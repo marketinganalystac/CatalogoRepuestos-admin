@@ -15,9 +15,17 @@ import {
   deleteDoc, doc, writeBatch, serverTimestamp, query, orderBy
 } from 'firebase/firestore';
 
-// ── XLSX (import en index.html o vía CDN si usas Vite add dependency) ─
-// Si usas npm: `npm i xlsx`
-import * as XLSX from 'xlsx';
+// ── XLSX: carga dinámica desde CDN (sin dependencia npm) ──────────────
+let XLSX = null;
+const loadXLSX = () => new Promise((resolve, reject) => {
+  if (XLSX) { resolve(XLSX); return; }
+  if (window.XLSX) { XLSX = window.XLSX; resolve(XLSX); return; }
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  script.onload  = () => { XLSX = window.XLSX; resolve(XLSX); };
+  script.onerror = () => reject(new Error('No se pudo cargar la librería XLSX'));
+  document.head.appendChild(script);
+});
 
 // ============================================================
 //  🔥 FIREBASE CONFIG — reemplaza con los datos de tu proyecto
@@ -361,9 +369,9 @@ async function fsAddLog(entry) {
 const EXPECTED_FIELDS = ['marca','modelo','modelo_original','anio',
   'descripcion_original','codigo','descripcion_estandar','clasificacion','subclasificacion'];
 
-function parseWorkbook(wb) {
+function parseWorkbook(wb, xlsxLib) {
   const sheet = wb.Sheets[wb.SheetNames[0]];
-  const rows  = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+  const rows  = xlsxLib.utils.sheet_to_json(sheet, { header: 1, defval: '' });
   if (rows.length < 2) return { records: [], headers: [] };
 
   const rawHeaders = rows[0].map(h => String(h).trim().toLowerCase()
@@ -579,15 +587,16 @@ const ModalImport = ({ onClose, onImport, onRestore }) => {
     const ext = file.name.split('.').pop().toLowerCase();
     const reader = new FileReader();
 
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
+        const xlsxLib = await loadXLSX();
         let wb;
         if (ext === 'csv') {
-          wb = XLSX.read(e.target.result, { type: 'string' });
+          wb = xlsxLib.read(e.target.result, { type: 'string' });
         } else {
-          wb = XLSX.read(e.target.result, { type: 'array' });
+          wb = xlsxLib.read(e.target.result, { type: 'array' });
         }
-        const result = parseWorkbook(wb);
+        const result = parseWorkbook(wb, xlsxLib);
         if (!result.records.length) { toast('El archivo parece vacío o sin datos válidos.', 'error'); return; }
         setParsed(result);
         setMapping(result.colMap);

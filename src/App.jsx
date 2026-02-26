@@ -1,1027 +1,1348 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { 
-  Printer, 
-  Share2, 
-  FileText, 
-  Ruler, 
-  Car, 
-  RefreshCw, 
-  Search, 
-  ArrowLeft, 
-  Info, 
-  AlertTriangle,
-  Package,
-  Menu,
-  Grid,
-  List,
-  Database,
-  Filter,
-  ChevronRight,
-  X,
-  SlidersHorizontal,
-  Download,
-  Upload,
-  Edit3,
-  Save,
-  Clock,
-  User,
-  History,
-  Trash2,
-  Plus,
-  FileSpreadsheet
-} from 'lucide-react';
+// ============================================================
+//  Auto Centro — Catálogo de Repuestos
+//  App.jsx  |  Firebase Firestore + XLSX + CSV
+//  Homologado desde autocentro_buscador_v8.html
+// ============================================================
 
-// --- UTILIDADES ---
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleString('es-ES', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit'
+import React, {
+  useState, useEffect, useMemo, useRef, useCallback
+} from 'react';
+
+// ── Firebase ──────────────────────────────────────────────
+import { initializeApp }              from 'firebase/app';
+import {
+  getFirestore, collection, getDocs, addDoc, updateDoc,
+  deleteDoc, doc, writeBatch, serverTimestamp, query, orderBy
+} from 'firebase/firestore';
+
+// ── XLSX (import en index.html o vía CDN si usas Vite add dependency) ─
+// Si usas npm: `npm i xlsx`
+import * as XLSX from 'xlsx';
+
+// ============================================================
+//  🔥 FIREBASE CONFIG — reemplaza con los datos de tu proyecto
+// ============================================================
+const firebaseConfig = {
+  apiKey:            "TU_API_KEY",
+  authDomain:        "TU_PROJECT.firebaseapp.com",
+  projectId:         "TU_PROJECT_ID",
+  storageBucket:     "TU_PROJECT.appspot.com",
+  messagingSenderId: "TU_SENDER_ID",
+  appId:             "TU_APP_ID"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db_fs       = getFirestore(firebaseApp);
+
+// ============================================================
+//  CONSTANTES
+// ============================================================
+const PAGE_SIZE = 50;
+
+const MARCAS = ['CHEVROLET','DAIHATSU','FORD','HONDA','HYUNDAI',
+  'ISUZU','KIA','MAZDA','MITSUBISHI','NISSAN','SUZUKI','TOYOTA'];
+
+const CLASIFICACIONES = ['BATERÍAS','BUJÍAS E IGNICIÓN','CLUTCH Y TRANSMISIÓN',
+  'COMBUSTIBLE Y DIESEL','EJES Y RUEDAS','FILTROS','FRENOS',
+  'MOTOR Y DISTRIBUCIÓN','SISTEMA ELÉCTRICO','SUSPENSIÓN Y DIRECCIÓN','ZUNCHOS'];
+
+const SUBCLASIFICACIONES = [
+  'Amortiguadores','Balinera de Clutch','Balineras','Bandas de Freno',
+  'Barra Estabilizadora','Barra Suspensión','Base de Motor',
+  'Bases de Amortiguador','Baterías AGM','Baterías Especiales','Baterías MF',
+  'Baterías UMF','Bolas / Rótulas','Bomba de Agua','Brazos y Links','Bujes',
+  'Bujías','Bujías Iridium','Bujías Original','Bujías Platino','Bujías Racing',
+  'Bujías de Cobre','Calibración','Cilindros de Freno','Correas','Cremallera',
+  'Disco de Clutch','Discos de Freno','Esclavo de Clutch','Filtro A/C',
+  'Filtro de Aceite','Filtro de Aire','Filtro de Combustible','Hub / Cubos',
+  'Kit de Buje','Kit de Tiempo','Master de Clutch','Master de Freno',
+  'Muñequilla / Ejes','Pastillas / Tacos','Pernos','Plato de Clutch','Relay',
+  'Retenedoras','Tambores','Tensores','Terminales de Batería','Terminales y V',
+  'Trampa de Diesel','Zunchos'
+];
+
+// Índice de columnas de un registro (array de 9 campos)
+// [0]marca [1]modelo [2]modelo_orig [3]anio [4]desc_orig [5]codigo [6]desc_std [7]clasi [8]sub
+const COL_DEFS = [
+  { key: 0, label: 'Marca',            show: true  },
+  { key: 1, label: 'Modelo',           show: true  },
+  { key: 2, label: 'Modelo Original',  show: false },
+  { key: 3, label: 'Año',             show: true  },
+  { key: 4, label: 'Descripción',      show: true  },
+  { key: 5, label: 'Código',           show: true  },
+  { key: 6, label: 'Desc. Estándar',   show: false },
+  { key: 7, label: 'Clasificación',    show: true  },
+  { key: 8, label: 'Subclasificación', show: true  },
+];
+
+// ============================================================
+//  UTILITARIOS
+// ============================================================
+const escH = (s) => String(s ?? '')
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+const nowDateTime = () => {
+  const d = new Date();
+  return {
+    fecha: d.toLocaleDateString('es-PA'),
+    hora:  d.toLocaleTimeString('es-PA', { hour:'2-digit', minute:'2-digit' })
+  };
+};
+
+const highlightText = (text, query) => {
+  if (!query || !text) return text ?? '';
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const parts = String(text).split(new RegExp(`(${escaped})`, 'gi'));
+  return parts.map((p, i) =>
+    p.toLowerCase() === query.toLowerCase()
+      ? <mark key={i} className="ac-mark">{p}</mark>
+      : p
+  );
+};
+
+// ============================================================
+//  CSS-IN-JS — inyectado una sola vez
+// ============================================================
+const STYLES = `
+:root {
+  --bd:#1A3F6F; --bm:#0060A0; --bl:#E8F2FA;
+  --gold:#D4A800; --gl:#FDF6DC;
+  --w:#fff; --g1:#F5F7FA; --g2:#E8ECF0; --g3:#CFD8DC;
+  --g5:#78909C; --g7:#37474F; --g9:#1A2530;
+  --red:#C62828; --grn:#2E7D32; --org:#D84315;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--g1);color:var(--g9);min-height:100vh}
+
+/* ─ Header ─ */
+.ac-header{background:linear-gradient(135deg,var(--bd) 0%,var(--bm) 100%);padding:0 24px;
+  border-bottom:3px solid var(--gold);box-shadow:0 2px 10px rgba(0,0,0,.25);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;min-height:58px}
+.ac-hl{display:flex;align-items:center;gap:16px}
+.ac-logo{height:42px;border-radius:5px}
+.ac-hdiv{width:1px;height:30px;background:rgba(255,255,255,.3)}
+.ac-htitle{display:flex;flex-direction:column}
+.ac-htitle .s1{font-size:.62rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.ac-htitle .s2{font-size:.92rem;color:#fff;font-weight:700}
+.ac-badge{background:rgba(255,255,255,.15);color:#fff;font-size:.74rem;font-weight:700;
+  padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.25)}
+.ac-hact{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+
+/* ─ Buttons ─ */
+.btn{padding:7px 15px;border:none;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;transition:.18s;white-space:nowrap}
+.btn-p{background:var(--bm);color:#fff}.btn-p:hover{background:var(--bd)}
+.btn-g{background:var(--gold);color:var(--bd)}.btn-g:hover{background:#c49a00}
+.btn-c{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25)}.btn-c:hover{background:rgba(255,255,255,.25)}
+.btn-r{background:var(--red);color:#fff}.btn-r:hover{background:#8B0000}
+.btn-o{background:#fff;border:1.5px solid var(--bm);color:var(--bm)}.btn-o:hover{background:var(--bl)}
+.btn-sm{padding:3px 9px;font-size:.7rem;border-radius:5px}
+.btn-dark{background:var(--bd);color:#fff;border:none}.btn-dark:hover{background:#102a50}
+.btn-org{background:var(--org);color:#fff}.btn-org:hover{background:#b23610}
+.btn-slate{background:#546E7A;color:#fff}.btn-slate:hover{background:#37474F}
+.btn-edit{padding:3px 9px;background:var(--bm);color:#fff;border:none;border-radius:5px;font-size:.7rem;cursor:pointer;font-weight:600}
+.btn-edit:hover{background:var(--bd)}
+.btn-del{padding:3px 9px;background:#FFEBEE;color:var(--red);border:1px solid #FFCDD2;border-radius:5px;font-size:.7rem;cursor:pointer;font-weight:600;margin-left:4px}
+.btn-del:hover{background:var(--red);color:#fff}
+.btn-copy{padding:2px 6px;background:var(--bl);border:1px solid #90CAF9;border-radius:4px;font-size:.68rem;cursor:pointer;color:var(--bm);font-weight:600;margin-left:5px}
+.btn-copy:hover{background:var(--bm);color:#fff}
+.btn:disabled{opacity:.45;cursor:default}
+
+/* ─ Search Panel ─ */
+.ac-sp{background:#fff;border-bottom:1px solid var(--g2);padding:14px 24px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.ac-fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin-bottom:10px}
+.ac-fl{display:flex;flex-direction:column;gap:3px}
+.ac-fl label{font-size:.67rem;color:var(--bm);font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+select,input[type=text]{background:var(--g1);border:1.5px solid var(--g3);color:var(--g9);
+  padding:7px 10px;border-radius:6px;font-size:.82rem;outline:none;transition:.18s;width:100%}
+select:focus,input[type=text]:focus{border-color:var(--bm);background:#fff;box-shadow:0 0 0 3px rgba(0,96,160,.12)}
+.ac-sr{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.ac-sr .ac-fl{flex:1;min-width:200px}
+
+/* ─ Status Bar ─ */
+.ac-sb{background:var(--bd);padding:6px 24px;display:flex;align-items:center;gap:14px;font-size:.76rem;color:rgba(255,255,255,.7);flex-wrap:wrap}
+.ac-sb strong{color:#fff}
+.ac-sep{color:rgba(255,255,255,.3)}
+.ac-tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:10px;font-size:.68rem;font-weight:700;color:#fff}
+
+/* ─ Quick Stats ─ */
+.ac-qs{background:#fff;border-bottom:1px solid var(--g2);padding:8px 24px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ac-qi{display:flex;align-items:center;gap:6px;background:var(--bl);border:1px solid #B3D4F0;border-radius:8px;padding:5px 12px}
+.ac-qi .n{font-size:1rem;font-weight:800;color:var(--bd);line-height:1}
+.ac-qi .l{color:var(--bm);font-size:.67rem;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.ac-qsep{width:1px;height:24px;background:var(--g2)}
+
+/* ─ Table ─ */
+.ac-tw{overflow:auto;max-height:calc(100vh - 310px);background:#fff}
+table{width:100%;border-collapse:collapse;font-size:.81rem}
+thead th{background:var(--bd);color:rgba(255,255,255,.9);padding:9px 13px;text-align:left;
+  font-size:.69rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+  position:sticky;top:0;z-index:10;white-space:nowrap;border-right:1px solid rgba(255,255,255,.1);
+  cursor:pointer;user-select:none;transition:.15s}
+thead th:hover{background:var(--bm)}
+thead th.sorted{background:var(--bm)}
+thead th.sorted .si{opacity:1;color:var(--gold)}
+thead th .si{margin-left:3px;opacity:.35;font-size:.62rem}
+tbody tr{border-bottom:1px solid var(--g2);transition:background .1s}
+tbody tr:hover{background:var(--bl)}
+tbody tr:nth-child(even){background:#FAFBFD}
+tbody tr:nth-child(even):hover{background:var(--bl)}
+tbody td{padding:7px 13px;vertical-align:middle}
+.cm{font-weight:800;color:var(--bd);white-space:nowrap;font-size:.84rem}
+.cmo{color:var(--g7);white-space:nowrap;font-weight:500}
+.ca{font-weight:800;color:var(--bd);background:var(--gl);border-radius:4px;font-size:.8rem;padding:2px 6px;white-space:nowrap;display:inline-block}
+.cc{font-family:'Courier New',monospace;color:var(--grn);font-size:.77rem;font-weight:700;background:#F1F8E9;padding:2px 7px;border-radius:4px;display:inline-block;white-space:nowrap}
+.cds{color:var(--g9);font-weight:600}
+.ct{display:inline-block;padding:2px 9px;border-radius:9px;font-size:.67rem;font-weight:700;color:#fff;white-space:nowrap}
+.cs{color:var(--g5);font-size:.75rem;font-style:italic}
+.cac{white-space:nowrap;text-align:center}
+.ac-mark{background:#FFE082;color:#333;border-radius:2px;padding:0 2px}
+
+/* ─ Pagination ─ */
+.ac-pg{background:#fff;padding:9px 24px;display:flex;align-items:center;gap:5px;
+  border-top:2px solid var(--g2);flex-wrap:wrap;box-shadow:0 -1px 4px rgba(0,0,0,.05)}
+.pb{padding:5px 12px;border:1.5px solid var(--g3);background:#fff;color:var(--g7);
+  border-radius:6px;cursor:pointer;font-size:.77rem;font-weight:500;transition:.15s}
+.pb:hover{background:var(--bl);border-color:#90CAF9;color:var(--bm)}
+.pb.active{background:var(--bm);border-color:var(--bm);color:#fff;font-weight:700}
+.pb:disabled{opacity:.3;cursor:default}
+.pi{font-size:.76rem;color:var(--g5);margin-left:auto}
+
+/* ─ Modals ─ */
+.mo{display:none;position:fixed;inset:0;background:rgba(10,25,45,.6);z-index:1000;
+  align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.mo.show{display:flex}
+.md{background:#fff;border-radius:12px;width:min(680px,95vw);max-height:90vh;overflow-y:auto;
+  box-shadow:0 24px 60px rgba(0,0,0,.3);animation:pop .2s ease}
+.md.sm{max-width:440px}
+@keyframes pop{from{transform:scale(.93);opacity:0}to{transform:scale(1);opacity:1}}
+.mh{padding:16px 22px 12px;border-bottom:2px solid var(--bl);display:flex;align-items:center;
+  justify-content:space-between;background:var(--bd);border-radius:12px 12px 0 0}
+.mh.danger{background:#7B1818}
+.mh h2{font-size:.95rem;color:#fff;font-weight:700}
+.mx{background:rgba(255,255,255,.15);border:none;font-size:1.1rem;cursor:pointer;color:#fff;
+  border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;transition:.15s}
+.mx:hover{background:var(--red)}
+.mb{padding:20px 22px}
+.mf{padding:14px 22px;border-top:1px solid var(--g2);display:flex;justify-content:flex-end;gap:8px;
+  background:var(--g1);border-radius:0 0 12px 12px}
+
+/* ─ Form grid ─ */
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg2{display:flex;flex-direction:column;gap:4px}
+.fg2.full{grid-column:1/-1}
+.fg2 label{font-size:.68rem;color:var(--bm);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.fg2 input,.fg2 select{background:var(--g1);border:1.5px solid var(--g3);color:var(--g9);
+  padding:8px 11px;border-radius:7px;font-size:.84rem;outline:none;transition:.18s;width:100%}
+.fg2 input:focus,.fg2 select:focus{border-color:var(--bm);background:#fff;box-shadow:0 0 0 3px rgba(0,96,160,.1)}
+.fg2 input.err{border-color:var(--red);background:#FFF5F5}
+.em{font-size:.68rem;color:var(--red);margin-top:1px}
+
+/* ─ Import ─ */
+.ib{border:2px dashed #90CAF9;border-radius:10px;padding:26px;text-align:center;
+  background:var(--bl);cursor:pointer;transition:.2s}
+.ib:hover,.ib.drag{border-color:var(--bm);background:#D0E8FA}
+.ib .icon{font-size:2.4rem;margin-bottom:8px}
+.ib p{color:var(--g5);font-size:.83rem}
+.ii{margin-top:12px;background:#E8F5E9;border-radius:8px;padding:11px;font-size:.78rem;color:var(--grn);display:none}
+.ii ul{margin-top:5px;padding-left:16px}
+.ipv{margin-top:12px;font-size:.76rem;color:var(--g7);background:var(--g1);border-radius:6px;
+  padding:10px;max-height:110px;overflow-y:auto;border:1px solid var(--g2)}
+.wb{margin-top:12px;padding:10px 13px;background:#FFF8E1;border-radius:7px;
+  font-size:.76rem;color:#8B6000;border-left:3px solid var(--gold)}
+.cmr{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+.cmrow{display:flex;align-items:center;gap:6px;font-size:.78rem;background:var(--g1);padding:5px 9px;border-radius:6px}
+.cmrow span{color:var(--g5);min-width:130px;font-size:.74rem}
+.cmrow select{flex:1;padding:3px 7px;font-size:.76rem}
+
+/* ─ Detail rows ─ */
+.dr{display:flex;gap:8px;margin-bottom:8px;font-size:.82rem}
+.dr .lb{font-weight:700;color:var(--bm);min-width:130px;font-size:.74rem;text-transform:uppercase;padding-top:1px}
+.dr .vl{color:var(--g9);flex:1}
+
+/* ─ Toast ─ */
+.toast{position:fixed;bottom:22px;right:22px;padding:11px 18px;border-radius:8px;font-size:.82rem;
+  font-weight:600;box-shadow:0 4px 18px rgba(0,0,0,.2);z-index:2000;display:none;color:#fff;
+  max-width:360px;animation:su .3s ease}
+.toast.show{display:block}
+.toast.success{background:var(--grn)}.toast.error{background:var(--red)}
+.toast.info{background:var(--bm)}.toast.warning{background:var(--org)}
+@keyframes su{from{transform:translateY(18px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* ─ Loading ─ */
+.loading{text-align:center;padding:40px;color:var(--bm);background:#fff}
+.spin{display:inline-block;width:22px;height:22px;border:3px solid var(--bl);
+  border-top-color:var(--bm);border-radius:50%;animation:spin .75s linear infinite;
+  margin-right:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:60px 20px;color:var(--g5);background:#fff}
+.empty .icon{font-size:3rem;margin-bottom:10px}
+
+/* ─ Historial ─ */
+.mhist-wrap{overflow-y:auto;max-height:60vh}
+.hlog-item{display:grid;grid-template-columns:180px 110px 1fr;border-bottom:1px solid var(--g2);font-size:.78rem}
+.hlog-item:hover{background:var(--bl)}
+.hlog-dt{padding:10px 14px;color:var(--g5);white-space:nowrap;font-size:.73rem;border-right:1px solid var(--g2)}
+.hlog-op{padding:10px 12px;font-weight:700;border-right:1px solid var(--g2);display:flex;align-items:center;gap:5px}
+.hlog-det{padding:10px 14px;color:var(--g7);line-height:1.5}
+.hlog-det strong{color:var(--bd)}
+.field-chg{display:inline-block;background:var(--gl);border:1px solid #e8d870;border-radius:4px;padding:1px 7px;margin:2px 3px 2px 0;font-size:.72rem}
+.field-chg .old{color:var(--red);text-decoration:line-through;margin-right:4px}
+.field-chg .new{color:var(--grn)}
+.hlog-ip{font-size:.68rem;color:var(--g5);margin-top:3px}
+.hop-add{color:var(--grn)}.hop-edit{color:var(--bm)}.hop-del{color:var(--red)}.hop-imp{color:var(--org)}
+.hist-empty{text-align:center;padding:40px;color:var(--g5);font-size:.85rem}
+.hist-toolbar{display:flex;gap:8px;align-items:center;padding:10px 16px;background:var(--g1);border-bottom:1px solid var(--g2);flex-wrap:wrap}
+.hist-toolbar select{width:auto;padding:5px 8px;font-size:.76rem}
+
+/* ─ Col toggles ─ */
+.col-toggle-label{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.84rem;
+  padding:6px 10px;border-radius:6px;background:var(--g1)}
+
+/* ─ Firebase badge ─ */
+.fb-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(255,167,38,.18);
+  border:1px solid rgba(255,167,38,.4);border-radius:12px;padding:2px 9px;font-size:.65rem;
+  font-weight:700;color:#FF8F00;letter-spacing:.5px}
+.fb-dot{width:6px;height:6px;border-radius:50%;background:#4CAF50;display:inline-block}
+.fb-dot.connecting{background:var(--gold);animation:spin .8s linear infinite}
+.fb-dot.error{background:var(--red)}
+`;
+
+// ============================================================
+//  FIRESTORE HELPERS
+// ============================================================
+const COL_RECORDS  = 'repuestos';
+const COL_CHANGELOG = 'changelog';
+
+async function fsGetAll(colName) {
+  const snap = await getDocs(collection(db_fs, colName));
+  return snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+}
+
+async function fsAdd(colName, data) {
+  const ref = await addDoc(collection(db_fs, colName), {
+    ...data, _ts: serverTimestamp()
   });
-};
+  return ref.id;
+}
 
-// --- PARSER CSV A JSON (NUEVO) ---
-const parseCSV = (csvText) => {
-  const lines = csvText.split('\n');
-  const result = [];
-  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/^"|"$/g, ''));
+async function fsUpdate(id, data) {
+  await updateDoc(doc(db_fs, COL_RECORDS, id), {
+    ...data, _ts: serverTimestamp()
+  });
+}
 
-  for (let i = 1; i < lines.length; i++) {
-    if (!lines[i].trim()) continue;
-    
-    // Regex compleja para manejar comas dentro de comillas (ej: "Toyota, Inc")
-    const obj = {};
-    const currentline = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(',');
+async function fsDelete(id) {
+  await deleteDoc(doc(db_fs, COL_RECORDS, id));
+}
 
-    headers.forEach((header, index) => {
-      let val = currentline[index] ? currentline[index].replace(/^"|"$/g, '').trim() : '';
-      obj[header] = val;
+async function fsBatchWrite(records) {
+  // Firestore limita 500 ops por batch
+  const CHUNK = 490;
+  for (let i = 0; i < records.length; i += CHUNK) {
+    const batch = writeBatch(db_fs);
+    records.slice(i, i + CHUNK).forEach(r => {
+      const ref = doc(collection(db_fs, COL_RECORDS));
+      batch.set(ref, { ...r, _ts: serverTimestamp() });
     });
-
-    // Mapeo inteligente de CSV plano a Estructura Compleja de la App
-    if (obj.sku) { // Solo si tiene SKU
-        const newProduct = {
-            id: Date.now() + i,
-            sku: obj.sku || 'SIN-SKU',
-            name: obj.name || 'Producto Nuevo',
-            brand: obj.brand || 'Genérico',
-            category: obj.category || 'General',
-            oem_ref: obj.oem_ref || '',
-            line: obj.line || '',
-            description: obj.description || '',
-            image_preview: obj.image_url || 'https://placehold.co/400x400/0f172a/fbbf24?text=NO+IMG',
-            // Reconstruimos la estructura anidada
-            quickSpecs: {
-                info: obj.specs_info || ''
-            },
-            specs: [
-                { label: "Origen", value: "Importado (CSV)" }
-            ],
-            // Asumimos que el CSV trae al menos un vehículo principal
-            applications: obj.make ? [{
-                make: obj.make,
-                model: obj.model || 'Varios',
-                engine: obj.engine || '',
-                years: obj.year || 'Todos'
-            }] : [],
-            crossReference: [],
-            images: []
-        };
-        result.push(newProduct);
-    }
+    await batch.commit();
   }
-  return result;
-};
+}
 
-// --- COMPONENTE DE FILTROS INTELIGENTES (CASCADA) ---
-const SmartFilters = ({ db, filters, onFilterChange, vertical = false }) => {
-  
-  const availableMakes = useMemo(() => {
-    const makes = new Set();
-    db.forEach(p => p.applications?.forEach(app => makes.add(app.make)));
-    return Array.from(makes).sort();
-  }, [db]);
+async function fsAddLog(entry) {
+  await addDoc(collection(db_fs, COL_CHANGELOG), {
+    ...entry, _ts: serverTimestamp()
+  });
+}
 
-  const availableModels = useMemo(() => {
-    if (!filters.make) return [];
-    const models = new Set();
-    db.forEach(p => {
-      p.applications?.forEach(app => {
-        if (app.make === filters.make) {
-          models.add(app.model);
-        }
-      });
-    });
-    return Array.from(models).sort();
-  }, [db, filters.make]);
+// ============================================================
+//  XLSX / CSV PARSER  → array de 9 campos
+// ============================================================
+const EXPECTED_FIELDS = ['marca','modelo','modelo_original','anio',
+  'descripcion_original','codigo','descripcion_estandar','clasificacion','subclasificacion'];
 
-  const availableYears = useMemo(() => {
-    if (!filters.make || !filters.model) return [];
-    const years = new Set();
-    db.forEach(p => {
-      p.applications?.forEach(app => {
-        if (app.make === filters.make && app.model === filters.model) {
-          years.add(app.years);
-        }
-      });
-    });
-    return Array.from(years).sort();
-  }, [db, filters.make, filters.model]);
+function parseWorkbook(wb) {
+  const sheet = wb.Sheets[wb.SheetNames[0]];
+  const rows  = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+  if (rows.length < 2) return { records: [], headers: [] };
 
-  const availableCategories = useMemo(() => {
-    let relevantProducts = db;
-    if (filters.make) {
-      relevantProducts = relevantProducts.filter(p => 
-        p.applications?.some(a => a.make === filters.make && (!filters.model || a.model === filters.model))
-      );
-    }
-    const cats = new Set(relevantProducts.map(p => p.category));
-    return Array.from(cats).sort();
-  }, [db, filters.make, filters.model]);
+  const rawHeaders = rows[0].map(h => String(h).trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9_]/g,'_'));
 
-  const containerClass = vertical 
-    ? "flex flex-col gap-4 w-full" 
-    : "grid grid-cols-1 md:grid-cols-4 gap-4 w-full";
+  // Auto-map: busca la columna más parecida
+  const colMap = EXPECTED_FIELDS.map(f => {
+    const exact = rawHeaders.indexOf(f);
+    if (exact >= 0) return exact;
+    const partial = rawHeaders.findIndex(h => h.includes(f.split('_')[0]));
+    return partial >= 0 ? partial : -1;
+  });
 
-  const selectClass = "w-full bg-slate-900 border border-slate-700 text-slate-100 text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block p-2.5 shadow-sm disabled:bg-slate-800 disabled:text-slate-600 transition-all";
-  const labelClass = "block mb-1 text-xs font-bold text-slate-500 uppercase tracking-wider";
+  const records = rows.slice(1)
+    .filter(r => r.some(c => String(c).trim()))
+    .map(r => colMap.map(ci => ci >= 0 ? String(r[ci] ?? '').trim() : ''));
+
+  return { records, headers: rawHeaders, colMap };
+}
+
+// ============================================================
+//  COMPONENTE TOAST
+// ============================================================
+const ToastCtx = React.createContext(null);
+const ToastProvider = ({ children }) => {
+  const [toast, setToast] = useState({ msg:'', type:'info', show: false });
+  const timerRef = useRef(null);
+
+  const showToast = useCallback((msg, type = 'info') => {
+    clearTimeout(timerRef.current);
+    setToast({ msg, type, show: true });
+    timerRef.current = setTimeout(() => setToast(t => ({ ...t, show: false })), 3200);
+  }, []);
 
   return (
-    <div className={containerClass}>
-      <div className="w-full">
-        <label className={labelClass}>Marca</label>
-        <select 
-          value={filters.make} 
-          onChange={(e) => onFilterChange('make', e.target.value)}
-          className={selectClass}
-        >
-          <option value="">Todas las marcas</option>
-          {availableMakes.map(make => (
-            <option key={make} value={make}>{make}</option>
-          ))}
-        </select>
+    <ToastCtx.Provider value={showToast}>
+      {children}
+      <div className={`toast ${toast.type} ${toast.show ? 'show' : ''}`}>
+        {toast.msg}
       </div>
+    </ToastCtx.Provider>
+  );
+};
+const useToast = () => React.useContext(ToastCtx);
 
-      <div className="w-full">
-        <label className={labelClass}>Modelo</label>
-        <select 
-          value={filters.model} 
-          onChange={(e) => onFilterChange('model', e.target.value)}
-          className={selectClass}
-          disabled={!filters.make}
-        >
-          <option value="">{filters.make ? 'Seleccionar Modelo' : '---'}</option>
-          {availableModels.map(model => (
-            <option key={model} value={model}>{model}</option>
-          ))}
-        </select>
-      </div>
+// ============================================================
+//  MODAL AGREGAR / EDITAR
+// ============================================================
+const ModalEdit = ({ record, onSave, onClose }) => {
+  const toast   = useToast();
+  const isNew   = !record?._id;
+  const [form, setForm] = useState(() =>
+    record ? [...record.fields] : ['','','','','','','','','']
+  );
+  const [errors, setErrors] = useState([]);
 
-      <div className="w-full">
-        <label className={labelClass}>Año / Rango</label>
-        <select 
-          value={filters.year} 
-          onChange={(e) => onFilterChange('year', e.target.value)}
-          className={selectClass}
-          disabled={!filters.model}
-        >
-          <option value="">{filters.model ? 'Todos los años' : '---'}</option>
-          {availableYears.map(year => (
-            <option key={year} value={year}>{year}</option>
-          ))}
-        </select>
-      </div>
+  const validate = () => {
+    const e = [];
+    if (!form[0]) e.push(0); // marca
+    if (!form[1]) e.push(1); // modelo
+    if (!form[3]) e.push(3); // anio
+    if (!form[4]) e.push(4); // desc orig
+    return e;
+  };
 
-      <div className="w-full">
-        <label className={labelClass}>Categoría</label>
-        <select 
-          value={filters.category} 
-          onChange={(e) => onFilterChange('category', e.target.value)}
-          className={selectClass}
-        >
-          <option value="">Todas</option>
-          {availableCategories.map(cat => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
+  const handleSave = async () => {
+    const e = validate();
+    if (e.length) { setErrors(e); return; }
+    await onSave({ fields: form });
+    onClose();
+  };
+
+  const labels = ['Marca *','Modelo *','Modelo Original','Año *',
+    'Descripción Original *','Código','Descripción Estándar',
+    'Clasificación','Subclasificación'];
+
+  const renderField = (i) => {
+    const isErr = errors.includes(i);
+    if (i === 7) return (
+      <select value={form[i]} onChange={e => { setForm(f => { const n=[...f]; n[i]=e.target.value; return n; }); }}
+        style={{ background:'var(--g1)',border:`1.5px solid ${isErr?'var(--red)':'var(--g3)'}`,
+          color:'var(--g9)',padding:'8px 11px',borderRadius:7,fontSize:'.84rem',width:'100%',outline:'none' }}>
+        <option value="">— Seleccionar —</option>
+        {CLASIFICACIONES.map(c => <option key={c}>{c}</option>)}
+      </select>
+    );
+    if (i === 8) return (
+      <select value={form[i]} onChange={e => { setForm(f => { const n=[...f]; n[i]=e.target.value; return n; }); }}
+        style={{ background:'var(--g1)',border:'1.5px solid var(--g3)',
+          color:'var(--g9)',padding:'8px 11px',borderRadius:7,fontSize:'.84rem',width:'100%',outline:'none' }}>
+        <option value="">— Seleccionar —</option>
+        {SUBCLASIFICACIONES.map(c => <option key={c}>{c}</option>)}
+      </select>
+    );
+    const upper = [0,1,2,6].includes(i);
+    return (
+      <input
+        className={isErr ? 'err' : ''}
+        type="text"
+        value={form[i]}
+        onChange={e => {
+          let v = e.target.value;
+          if (upper) v = v.toUpperCase();
+          setForm(f => { const n=[...f]; n[i]=v; return n; });
+          setErrors(er => er.filter(x => x !== i));
+        }}
+      />
+    );
+  };
+
+  return (
+    <div className="mo show">
+      <div className="md">
+        <div className="mh">
+          <h2>{isNew ? '➕ Nuevo Registro' : '✏️ Editar Registro'}</h2>
+          <button className="mx" onClick={onClose}>×</button>
+        </div>
+        <div className="mb">
+          <div className="fgrid">
+            {labels.map((lbl, i) => (
+              <div key={i} className={`fg2${i === 4 || i === 6 ? ' full' : ''}`}>
+                <label>{lbl}</label>
+                {renderField(i)}
+                {errors.includes(i) && <span className="em">Campo requerido</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="mf">
+          <button className="btn btn-o" onClick={onClose}>Cancelar</button>
+          <button className="btn btn-p" onClick={handleSave}>💾 Guardar</button>
+        </div>
       </div>
     </div>
   );
 };
 
-// --- MODAL DE EDICIÓN DE PRODUCTO ---
-const ProductEditModal = ({ product, isOpen, onClose, onSave, currentUser }) => {
-  const [formData, setFormData] = useState({});
+// ============================================================
+//  MODAL ELIMINAR
+// ============================================================
+const ModalDelete = ({ record, onConfirm, onClose }) => {
+  if (!record) return null;
+  return (
+    <div className="mo show">
+      <div className="md sm">
+        <div className="mh danger">
+          <h2>🗑 Eliminar Registro</h2>
+          <button className="mx" onClick={onClose}>×</button>
+        </div>
+        <div className="mb">
+          <p style={{fontSize:'.87rem',color:'var(--g7)',lineHeight:1.6}}>
+            ¿Confirmas la eliminación? Esta acción <strong>no se puede deshacer</strong>.
+          </p>
+          <div style={{marginTop:12,background:'#FFF5F5',border:'1px solid #FFCDD2',
+            borderLeft:'3px solid var(--red)',borderRadius:8,padding:11,fontSize:'.79rem',color:'var(--red)'}}>
+            <strong>{record.fields[0]}</strong> {record.fields[1]} {record.fields[3]}
+            {record.fields[4] && <><br/><span style={{color:'var(--g7)'}}>{record.fields[4]}</span></>}
+          </div>
+        </div>
+        <div className="mf">
+          <button className="btn btn-o" onClick={onClose}>Cancelar</button>
+          <button className="btn btn-r" onClick={onConfirm}>🗑 Eliminar</button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-  useEffect(() => {
-    if (product) {
-      setFormData(JSON.parse(JSON.stringify(product))); // Deep copy
-    } else {
-        // Default empty product
-        setFormData({
-            sku: '', name: '', brand: '', category: '', oem_ref: '', line: '', description: '',
-            image_preview: 'https://placehold.co/400x400/0f172a/fbbf24?text=NEW',
-            quickSpecs: {}, specs: [], applications: [], crossReference: [], images: []
-        });
-    }
-  }, [product, isOpen]);
+// ============================================================
+//  MODAL DETALLE
+// ============================================================
+const ModalDetail = ({ record, onClose, onEdit }) => {
+  if (!record) return null;
+  const labels = ['Marca','Modelo','Modelo Original','Año',
+    'Descripción Original','Código','Descripción Estándar','Clasificación','Subclasificación'];
+  return (
+    <div className="mo show">
+      <div className="md sm">
+        <div className="mh">
+          <h2>📋 Detalle del Registro</h2>
+          <button className="mx" onClick={onClose}>×</button>
+        </div>
+        <div className="mb">
+          {labels.map((lbl, i) => record.fields[i] ? (
+            <div key={i} className="dr">
+              <span className="lb">{lbl}</span>
+              <span className="vl">{record.fields[i]}</span>
+            </div>
+          ) : null)}
+        </div>
+        <div className="mf">
+          <button className="btn btn-o" onClick={onClose}>Cerrar</button>
+          <button className="btn btn-p" onClick={() => { onClose(); onEdit(record); }}>✏ Editar</button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-  if (!isOpen) return null;
+// ============================================================
+//  MODAL IMPORTAR
+// ============================================================
+const ModalImport = ({ onClose, onImport, onRestore }) => {
+  const toast      = useToast();
+  const fileRef    = useRef(null);
+  const [parsed,  setParsed]  = useState(null);   // { records, headers, colMap }
+  const [mapping, setMapping] = useState([]);      // índice destino por columna origen
+  const [isDrag,  setIsDrag]  = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const processFile = (file) => {
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      try {
+        let wb;
+        if (ext === 'csv') {
+          wb = XLSX.read(e.target.result, { type: 'string' });
+        } else {
+          wb = XLSX.read(e.target.result, { type: 'array' });
+        }
+        const result = parseWorkbook(wb);
+        if (!result.records.length) { toast('El archivo parece vacío o sin datos válidos.', 'error'); return; }
+        setParsed(result);
+        setMapping(result.colMap);
+      } catch (err) {
+        toast('Error leyendo el archivo: ' + err.message, 'error');
+      }
+    };
+
+    if (ext === 'csv') reader.readAsText(file, 'UTF-8');
+    else               reader.readAsArrayBuffer(file);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(formData, currentUser);
+  const handleDrop = (e) => {
+    e.preventDefault(); setIsDrag(false);
+    processFile(e.dataTransfer.files[0]);
+  };
+
+  const handleImportAction = (mode) => {
+    if (!parsed) return;
+    // Remap usando mapping actual
+    const records = parsed.records.map(row => {
+      const mapped = Array(9).fill('');
+      mapping.forEach((destIdx, srcIdx) => {
+        if (destIdx >= 0 && destIdx < 9) mapped[destIdx] = row[srcIdx] ?? '';
+      });
+      return mapped;
+    });
+    onImport(records, mode);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="bg-slate-900 px-6 py-4 flex justify-between items-center border-b border-amber-500/30">
-          <h3 className="text-xl font-bold text-white flex items-center gap-2">
-            <Edit3 className="w-5 h-5 text-amber-500" />
-            {product ? `Editar: ${product.sku}` : 'Nuevo Producto'}
-          </h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
-            <X className="w-6 h-6" />
-          </button>
+    <div className="mo show">
+      <div className="md">
+        <div className="mh">
+          <h2>📂 Cargar Base de Datos</h2>
+          <button className="mx" onClick={onClose}>×</button>
         </div>
-        
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto custom-scrollbar flex-grow space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">SKU / Código</label>
-              <input required name="sku" value={formData.sku || ''} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-amber-500 outline-none" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">OEM Ref</label>
-              <input name="oem_ref" value={formData.oem_ref || ''} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-amber-500 outline-none" />
-            </div>
+        <div className="mb">
+          <div
+            className={`ib${isDrag ? ' drag' : ''}`}
+            onClick={() => fileRef.current?.click()}
+            onDragOver={e => { e.preventDefault(); setIsDrag(true); }}
+            onDragLeave={() => setIsDrag(false)}
+            onDrop={handleDrop}
+          >
+            <input ref={fileRef} type="file" accept=".csv,.xls,.xlsx"
+              style={{display:'none'}} onChange={e => processFile(e.target.files[0])} />
+            <div className="icon">📄</div>
+            <p><strong>Haz clic o arrastra tu archivo aquí</strong></p>
+            <p style={{marginTop:5,fontSize:'.76rem'}}>Formatos: <strong>.csv</strong> · <strong>.xls</strong> · <strong>.xlsx</strong></p>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Nombre del Producto</label>
-            <input required name="name" value={formData.name || ''} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-amber-500 outline-none" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Marca</label>
-              <input required name="brand" value={formData.brand || ''} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-amber-500 outline-none" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Categoría</label>
-              <input required name="category" value={formData.category || ''} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-amber-500 outline-none" />
-            </div>
-          </div>
-
-          <div>
-             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Descripción</label>
-             <textarea name="description" value={formData.description || ''} onChange={handleChange} rows={3} className="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-amber-500 outline-none text-sm"></textarea>
-          </div>
-          
-          <div className="p-3 bg-amber-50 rounded text-xs text-amber-800 border border-amber-200 flex items-center gap-2">
-            <Info className="w-4 h-4" />
-            Nota: Para editar especificaciones técnicas complejas o aplicaciones, use la carga masiva CSV/JSON. Esta edición es rápida.
-          </div>
-        </form>
-
-        <div className="bg-slate-50 p-4 border-t border-slate-200 flex justify-end gap-3">
-          <button type="button" onClick={onClose} className="px-4 py-2 text-slate-600 font-medium hover:text-slate-900">Cancelar</button>
-          <button onClick={handleSubmit} className="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded shadow-lg transition-colors flex items-center gap-2">
-            <Save className="w-4 h-4" /> Guardar Cambios
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// --- COMPONENTE TARJETA DE PRODUCTO ---
-const ProductCard = ({ product, onClick, viewMode }) => {
-  return (
-    <div 
-      onClick={onClick}
-      className={`group bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-2xl hover:border-amber-400 transition-all duration-300 cursor-pointer flex ${viewMode === 'list' ? 'flex-row' : 'flex-col'}`}
-    >
-      <div className={`${viewMode === 'list' ? 'w-48 h-full' : 'w-full h-48'} bg-slate-900 relative overflow-hidden flex items-center justify-center p-4 group-hover:bg-slate-800 transition-colors`}>
-        <img 
-          src={product.image_preview} 
-          alt={product.sku}
-          className="max-w-full max-h-full object-contain mix-blend-normal group-hover:scale-110 transition-transform duration-500"
-          onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/400x400/0f172a/fbbf24?text=NO+IMG"; }}
-        />
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <span className="bg-amber-500 text-slate-900 p-1.5 rounded-full shadow-lg block">
-            <ChevronRight className="w-4 h-4" />
-          </span>
-        </div>
-      </div>
-
-      <div className={`p-5 flex flex-col flex-grow ${viewMode === 'list' ? 'justify-center' : ''}`}>
-        <div className="flex justify-between items-start mb-2">
-          <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600 uppercase tracking-wider">
-            {product.brand}
-          </span>
-          <span className="text-xs font-mono text-slate-400">{product.category}</span>
-        </div>
-        
-        <h3 className="text-lg font-bold text-slate-900 group-hover:text-amber-600 transition-colors mb-1">
-          {product.sku}
-        </h3>
-        
-        <p className="text-sm text-slate-600 line-clamp-2 mb-4 leading-relaxed">
-          {product.name}
-        </p>
-
-        <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
-          <div className="flex flex-col">
-            <span className="text-slate-400 mb-0.5">OEM Ref:</span>
-            <span className="font-mono font-medium text-slate-700">{product.oem_ref}</span>
-          </div>
-          {viewMode !== 'list' && (
-            <button className="text-amber-600 font-medium text-xs hover:underline flex items-center gap-1">
-              Ver Ficha <ArrowLeft className="w-3 h-3 rotate-180" />
-            </button>
+          {parsed && (
+            <>
+              <div className="ii" style={{display:'block'}}>
+                <strong>📋 Archivo detectado</strong>
+                <ul>
+                  <li>{parsed.records.length} registros encontrados</li>
+                  <li>{parsed.headers.length} columnas detectadas</li>
+                </ul>
+              </div>
+              <div style={{marginTop:12}}>
+                <p style={{fontSize:'.8rem',fontWeight:700,color:'var(--g7)',marginBottom:6}}>
+                  🗂 Mapeo de columnas
+                </p>
+                <div className="cmr">
+                  {parsed.headers.map((h, si) => (
+                    <div key={si} className="cmrow">
+                      <span>{h}</span>
+                      <select value={mapping[si] ?? -1}
+                        onChange={e => setMapping(m => { const n=[...m]; n[si]=Number(e.target.value); return n; })}>
+                        <option value={-1}>— ignorar —</option>
+                        {EXPECTED_FIELDS.map((f,fi) => <option key={fi} value={fi}>{f}</option>)}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="ipv">
+                <strong>Vista previa:</strong>
+                <div style={{marginTop:5}}>
+                  {parsed.records.slice(0,5).map((r,i) => (
+                    <div key={i} style={{fontSize:'.72rem',color:'var(--g7)',padding:'2px 0',borderBottom:'1px solid var(--g2)'}}>
+                      {r.filter(Boolean).slice(0,5).join(' · ')}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
+
+          <div className="wb">
+            ⚠ <strong>Reemplazar</strong> borra todo y carga desde el archivo.
+            <strong> Agregar</strong> añade al catálogo existente.
+          </div>
+        </div>
+        <div className="mf">
+          <button className="btn btn-o" onClick={onClose}>Cancelar</button>
+          <button className="btn btn-slate" onClick={onRestore}>🔁 Restaurar original</button>
+          <button className="btn btn-org" onClick={() => handleImportAction('replace')} disabled={!parsed}>🔄 Reemplazar</button>
+          <button className="btn btn-p"   onClick={() => handleImportAction('append')}  disabled={!parsed}>➕ Agregar</button>
         </div>
       </div>
     </div>
   );
 };
 
-// --- VISTA DETALLE CON HISTORIAL ---
-const ProductDetail = ({ product, onBack, onEdit, historyLog }) => {
-  const [activeTab, setActiveTab] = useState('specs');
-  
-  if (!product) return null;
-
-  // Filtrar historial solo para este producto
-  const productHistory = historyLog.filter(h => h.sku === product.sku).sort((a,b) => new Date(b.date) - new Date(a.date));
-
-  return (
-    <div className="animate-in slide-in-from-right-4 duration-300 pb-20">
-      <div className="mb-6 flex justify-between items-center">
-        <button onClick={onBack} className="flex items-center text-sm font-medium text-slate-500 hover:text-amber-600 transition-colors">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Volver a resultados
-        </button>
-        <button 
-          onClick={() => onEdit(product)}
-          className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 hover:bg-amber-200 rounded-lg text-sm font-bold transition-colors"
-        >
-          <Edit3 className="w-4 h-4" /> Editar Producto
-        </button>
+// ============================================================
+//  MODAL COLUMNAS
+// ============================================================
+const ModalCols = ({ visibleCols, onChange, onClose }) => (
+  <div className="mo show">
+    <div className="md sm">
+      <div className="mh">
+        <h2>👁 Columnas visibles</h2>
+        <button className="mx" onClick={onClose}>×</button>
       </div>
-
-      <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-        {/* Header Producto GALAXY BLUE */}
-        <div className="bg-slate-900 text-white p-8 relative overflow-hidden border-b-4 border-amber-500">
-          <div className="absolute -top-10 -right-10 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl"></div>
-          <div className="relative z-10 flex flex-col md:flex-row justify-between gap-6">
-            <div>
-              <div className="flex gap-2 mb-3">
-                <span className="bg-amber-500 text-slate-900 text-xs font-bold px-2 py-1 rounded shadow-lg">{product.brand}</span>
-                <span className="bg-slate-700 text-slate-300 text-xs font-medium px-2 py-1 rounded border border-slate-600">{product.category}</span>
-              </div>
-              <h1 className="text-4xl font-black tracking-tight mb-2 text-white">{product.sku}</h1>
-              <p className="text-slate-300 text-lg font-light">{product.name}</p>
-            </div>
-            <div className="flex gap-3 items-start">
-               <button className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-lg text-sm transition-all text-slate-300">
-                <Printer className="w-4 h-4" /> Imprimir
-               </button>
-               <button className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-900 px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-amber-900/20 transition-all">
-                <Share2 className="w-4 h-4" /> Compartir
-               </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col lg:flex-row">
-          {/* Columna Izquierda */}
-          <div className="w-full lg:w-1/3 p-6 border-r border-slate-200 bg-slate-50">
-            <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm mb-6 flex items-center justify-center min-h-[250px]">
-              <img src={product.image_preview} alt={product.sku} className="w-full h-auto object-contain max-h-[300px]" 
-                   onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/400x400/0f172a/fbbf24?text=NO+IMG"; }}
-              />
-            </div>
-            
-            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
-                <Ruler className="w-4 h-4 text-amber-500" /> Especificaciones Clave
-              </h3>
-              <div className="space-y-3">
-                {product.quickSpecs && Object.entries(product.quickSpecs).map(([key, value]) => (
-                  <div key={key} className="flex justify-between items-center text-sm">
-                    <span className="text-slate-500 capitalize">{key}</span>
-                    <span className="font-mono font-bold text-slate-800">{value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Columna Derecha */}
-          <div className="w-full lg:w-2/3">
-             <div className="flex border-b border-slate-200 bg-white">
-               {[
-                 { id: 'specs', label: 'Ficha Técnica', icon: FileText },
-                 { id: 'apps', label: 'Compatibilidad', icon: Car },
-                 { id: 'cross', label: 'Cruce OEM', icon: RefreshCw },
-                 { id: 'history', label: 'Auditoría', icon: History },
-               ].map(tab => (
-                 <button
-                   key={tab.id}
-                   onClick={() => setActiveTab(tab.id)}
-                   className={`flex-1 py-4 text-sm font-medium border-b-2 flex items-center justify-center gap-2 transition-colors ${activeTab === tab.id ? 'border-amber-500 text-slate-900 bg-amber-50/50' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-                 >
-                   <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-amber-500' : ''}`} /> {tab.label}
-                 </button>
-               ))}
-             </div>
-
-             <div className="p-8 min-h-[400px] bg-white">
-               {activeTab === 'specs' && (
-                 <div className="space-y-6">
-                   <div>
-                     <h3 className="font-bold text-slate-900 mb-3">Descripción Detallada</h3>
-                     <p className="text-slate-600 leading-relaxed text-sm bg-slate-50 p-4 rounded-lg border border-slate-100">
-                       {product.description || "Sin descripción disponible."}
-                     </p>
-                   </div>
-                   {product.specs && (
-                     <div>
-                       <h3 className="font-bold text-slate-900 mb-3">Tabla Técnica</h3>
-                       <table className="w-full text-sm">
-                         <tbody className="divide-y divide-slate-100 border border-slate-100 rounded-lg overflow-hidden block">
-                           {product.specs.map((spec, i) => (
-                             <tr key={i} className="flex">
-                               <td className="w-1/3 bg-slate-50 p-3 font-medium text-slate-600">{spec.label}</td>
-                               <td className="w-2/3 p-3 text-slate-800">{spec.value}</td>
-                             </tr>
-                           ))}
-                         </tbody>
-                       </table>
-                     </div>
-                   )}
-                 </div>
-               )}
-
-               {activeTab === 'apps' && (
-                 <div>
-                   <h3 className="font-bold text-slate-900 mb-4">Vehículos Compatibles</h3>
-                   {product.applications && product.applications.length > 0 ? (
-                    <div className="overflow-hidden rounded-lg border border-slate-200">
-                        <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-100 text-slate-600 uppercase text-xs">
-                            <tr>
-                            <th className="py-3 px-4">Marca</th>
-                            <th className="py-3 px-4">Modelo</th>
-                            <th className="py-3 px-4">Motor</th>
-                            <th className="py-3 px-4">Años</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200">
-                            {product.applications.map((app, i) => (
-                            <tr key={i} className="hover:bg-amber-50/50 transition-colors">
-                                <td className="py-3 px-4 font-bold text-slate-800">{app.make}</td>
-                                <td className="py-3 px-4 text-slate-600">{app.model}</td>
-                                <td className="py-3 px-4 text-slate-500">{app.engine}</td>
-                                <td className="py-3 px-4 font-mono text-xs text-amber-600 bg-amber-50">{app.years}</td>
-                            </tr>
-                            ))}
-                        </tbody>
-                        </table>
-                    </div>
-                   ) : (
-                       <p className="text-slate-400 italic">No hay aplicaciones registradas.</p>
-                   )}
-                 </div>
-               )}
-
-               {activeTab === 'cross' && (
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 border border-amber-200 bg-amber-50 rounded-lg">
-                      <span className="text-xs font-bold text-amber-600 uppercase block mb-1">OEM / Original</span>
-                      <span className="text-xl font-black text-slate-900 font-mono tracking-tight">{product.oem_ref}</span>
-                    </div>
-                    {product.crossReference && product.crossReference.map((ref, i) => (
-                      <div key={i} className="p-4 border border-slate-200 rounded-lg flex justify-between items-center group hover:border-amber-400 transition-colors">
-                        <div>
-                          <span className="text-xs font-bold text-slate-500 uppercase block mb-1">{ref.brand}</span>
-                          <span className="text-lg font-bold text-slate-700 font-mono">{ref.part}</span>
-                        </div>
-                        <RefreshCw className="w-4 h-4 text-slate-300 group-hover:text-amber-500" />
-                      </div>
-                    ))}
-                 </div>
-               )}
-
-               {activeTab === 'history' && (
-                   <div className="animate-in fade-in duration-300">
-                       <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                           <Clock className="w-4 h-4 text-slate-400" /> Historial de Modificaciones
-                       </h3>
-                       {productHistory.length > 0 ? (
-                           <div className="relative border-l-2 border-slate-200 ml-3 space-y-6">
-                               {productHistory.map((log, idx) => (
-                                   <div key={idx} className="ml-6 relative">
-                                       <span className="absolute -left-[31px] top-1 w-3 h-3 rounded-full bg-amber-500 border-2 border-white ring-1 ring-slate-200"></span>
-                                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline mb-1">
-                                           <span className="text-sm font-bold text-slate-800">{log.action}</span>
-                                           <span className="text-xs text-slate-400 font-mono">{formatDate(log.date)}</span>
-                                       </div>
-                                       <p className="text-xs text-slate-500 mb-1">Por: <span className="font-medium text-slate-700">{log.user}</span></p>
-                                       {log.details && (
-                                           <div className="bg-slate-50 p-2 rounded text-xs text-slate-600 font-mono border border-slate-100">
-                                               {log.details}
-                                           </div>
-                                       )}
-                                   </div>
-                               ))}
-                           </div>
-                       ) : (
-                           <div className="text-center py-10 text-slate-400 bg-slate-50 rounded-lg border border-dashed border-slate-200">
-                               <p>No hay registros de cambios para este producto.</p>
-                           </div>
-                       )}
-                   </div>
-               )}
-             </div>
-          </div>
+      <div className="mb">
+        <p style={{fontSize:'.82rem',color:'var(--g5)',marginBottom:14}}>Activa o desactiva columnas.</p>
+        <div style={{display:'flex',flexDirection:'column',gap:8}}>
+          {visibleCols.map((col, i) => (
+            <label key={i} className="col-toggle-label">
+              <input type="checkbox" checked={col.show}
+                onChange={e => onChange(i, e.target.checked)}
+                style={{width:16,height:16,accentColor:'var(--bm)'}} />
+              {col.label}
+            </label>
+          ))}
         </div>
       </div>
+      <div className="mf"><button className="btn btn-p" onClick={onClose}>Aplicar</button></div>
     </div>
-  );
-};
+  </div>
+);
 
-// --- VISTA BASE DE DATOS (TABULAR) ---
-const DatabaseView = ({ db, filters, onFilterChange, onEdit, historyLog }) => {
-  const filteredData = useMemo(() => {
-    return db.filter(item => {
-      const matchesVehicle = item.applications?.some(app => {
-        const makeMatch = !filters.make || app.make === filters.make;
-        const modelMatch = !filters.model || app.model === filters.model;
-        const yearMatch = !filters.year || app.years === filters.year;
-        return makeMatch && modelMatch && yearMatch;
-      });
+// ============================================================
+//  MODAL HISTORIAL
+// ============================================================
+const ModalHistory = ({ changelog, onClose }) => {
+  const [filter, setFilter] = useState('');
+  const list = filter ? changelog.filter(e => e.op === filter) : changelog;
+  const opIcon = { AGREGAR:'✅', EDITAR:'✏️', ELIMINAR:'🗑', IMPORTAR:'📂' };
+  const opCls  = { AGREGAR:'hop-add', EDITAR:'hop-edit', ELIMINAR:'hop-del', IMPORTAR:'hop-imp' };
 
-      const catMatch = !filters.category || item.category === filters.category;
-      
-      const text = filters.search?.toLowerCase() || '';
-      const textMatch = !text || 
-        item.sku.toLowerCase().includes(text) || 
-        item.name.toLowerCase().includes(text) ||
-        item.oem_ref.toLowerCase().includes(text);
-
-      return (item.applications ? matchesVehicle : true) && catMatch && textMatch;
+  const exportCSV = () => {
+    if (!changelog.length) return;
+    const rows = [['#','Fecha','Hora','Operación','Resumen','Campos Cambiados']];
+    changelog.forEach(e => {
+      const cambios = (e.cambios||[]).map(c => `${c.campo}: "${c.antes}" → "${c.despues}"`).join(' | ');
+      rows.push([e.id, e.fecha, e.hora, e.op, e.resumen, cambios]);
     });
-  }, [db, filters]);
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'}));
+    a.download = `historial_cambios_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+  };
 
   return (
-    <div className="animate-in fade-in duration-300">
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
-        <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-          <h2 className="font-bold text-slate-700 flex items-center gap-2">
-            <Database className="w-5 h-5 text-amber-600" />
-            Inventario Maestro
-          </h2>
-          <div className="text-xs text-slate-500">
-            Registros: <span className="font-bold text-slate-800">{filteredData.length}</span>
-          </div>
+    <div className="mo show">
+      <div className="md" style={{maxWidth:860,width:'95vw'}}>
+        <div className="mh"><h2>📋 Historial de Cambios</h2><button className="mx" onClick={onClose}>×</button></div>
+        <div className="hist-toolbar">
+          <select value={filter} onChange={e => setFilter(e.target.value)}
+            style={{border:'1.5px solid var(--g3)',borderRadius:6}}>
+            <option value="">Todas las operaciones</option>
+            <option value="AGREGAR">✅ Agregar</option>
+            <option value="EDITAR">✏️ Editar</option>
+            <option value="ELIMINAR">🗑 Eliminar</option>
+            <option value="IMPORTAR">📂 Importar</option>
+          </select>
+          <span style={{fontSize:'.76rem',color:'var(--g5)'}}>{list.length} registro(s)</span>
+          <button className="btn btn-dark btn-sm" style={{marginLeft:'auto'}} onClick={exportCSV}>
+            📥 Exportar historial
+          </button>
         </div>
-        
-        <div className="p-4 bg-white border-b border-slate-100">
-           <SmartFilters db={db} filters={filters} onFilterChange={onFilterChange} />
+        <div className="mhist-wrap">
+          {list.length === 0
+            ? <div className="hist-empty">Sin registros de cambios aún.</div>
+            : list.map((e, idx) => (
+              <div key={idx} className="hlog-item">
+                <div className="hlog-dt">📅 {e.fecha}<br/>🕐 {e.hora}</div>
+                <div className={`hlog-op ${opCls[e.op]||''}`}>{opIcon[e.op]||''} {e.op}</div>
+                <div className="hlog-det">
+                  <div><strong>{e.resumen}</strong></div>
+                  {(e.cambios||[]).map((c, ci) => (
+                    <span key={ci} className="field-chg">
+                      <em>{c.campo}:</em>{' '}
+                      {c.antes && <span className="old">{c.antes}</span>}
+                      {c.antes && c.despues && '→'}
+                      {c.despues && <span className="new">{c.despues}</span>}
+                    </span>
+                  ))}
+                  <div className="hlog-ip">🔥 Firebase · {e.fecha}</div>
+                </div>
+              </div>
+            ))
+          }
         </div>
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-100">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">SKU</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Producto</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Marca</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">OEM</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Aplicaciones</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Modificado</th>
-                <th className="px-6 py-3 text-right text-xs font-bold text-slate-600 uppercase tracking-wider">Acción</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-slate-200">
-              {filteredData.map((product) => {
-                  const lastMod = historyLog.filter(h => h.sku === product.sku).sort((a,b) => new Date(b.date) - new Date(a.date))[0];
-                  return (
-                    <tr key={product.id || product.sku} className="hover:bg-amber-50/30 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="font-mono font-bold text-amber-600">{product.sku}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-slate-900">{product.name}</div>
-                        <div className="text-xs text-slate-500">{product.category}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
-                        <span className="px-2 py-1 rounded bg-slate-100 text-xs font-semibold">{product.brand}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-600">{product.oem_ref}</td>
-                    <td className="px-6 py-4 text-sm text-slate-500">
-                        <div className="flex -space-x-2 overflow-hidden max-w-[150px]">
-                        {product.applications && product.applications.slice(0,3).map((a,i) => (
-                            <div key={i} className="inline-block px-2 py-0.5 bg-slate-100 border border-white rounded-full text-[10px] z-0">
-                            {a.make}
-                            </div>
-                        ))}
-                        </div>
-                    </td>
-                    <td className="px-6 py-4 text-xs text-slate-400">
-                         {lastMod ? (
-                             <div>
-                                 <div>{formatDate(lastMod.date).split(',')[0]}</div>
-                                 <div className="text-[10px]">{lastMod.user}</div>
-                             </div>
-                         ) : '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button onClick={() => onEdit(product)} className="text-slate-400 hover:text-amber-600 p-2 rounded-lg transition-colors">
-                        <Edit3 className="w-4 h-4" />
-                        </button>
-                    </td>
-                    </tr>
-                  )
-              })}
-            </tbody>
-          </table>
-          {filteredData.length === 0 && (
-             <div className="text-center py-12 text-slate-400">
-               No hay resultados que coincidan con los filtros seleccionados.
-             </div>
-          )}
-        </div>
+        <div className="mf"><button className="btn btn-o" onClick={onClose}>Cerrar</button></div>
       </div>
     </div>
   );
 };
 
-// --- APP PRINCIPAL ---
-const AutoCatalogApp = () => {
-  const [currentView, setCurrentView] = useState('search'); 
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [viewMode, setViewMode] = useState('grid');
-  const [currentUser, setCurrentUser] = useState('Admin'); // Simulador de usuario
-  
-  // ESTADO DE LA BASE DE DATOS (Vacía por defecto)
-  const [db, setDb] = useState([]);
-  
-  // ESTADO DE HISTORIAL
-  const [historyLog, setHistoryLog] = useState([]);
-  
-  // ESTADO DE MODALES
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [productToEdit, setProductToEdit] = useState(null);
+// ============================================================
+//  MAIN APP
+// ============================================================
+export default function App() {
+  // ─ Estado Firebase ─
+  const [fbStatus,   setFbStatus]   = useState('connecting'); // connecting | ok | error
+  const [loading,    setLoading]    = useState(true);
 
-  const [filters, setFilters] = useState({
-    make: '', model: '', year: '', category: '', search: ''
-  });
+  // ─ Data ─
+  const [records,    setRecords]    = useState([]);   // [{_id, fields:[9]}]
+  const [changelog,  setChangelog]  = useState([]);
 
-  // --- MANEJO DE ARCHIVOS (CARGA JSON Y CSV) ---
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      const fileName = file.name.toLowerCase();
+  // ─ Filtros ─
+  const [fMarca,    setFMarca]    = useState('');
+  const [fModelo,   setFModelo]   = useState('');
+  const [fAnio,     setFAnio]     = useState('');
+  const [fClasi,    setFClasi]    = useState('');
+  const [fSub,      setFSub]      = useState('');
+  const [fText,     setFText]     = useState('');
+  const [debText,   setDebText]   = useState('');
 
-      reader.onload = (e) => {
-        try {
-          let newData = [];
-          if (fileName.endsWith('.csv')) {
-              // Parsear CSV
-              newData = parseCSV(e.target.result);
-          } else if (fileName.endsWith('.json')) {
-              // Parsear JSON
-              const json = JSON.parse(e.target.result);
-              if (Array.isArray(json)) newData = json;
-          } else {
-              alert("Formato no soportado. Use .csv (Excel) o .json");
-              return;
-          }
+  // ─ Tabla ─
+  const [sortCol,   setSortCol]   = useState(-1);
+  const [sortAsc,   setSortAsc]   = useState(true);
+  const [page,      setPage]      = useState(1);
+  const [visibleCols, setVisibleCols] = useState(COL_DEFS.map(c => ({...c})));
 
-          if (newData.length > 0) {
-            setDb(newData);
-            // Log de carga inicial
-            setHistoryLog(prev => [...prev, {
-                date: new Date().toISOString(),
-                user: currentUser,
-                sku: 'SISTEMA',
-                action: 'CARGA MASIVA',
-                details: `Se cargaron ${newData.length} productos desde ${fileName}.`
-            }]);
-            alert(`Base de datos cargada con éxito: ${newData.length} productos.`);
-          } else {
-            alert("El archivo parece estar vacío o tiene un formato incorrecto.");
-          }
-        } catch (error) {
-          console.error(error);
-          alert("Error al leer el archivo. Revise el formato.");
-        }
-      };
-      
-      reader.readAsText(file);
+  // ─ Modals ─
+  const [modalEdit,   setModalEdit]   = useState(null);    // record | 'new' | null
+  const [modalDel,    setModalDel]    = useState(null);
+  const [modalDetail, setModalDetail] = useState(null);
+  const [showImport,  setShowImport]  = useState(false);
+  const [showCols,    setShowCols]    = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+
+  const toast = useToast();
+  const debounceRef = useRef(null);
+
+  // ─ Lógica de modelos/años en cascada ─
+  const availableModels = useMemo(() => {
+    if (!fMarca) return [];
+    return [...new Set(records.filter(r => r.fields[0]===fMarca).map(r => r.fields[1]))].sort();
+  }, [records, fMarca]);
+
+  const availableYears = useMemo(() => {
+    const base = fMarca ? records.filter(r => r.fields[0]===fMarca) : records;
+    const filtered = fModelo ? base.filter(r => r.fields[1]===fModelo) : base;
+    return [...new Set(filtered.map(r => r.fields[3]).filter(Boolean))].sort();
+  }, [records, fMarca, fModelo]);
+
+  const availableSubs = useMemo(() => {
+    if (!fClasi) return SUBCLASIFICACIONES;
+    return [...new Set(records.filter(r=>r.fields[7]===fClasi).map(r=>r.fields[8]).filter(Boolean))].sort();
+  }, [records, fClasi]);
+
+  // ─ Carga inicial desde Firestore ─
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        const [recs, logs] = await Promise.all([
+          fsGetAll(COL_RECORDS),
+          fsGetAll(COL_CHANGELOG)
+        ]);
+        // Normalizar: si el doc tiene campos individuales, reconstruir array fields
+        const normalized = recs.map(r => {
+          if (r.fields) return r;
+          return {
+            _id: r._id,
+            fields: [
+              r.marca||'', r.modelo||'', r.modelo_orig||'',
+              r.anio||'', r.desc_orig||'', r.codigo||'',
+              r.desc_std||'', r.clasi||'', r.sub||''
+            ]
+          };
+        });
+        setRecords(normalized);
+        setChangelog(logs.sort((a,b) => (b._ts?.seconds||0) - (a._ts?.seconds||0)));
+        setFbStatus('ok');
+      } catch (err) {
+        console.error(err);
+        setFbStatus('error');
+        toast('Error conectando a Firebase: ' + err.message, 'error');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  // ─ Debounce búsqueda ─
+  const onTextInput = (v) => {
+    setFText(v);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setDebText(v), 280);
+  };
+
+  // ─ Filtrado ─
+  const filtered = useMemo(() => {
+    let r = records;
+    if (fMarca)  r = r.filter(x => x.fields[0] === fMarca);
+    if (fModelo) r = r.filter(x => x.fields[1] === fModelo);
+    if (fAnio)   r = r.filter(x => x.fields[3] === fAnio);
+    if (fClasi)  r = r.filter(x => x.fields[7] === fClasi);
+    if (fSub)    r = r.filter(x => x.fields[8] === fSub);
+    if (debText) {
+      const t = debText.toLowerCase();
+      r = r.filter(x =>
+        x.fields.some(f => String(f).toLowerCase().includes(t))
+      );
+    }
+    if (sortCol >= 0) {
+      r = [...r].sort((a,b) => {
+        const av = String(a.fields[sortCol]||'').toLowerCase();
+        const bv = String(b.fields[sortCol]||'').toLowerCase();
+        return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+      });
+    }
+    return r;
+  }, [records, fMarca, fModelo, fAnio, fClasi, fSub, debText, sortCol, sortAsc]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginated  = filtered.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
+
+  // Stats rápidos
+  const stats = useMemo(() => ({
+    total:    records.length,
+    marcas:   new Set(records.map(r=>r.fields[0]).filter(Boolean)).size,
+    modelos:  new Set(records.map(r=>r.fields[1]).filter(Boolean)).size,
+    cats:     new Set(records.map(r=>r.fields[7]).filter(Boolean)).size,
+    conCodigo: records.filter(r=>r.fields[5]).length,
+  }), [records]);
+
+  // ─ Handlers de filtros ─
+  const onMarcaChange = (v) => { setFMarca(v); setFModelo(''); setFAnio(''); setPage(1); };
+  const onModeloChange = (v) => { setFModelo(v); setFAnio(''); setPage(1); };
+  const onClasiChange = (v) => { setFClasi(v); setFSub(''); setPage(1); };
+  const clearAll = () => {
+    setFMarca(''); setFModelo(''); setFAnio('');
+    setFClasi(''); setFSub(''); setFText(''); setDebText('');
+    setSortCol(-1); setSortAsc(true); setPage(1);
+  };
+
+  // ─ Sort ─
+  const handleSort = (ci) => {
+    if (sortCol === ci) setSortAsc(a => !a);
+    else { setSortCol(ci); setSortAsc(true); }
+    setPage(1);
+  };
+
+  // ─ CRUD Firestore ─
+  const logEntry = async (op, resumen, cambios = []) => {
+    const { fecha, hora } = nowDateTime();
+    const entry = { op, resumen, cambios, fecha, hora, id: Date.now() };
+    await fsAddLog(entry);
+    setChangelog(prev => [{ ...entry, _id: 'local_' + Date.now() }, ...prev]);
+  };
+
+  const handleSaveNew = async ({ fields }) => {
+    try {
+      const id = await fsAdd(COL_RECORDS, { fields });
+      const rec = { _id: id, fields };
+      setRecords(prev => [rec, ...prev]);
+      await logEntry('AGREGAR', `${fields[0]} ${fields[1]} ${fields[3]}`, [
+        { campo:'Descripción', antes:'', despues: fields[4] }
+      ]);
+      toast('✅ Registro agregado y guardado en Firebase.', 'success');
+    } catch (err) {
+      toast('Error al guardar: ' + err.message, 'error');
     }
   };
 
-  // --- MANEJO DE EDICIÓN ---
-  const handleEditClick = (product) => {
-    setProductToEdit(product);
-    setIsEditModalOpen(true);
+  const handleSaveEdit = async (original, { fields }) => {
+    try {
+      await fsUpdate(original._id, { fields });
+      setRecords(prev => prev.map(r => r._id === original._id ? { ...r, fields } : r));
+      const cambios = fields.map((f, i) =>
+        f !== original.fields[i]
+          ? { campo: COL_DEFS[i].label, antes: original.fields[i], despues: f }
+          : null
+      ).filter(Boolean);
+      await logEntry('EDITAR', `${fields[0]} ${fields[1]}`, cambios);
+      toast('✏️ Registro actualizado en Firebase.', 'success');
+    } catch (err) {
+      toast('Error al actualizar: ' + err.message, 'error');
+    }
   };
 
-  const handleSaveProduct = (updatedProduct, user) => {
-      let actionType = 'ACTUALIZACIÓN';
-      
-      setDb(prevDb => {
-          const index = prevDb.findIndex(p => p.sku === updatedProduct.sku);
-          if (index >= 0) {
-              // Actualizar existente
-              const newDb = [...prevDb];
-              newDb[index] = updatedProduct;
-              return newDb;
-          } else {
-              // Nuevo producto (si implementas botón crear)
-              actionType = 'CREACIÓN';
-              return [...prevDb, { ...updatedProduct, id: Date.now() }];
-          }
-      });
-
-      // Registrar en Historial
-      setHistoryLog(prev => [...prev, {
-          date: new Date().toISOString(),
-          user: user,
-          sku: updatedProduct.sku,
-          action: actionType,
-          details: `Modificación manual de campos.`
-      }]);
+  const handleDelete = async () => {
+    const rec = modalDel;
+    try {
+      await fsDelete(rec._id);
+      setRecords(prev => prev.filter(r => r._id !== rec._id));
+      await logEntry('ELIMINAR', `${rec.fields[0]} ${rec.fields[1]} ${rec.fields[3]}`);
+      toast('🗑 Registro eliminado de Firebase.', 'warning');
+    } catch (err) {
+      toast('Error al eliminar: ' + err.message, 'error');
+    }
+    setModalDel(null);
   };
 
-  // Handler centralizado de cambio de filtros
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => {
-      const newFilters = { ...prev, [key]: value };
-      if (key === 'make') { newFilters.model = ''; newFilters.year = ''; }
-      if (key === 'model') { newFilters.year = ''; }
-      return newFilters;
-    });
+  // ─ Importar ─
+  const handleImport = async (rows, mode) => {
+    setLoading(true);
+    try {
+      if (mode === 'replace') {
+        // Borrar todo primero
+        const all = await fsGetAll(COL_RECORDS);
+        const CHUNK = 490;
+        for (let i = 0; i < all.length; i += CHUNK) {
+          const batch = writeBatch(db_fs);
+          all.slice(i, i+CHUNK).forEach(r => batch.delete(doc(db_fs, COL_RECORDS, r._id)));
+          await batch.commit();
+        }
+      }
+      const newRecs = rows.map(f => ({ fields: f }));
+      await fsBatchWrite(newRecs);
+      // Recargar
+      const fresh = await fsGetAll(COL_RECORDS);
+      const normalized = fresh.map(r => ({
+        _id: r._id,
+        fields: r.fields || ['','','','','','','','','']
+      }));
+      setRecords(normalized);
+      await logEntry('IMPORTAR', `${mode==='replace'?'Reemplazo':'Adición'} de ${rows.length} registros`);
+      toast(`📂 ${rows.length} registros importados a Firebase.`, 'success');
+    } catch (err) {
+      toast('Error en importación: ' + err.message, 'error');
+    }
+    setLoading(false);
+    clearAll();
   };
 
-  const clearFilters = () => {
-    setFilters({ make: '', model: '', year: '', category: '', search: '' });
+  const handleRestore = async () => {
+    if (!window.confirm('¿Restaurar la base original? Se perderán todos los cambios.')) return;
+    // Aquí podrías cargar desde un JSON estático si lo deseas.
+    toast('Sin base original configurada. Carga un archivo para empezar.', 'info');
   };
 
-  const filteredProducts = useMemo(() => {
-    return db.filter(product => {
-      const searchTerm = filters.search.toLowerCase();
-      const matchesText = !searchTerm || 
-        product.sku.toLowerCase().includes(searchTerm) || 
-        product.name.toLowerCase().includes(searchTerm) || 
-        product.oem_ref.toLowerCase().includes(searchTerm) ||
-        product.crossReference?.some(c => c.part.toLowerCase().includes(searchTerm));
-
-      const matchesVehicle = product.applications?.some(app => {
-        const makeMatch = !filters.make || app.make === filters.make;
-        const modelMatch = !filters.model || app.model === filters.model;
-        const yearMatch = !filters.year || app.years === filters.year;
-        return makeMatch && modelMatch && yearMatch;
-      });
-
-      const matchesCategory = !filters.category || product.category === filters.category;
-
-      return matchesText && (product.applications ? matchesVehicle : true) && matchesCategory;
-    });
-  }, [filters, db]);
-
-  const handleProductSelect = (product) => {
-    setSelectedProduct(product);
-    setCurrentView('detail');
-    window.scrollTo(0,0);
+  // ─ Exportar CSV ─
+  const exportCSV = () => {
+    if (!filtered.length) { toast('No hay datos para exportar.', 'error'); return; }
+    const header = COL_DEFS.map(c => c.label);
+    const rows   = filtered.map(r => r.fields);
+    const csv    = [header, ...rows].map(r =>
+      r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')
+    ).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'}));
+    a.download = `catalogo_repuestos_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    toast(`📥 Exportados ${filtered.length} registros.`, 'success');
   };
 
-  // DOWNLOAD EJEMPLO CSV
-  const downloadSampleCSV = () => {
-    const csvContent = "sku,name,brand,category,oem_ref,description,image_url,make,model,year,engine\n" + 
-    "FIL-001,Filtro de Aceite Premium,Toyota,Motor,90915-YZZF1,Filtro de alto flujo,https://placehold.co/400x400,TOYOTA,Corolla,2015,1.8L";
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "plantilla_carga.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  // ─ Rendered columns ─
+  const activeCols = visibleCols.filter(c => c.show);
+
+  // ─ Color badge clasificación ─
+  const clasiBgColor = (c) => {
+    const map = {
+      'BATERÍAS':'#1565C0','BUJÍAS E IGNICIÓN':'#6A1B9A','CLUTCH Y TRANSMISIÓN':'#4527A0',
+      'COMBUSTIBLE Y DIESEL':'#E65100','EJES Y RUEDAS':'#00695C','FILTROS':'#2E7D32',
+      'FRENOS':'#C62828','MOTOR Y DISTRIBUCIÓN':'#1B5E20','SISTEMA ELÉCTRICO':'#F57F17',
+      'SUSPENSIÓN Y DIRECCIÓN':'#0277BD','ZUNCHOS':'#37474F',
+    };
+    return map[c] || '#546E7A';
   };
 
+  // ─ Render ─
   return (
-    <div className="min-h-screen bg-slate-100 font-sans text-slate-800">
-      
-      {/* HEADER GALAXY BLUE */}
-      <header className="bg-slate-900 text-white shadow-lg sticky top-0 z-50 border-b border-slate-800">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setCurrentView('search')}>
-              <div className="bg-amber-500 p-2 rounded-lg shadow-lg shadow-amber-500/20 group-hover:bg-amber-400 transition-colors">
-                <Database className="w-5 h-5 text-slate-900" />
-              </div>
-              <div className="leading-none">
-                <h1 className="font-black text-xl tracking-tight text-white">GALAXY<span className="text-amber-500">PARTS</span></h1>
-                <p className="text-[10px] text-slate-400 font-medium tracking-[0.2em] uppercase mt-1">Gestión Técnica Centralizada</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-6">
-                <nav className="hidden md:flex items-center gap-1 bg-slate-800 p-1 rounded-lg">
-                <button 
-                    onClick={() => setCurrentView('search')}
-                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${currentView === 'search' ? 'bg-slate-700 text-white shadow' : 'text-slate-400 hover:text-white'}`}
-                >
-                    Catálogo
-                </button>
-                <button 
-                    onClick={() => setCurrentView('database')}
-                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${currentView === 'database' ? 'bg-slate-700 text-white shadow' : 'text-slate-400 hover:text-white'}`}
-                >
-                    Base de Datos
-                </button>
-                </nav>
+    <>
+      {/* Inject styles */}
+      <style>{STYLES}</style>
 
-                {/* SELECTOR DE USUARIO (SIMULADO) */}
-                <div className="hidden md:flex items-center gap-2 border-l border-slate-700 pl-6">
-                    <span className="text-xs text-slate-500 uppercase font-bold">Modo:</span>
-                    <select 
-                        value={currentUser} 
-                        onChange={(e) => setCurrentUser(e.target.value)}
-                        className="bg-slate-800 text-amber-500 text-xs font-bold py-1 px-2 rounded border border-slate-700 focus:outline-none focus:border-amber-500"
-                    >
-                        <option value="Admin">Administrador</option>
-                        <option value="Técnico">Técnico A</option>
-                        <option value="Gerente">Gerencia</option>
-                    </select>
-                </div>
-            </div>
+      {/* ── TOAST ── handled by provider */}
+
+      {/* ── HEADER ── */}
+      <div className="ac-header">
+        <div className="ac-hl">
+          {/* Logo — mismo base64 del HTML original se puede poner aquí, o usar img src */}
+          <div style={{
+            height:42,width:42,borderRadius:5,background:'var(--gold)',
+            display:'flex',alignItems:'center',justifyContent:'center',
+            fontWeight:900,fontSize:'1.1rem',color:'var(--bd)',letterSpacing:'-1px'
+          }}>AC</div>
+          <div className="ac-hdiv"/>
+          <div className="ac-htitle">
+            <span className="s1">Sistema de Gestión</span>
+            <span className="s2">Catálogo de Repuestos</span>
+          </div>
+          <span className="ac-badge">{records.length.toLocaleString()} registros</span>
+          {/* Firebase status */}
+          <span className="fb-badge">
+            <span className={`fb-dot${fbStatus==='connecting'?' connecting':fbStatus==='error'?' error':''}`}/>
+            Firebase {fbStatus==='ok'?'●':fbStatus==='connecting'?'…':'✕'}
+          </span>
+        </div>
+
+        <div className="ac-hact">
+          <button className="btn btn-g" onClick={() => setModalEdit({ _id: null, fields: Array(9).fill('') })}>
+            ➕ Nuevo
+          </button>
+          <button className="btn btn-c" onClick={() => setShowImport(true)}>📂 Cargar base</button>
+          <button className="btn btn-c" onClick={exportCSV}>📥 CSV</button>
+          <button className="btn btn-c" onClick={() => setShowCols(true)}>👁 Columnas</button>
+          <button className="btn btn-c" onClick={() => setShowHistory(true)}>
+            📋 Historial{' '}
+            {changelog.length > 0 && (
+              <span style={{background:'var(--gold)',color:'var(--bd)',borderRadius:10,padding:'1px 7px',fontSize:'.7rem',marginLeft:4}}>
+                {changelog.length}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* ── FILTROS ── */}
+      <div className="ac-sp">
+        <div className="ac-fg">
+          <div className="ac-fl">
+            <label>🅱 Marca</label>
+            <select value={fMarca} onChange={e => onMarcaChange(e.target.value)}>
+              <option value="">Todas las marcas</option>
+              {MARCAS.map(m => <option key={m}>{m}</option>)}
+            </select>
+          </div>
+          <div className="ac-fl">
+            <label>🚗 Modelo</label>
+            <select value={fModelo} onChange={e => onModeloChange(e.target.value)}>
+              <option value="">Todos los modelos</option>
+              {availableModels.map(m => <option key={m}>{m}</option>)}
+            </select>
+          </div>
+          <div className="ac-fl">
+            <label>📅 Año</label>
+            <select value={fAnio} onChange={e => { setFAnio(e.target.value); setPage(1); }}>
+              <option value="">Todos los años</option>
+              {availableYears.map(y => <option key={y}>{y}</option>)}
+            </select>
+          </div>
+          <div className="ac-fl">
+            <label>🔎 Clasificación</label>
+            <select value={fClasi} onChange={e => onClasiChange(e.target.value)}>
+              <option value="">Todas</option>
+              {CLASIFICACIONES.map(c => <option key={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="ac-fl">
+            <label>📂 Subclasificación</label>
+            <select value={fSub} onChange={e => { setFSub(e.target.value); setPage(1); }}>
+              <option value="">Todas</option>
+              {availableSubs.map(s => <option key={s}>{s}</option>)}
+            </select>
           </div>
         </div>
-      </header>
 
-      {/* CONTENIDO PRINCIPAL */}
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {/* ESTADO VACÍO (SIN DATOS) */}
-        {db.length === 0 ? (
-             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6 animate-in fade-in zoom-in duration-500">
-                 <div className="w-24 h-24 bg-slate-200 rounded-full flex items-center justify-center mb-4 shadow-inner">
-                     <FileSpreadsheet className="w-10 h-10 text-slate-400" />
-                 </div>
-                 <h2 className="text-3xl font-bold text-slate-900">La Base de Datos está vacía</h2>
-                 <p className="text-slate-500 max-w-md">
-                    Carga tu inventario usando un archivo Excel (guardado como CSV). 
-                    Es la forma más simple de empezar.
-                 </p>
-                 
-                 <div className="flex flex-col sm:flex-row gap-4 mt-4">
-                    <label className="cursor-pointer bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-6 rounded-xl shadow-lg shadow-amber-500/30 transition-all flex items-center gap-2 justify-center">
-                        <Upload className="w-5 h-5" />
-                        Cargar CSV / JSON
-                        <input type="file" accept=".csv, .json" onChange={handleFileUpload} className="hidden" />
-                    </label>
-                    <button onClick={downloadSampleCSV} className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-3 px-6 rounded-xl transition-all flex items-center gap-2 justify-center">
-                        <Download className="w-5 h-5" />
-                        Bajar Plantilla Excel (CSV)
-                    </button>
-                 </div>
-             </div>
-        ) : (
-          <>
-            {currentView === 'search' && (
-            <>
-                {/* HERO SECTION GALAXY */}
-                <div className="bg-slate-900 rounded-2xl shadow-xl overflow-hidden mb-8 border border-slate-800 relative">
-                <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-amber-500/10 to-transparent"></div>
-                <div className="px-6 py-8 md:p-10 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-                    <div>
-                    <h2 className="text-2xl md:text-3xl font-black text-white mb-2">Buscador <span className="text-amber-500">Maestro</span></h2>
-                    <p className="text-slate-400 text-sm">Base de datos activa con {db.length} referencias.</p>
-                    </div>
-                    {/* Buscador de Texto General */}
-                    <div className="relative w-full md:w-96 group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Search className="h-5 w-5 text-slate-500 group-focus-within:text-amber-500 transition-colors" />
-                    </div>
-                    <input
-                        type="text"
-                        className="block w-full pl-10 pr-3 py-3 rounded-xl border border-slate-700 bg-slate-950 text-white placeholder-slate-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all shadow-inner"
-                        placeholder="Buscar SKU, OEM o Nombre..."
-                        value={filters.search}
-                        onChange={(e) => handleFilterChange('search', e.target.value)}
-                    />
-                    </div>
-                </div>
-
-                {/* BARRA DE FILTROS */}
-                <div className="p-6 bg-slate-50 border-t border-slate-200">
-                    <div className="flex items-center gap-2 mb-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    <SlidersHorizontal className="w-4 h-4 text-amber-600" />
-                    Filtros de Vehículo
-                    </div>
-                    <SmartFilters db={db} filters={filters} onFilterChange={handleFilterChange} />
-                    
-                    {(filters.make || filters.category || filters.search) && (
-                    <div className="mt-4 flex flex-wrap gap-2 items-center pt-4 border-t border-slate-200">
-                        <span className="text-xs text-slate-400 mr-2">Filtros activos:</span>
-                        {filters.make && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
-                            {filters.make} {filters.model && `/ ${filters.model}`}
-                            <button onClick={() => handleFilterChange('make', '')} className="ml-1.5 hover:text-amber-900"><X className="w-3 h-3" /></button>
-                        </span>
-                        )}
-                        <button onClick={clearFilters} className="text-xs text-red-500 hover:text-red-700 font-medium ml-auto underline decoration-dotted">
-                        Limpiar Todo
-                        </button>
-                    </div>
-                    )}
-                </div>
-                </div>
-
-                {/* RESULTADOS */}
-                <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                <h3 className="font-bold text-slate-700 text-lg">
-                    Resultados <span className="text-slate-400 font-normal text-sm ml-2">({filteredProducts.length} encontrados)</span>
-                </h3>
-                <div className="flex bg-white rounded-lg p-1 shadow-sm border border-slate-200">
-                    <button 
-                    onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded ${viewMode === 'grid' ? 'bg-slate-100 text-amber-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                    <Grid className="w-4 h-4" />
-                    </button>
-                    <button 
-                    onClick={() => setViewMode('list')}
-                    className={`p-2 rounded ${viewMode === 'list' ? 'bg-slate-100 text-amber-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                    <List className="w-4 h-4" />
-                    </button>
-                </div>
-                </div>
-
-                {filteredProducts.length > 0 ? (
-                <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
-                    {filteredProducts.map(product => (
-                    <ProductCard key={product.id || product.sku} product={product} onClick={() => handleProductSelect(product)} viewMode={viewMode} />
-                    ))}
-                </div>
-                ) : (
-                <div className="text-center py-20 bg-white rounded-2xl border-2 border-dashed border-slate-200">
-                    <div className="mx-auto w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                    <Search className="w-8 h-8 text-slate-300" />
-                    </div>
-                    <h3 className="text-slate-900 font-medium">No se encontraron productos</h3>
-                    <p className="text-slate-500 text-sm mt-1">Intenta ajustar tus filtros de búsqueda.</p>
-                </div>
-                )}
-            </>
-            )}
-
-            {currentView === 'detail' && selectedProduct && (
-            <ProductDetail product={selectedProduct} onBack={() => setCurrentView('search')} onEdit={handleEditClick} historyLog={historyLog} />
-            )}
-
-            {currentView === 'database' && (
-            <DatabaseView db={db} filters={filters} onFilterChange={handleFilterChange} onEdit={handleEditClick} historyLog={historyLog} />
-            )}
-          </>
-        )}
-      </main>
-
-      {/* MODAL DE EDICIÓN GLOBAL */}
-      <ProductEditModal 
-        product={productToEdit} 
-        isOpen={isEditModalOpen} 
-        onClose={() => setIsEditModalOpen(false)} 
-        onSave={handleSaveProduct}
-        currentUser={currentUser}
-      />
-
-      {/* FOOTER */}
-      <footer className="bg-slate-900 text-slate-400 py-12 border-t border-slate-800 mt-auto">
-        <div className="max-w-[1400px] mx-auto px-4 text-center">
-          <Database className="w-8 h-8 text-amber-600 mx-auto mb-4" />
-          <p className="text-sm font-medium text-slate-300">GALAXY PARTS SYSTEM</p>
-          <p className="text-xs text-slate-500 mt-2">Versión 2.1 | Soporte CSV Universal</p>
+        <div className="ac-sr">
+          <div className="ac-fl">
+            <label>🔍 Búsqueda libre — descripción, código, modelo…</label>
+            <input type="text" value={fText}
+              placeholder="Ej: filtro aceite, TSL420, amortiguador…"
+              onChange={e => onTextInput(e.target.value)} />
+          </div>
+          <button className="btn btn-p" onClick={() => setPage(1)}>🔍 Buscar</button>
+          <button className="btn btn-o" onClick={clearAll}>✕ Limpiar</button>
         </div>
-      </footer>
-    </div>
-  );
-};
+      </div>
 
-export default AutoCatalogApp;
+      {/* ── STATUS BAR ── */}
+      <div className="ac-sb">
+        <span>Resultados: <strong>{filtered.length.toLocaleString()}</strong></span>
+        <span className="ac-sep">|</span>
+        <span>Página <strong>{page}</strong> de <strong>{totalPages}</strong></span>
+        <span style={{marginLeft:'auto',display:'flex',gap:5,flexWrap:'wrap'}}>
+          {fMarca  && <span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>🅱 {fMarca}</span>}
+          {fModelo && <span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>🚗 {fModelo}</span>}
+          {fAnio   && <span className="ac-tag" style={{background:'rgba(212,168,0,.8)'}}>📅 {fAnio}</span>}
+          {fClasi  && <span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>🔎 {fClasi.substring(0,20)}</span>}
+          {fSub    && <span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>📂 {fSub}</span>}
+          {debText && <span className="ac-tag" style={{background:'rgba(212,168,0,.8)'}}>🔍 "{debText}"</span>}
+        </span>
+      </div>
+
+      {/* ── QUICK STATS ── */}
+      <div className="ac-qs">
+        <div className="ac-qi"><div className="n">{stats.total.toLocaleString()}</div><div className="l">Total</div></div>
+        <div className="ac-qsep"/>
+        <div className="ac-qi"><div className="n">{stats.marcas}</div><div className="l">Marcas</div></div>
+        <div className="ac-qsep"/>
+        <div className="ac-qi"><div className="n">{stats.modelos}</div><div className="l">Modelos</div></div>
+        <div className="ac-qsep"/>
+        <div className="ac-qi"><div className="n">{stats.cats}</div><div className="l">Categorías</div></div>
+        <div className="ac-qsep"/>
+        <div className="ac-qi"><div className="n">{stats.conCodigo.toLocaleString()}</div><div className="l">Con código</div></div>
+      </div>
+
+      {/* ── TABLE ── */}
+      <div className="ac-tw">
+        {loading ? (
+          <div className="loading"><span className="spin"/>Cargando desde Firebase…</div>
+        ) : filtered.length === 0 ? (
+          <div className="empty">
+            <div className="icon">🔎</div>
+            <p>No se encontraron resultados.</p>
+          </div>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                {activeCols.map(col => (
+                  <th key={col.key}
+                    className={sortCol === col.key ? 'sorted' : ''}
+                    onClick={() => handleSort(col.key)}>
+                    {col.label}
+                    <span className="si">
+                      {sortCol === col.key ? (sortAsc ? '↑' : '↓') : '↕'}
+                    </span>
+                  </th>
+                ))}
+                <th style={{width:90}}>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginated.map((rec, ri) => {
+                const f = rec.fields;
+                const cellRenderers = {
+                  0: () => <span className="cm">{highlightText(f[0], debText)}</span>,
+                  1: () => <span className="cm">{highlightText(f[1], debText)}<br/><span className="cmo">{f[2]}</span></span>,
+                  2: () => <span className="cmo">{f[2]}</span>,
+                  3: () => <span className="ca">{highlightText(f[3], debText)}</span>,
+                  4: () => <span className="cds">{highlightText(f[4], debText)}{f[6] && <><br/><span className="cs">{f[6]}</span></>}</span>,
+                  5: () => f[5]
+                    ? <><span className="cc">{highlightText(f[5], debText)}<button className="btn-copy" onClick={e=>{e.stopPropagation();navigator.clipboard?.writeText(f[5]);toast('📋 Código copiado','info')}}>⧉</button></span></>
+                    : <span className="cs">—</span>,
+                  6: () => <span className="cs">{f[6]}</span>,
+                  7: () => f[7] ? <span className="ct" style={{background:clasiBgColor(f[7])}}>{f[7]}</span> : null,
+                  8: () => <span className="cs">{f[8]}</span>,
+                };
+                return (
+                  <tr key={rec._id || ri}>
+                    {activeCols.map(col => (
+                      <td key={col.key} onClick={() => setModalDetail(rec)} style={{cursor:'pointer'}}>
+                        {cellRenderers[col.key] ? cellRenderers[col.key]() : f[col.key]}
+                      </td>
+                    ))}
+                    <td className="cac" onClick={e => e.stopPropagation()}>
+                      <button className="btn-edit" onClick={() => setModalEdit(rec)}>✏ Edit</button>
+                      <button className="btn-del"  onClick={() => setModalDel(rec)}>🗑</button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* ── PAGINACIÓN ── */}
+      <div className="ac-pg">
+        <button className="pb" disabled={page<=1} onClick={() => setPage(p => p-1)}>‹ Anterior</button>
+        {(() => {
+          const pages = [1];
+          for (let i = Math.max(2, page-3); i <= Math.min(totalPages-1, page+3); i++) pages.push(i);
+          if (!pages.includes(totalPages)) pages.push(totalPages);
+          const els = [];
+          let prev = 0;
+          pages.forEach(p => {
+            if (prev && p - prev > 1) els.push(<span key={`e${p}`} style={{color:'#B0BEC5',padding:'0 4px'}}>…</span>);
+            els.push(
+              <button key={p} className={`pb${p===page?' active':''}`} onClick={() => setPage(p)}>{p}</button>
+            );
+            prev = p;
+          });
+          return els;
+        })()}
+        <button className="pb" disabled={page>=totalPages} onClick={() => setPage(p => p+1)}>Siguiente ›</button>
+        <span className="pi">
+          Mostrando {((page-1)*PAGE_SIZE+1).toLocaleString()}–{Math.min(page*PAGE_SIZE, filtered.length).toLocaleString()} de {filtered.length.toLocaleString()}
+        </span>
+      </div>
+
+      {/* ── MODALS ── */}
+      {modalEdit && (
+        <ModalEdit
+          record={modalEdit._id ? modalEdit : null}
+          onSave={async (data) => {
+            if (modalEdit._id) await handleSaveEdit(modalEdit, data);
+            else await handleSaveNew(data);
+          }}
+          onClose={() => setModalEdit(null)}
+        />
+      )}
+
+      {modalDel && (
+        <ModalDelete
+          record={modalDel}
+          onConfirm={handleDelete}
+          onClose={() => setModalDel(null)}
+        />
+      )}
+
+      {modalDetail && (
+        <ModalDetail
+          record={modalDetail}
+          onClose={() => setModalDetail(null)}
+          onEdit={(r) => { setModalDetail(null); setModalEdit(r); }}
+        />
+      )}
+
+      {showImport && (
+        <ModalImport
+          onClose={() => setShowImport(false)}
+          onImport={handleImport}
+          onRestore={handleRestore}
+        />
+      )}
+
+      {showCols && (
+        <ModalCols
+          visibleCols={visibleCols}
+          onChange={(i, show) => setVisibleCols(v => v.map((c,ci) => ci===i ? {...c,show} : c))}
+          onClose={() => setShowCols(false)}
+        />
+      )}
+
+      {showHistory && (
+        <ModalHistory
+          changelog={changelog}
+          onClose={() => setShowHistory(false)}
+        />
+      )}
+    </>
+  );
+}
+
+// ============================================================
+//  WRAPPER CON PROVIDERS (usar en index.jsx/main.jsx)
+// ============================================================
+//  import App from './App';
+//  import { ToastProvider } from './App';   ← o exportar por separado
+//  <ToastProvider><App /></ToastProvider>
+//
+//  O simplemente exporta AppWithProviders como default:
+// ============================================================
+export { ToastProvider };
+
+export function AppWithProviders() {
+  return (
+    <ToastProvider>
+      <App />
+    </ToastProvider>
+  );
+}

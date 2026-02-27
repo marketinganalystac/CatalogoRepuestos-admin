@@ -18,13 +18,13 @@ import {
 //  FIREBASE CONFIG — Auto Centro Repuestos Aplicables
 // ============================================================
 const firebaseConfig = {
-  apiKey:            "AIzaSyAr0SnRDII01gyosWghlSHjcnGe7eloWOQ",
-  authDomain:        "repuestosaplicables-admin.firebaseapp.com",
-  projectId:         "repuestosaplicables-admin",
-  storageBucket:     "repuestosaplicables-admin.firebasestorage.app",
-  messagingSenderId: "271216016032",
-  appId:             "1:271216016032:web:d55abadd8080f3c4f527c5",
-  measurementId:     "G-LF8GPKHZ1M",
+  apiKey: "AIzaSyCpHNFZR0tcDtEGkAeKxPZVUahe52Zeh3s",
+  authDomain: "catalogorepuestos-admin.firebaseapp.com",
+  projectId: "catalogorepuestos-admin",
+  storageBucket: "catalogorepuestos-admin.firebasestorage.app",
+  messagingSenderId: "353407521874",
+  appId: "1:353407521874:web:45d481e3a6147e38d13b8b",
+  measurementId: "G-9VLPWNQYMZ"
 };
 
 // HMR-safe: no reinicializar si ya existe

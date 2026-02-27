@@ -39,14 +39,14 @@ const PAGE_SIZE     = 50;
 const COL_RECORDS   = 'repuestos';
 const COL_CHANGELOG = 'changelog';
 
-const MARCAS = ['CHEVROLET','DAIHATSU','FORD','HONDA','HYUNDAI',
+const MARCAS_DEFAULT = ['CHEVROLET','DAIHATSU','FORD','HONDA','HYUNDAI',
   'ISUZU','KIA','MAZDA','MITSUBISHI','NISSAN','SUZUKI','TOYOTA'];
 
-const CLASIFICACIONES = ['BATERÍAS','BUJÍAS E IGNICIÓN','CLUTCH Y TRANSMISIÓN',
+const CLASIFICACIONES_DEFAULT = ['BATERÍAS','BUJÍAS E IGNICIÓN','CLUTCH Y TRANSMISIÓN',
   'COMBUSTIBLE Y DIESEL','EJES Y RUEDAS','FILTROS','FRENOS',
   'MOTOR Y DISTRIBUCIÓN','SISTEMA ELÉCTRICO','SUSPENSIÓN Y DIRECCIÓN','ZUNCHOS'];
 
-const SUBCLASIFICACIONES = [
+const SUBCLASIFICACIONES_DEFAULT = [
   'Amortiguadores','Balinera de Clutch','Balineras','Bandas de Freno',
   'Barra Estabilizadora','Barra Suspensión','Base de Motor','Bases de Amortiguador',
   'Baterías AGM','Baterías Especiales','Baterías MF','Baterías UMF','Bolas / Rótulas',
@@ -58,6 +58,11 @@ const SUBCLASIFICACIONES = [
   'Pastillas / Tacos','Pernos','Plato de Clutch','Relay','Retenedoras','Tambores',
   'Tensores','Terminales de Batería','Terminales y V','Trampa de Diesel','Zunchos'
 ];
+
+const DESC_STD_DEFAULT = [];
+
+// Context para listas dinámicas (marcas, clasificaciones, subclasificaciones, desc estándar)
+const ListasCtx = createContext(null);
 
 // [0]marca [1]modelo [2]modelo_orig [3]periodo [4]desc_orig [5]codigo [6]desc_std [7]clasi [8]sub
 const COL_DEFS = [
@@ -249,10 +254,11 @@ const fsAddLog = async (entry) => {
 };
 
 const fsDeleteAll = async () => {
+  // Supabase requiere un filtro; usamos gt para UUIDs/integers cubrir todos los registros
   const { error } = await supabase
     .from(COL_RECORDS)
     .delete()
-    .neq('id', 0); // delete all rows
+    .not('id', 'is', null);
   if (error) throw new Error(error.message);
 };
 
@@ -467,10 +473,12 @@ tbody td{padding:7px 13px;vertical-align:middle}
 // ============================================================
 const ModalEdit = ({ record, onSave, onClose }) => {
   const toast  = useToast();
+  const listas = useContext(ListasCtx);
   const isNew  = !record?._id;
   const [form,   setForm]   = useState(() => record ? [...record.fields] : Array(9).fill(''));
   const [errors, setErrors] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [addingNew, setAddingNew] = useState(null); // {field: i, val: ''}
 
   const setField = (i, v) => {
     setForm(f => { const n=[...f]; n[i]=v; return n; });
@@ -485,8 +493,28 @@ const ModalEdit = ({ record, onSave, onClose }) => {
     catch(e) { toast('Error al guardar: ' + e.message, 'error'); setSaving(false); }
   };
 
+  const confirmAddNew = () => {
+    if (!addingNew || !addingNew.val.trim()) { setAddingNew(null); return; }
+    const val = addingNew.val.trim();
+    const fi = addingNew.field;
+    if (fi === 0) listas.addMarca(val.toUpperCase());
+    if (fi === 6) listas.addDescStd(val.toUpperCase());
+    if (fi === 7) listas.addClasi(val.toUpperCase());
+    if (fi === 8) listas.addSub(val);
+    setField(fi, fi === 8 ? val : val.toUpperCase());
+    setAddingNew(null);
+  };
+
   const labels = ['Marca *','Modelo *','Modelo Original','Período *',
     'Descripción Original *','Código','Descripción Estándar','Clasificación','Subclasificación'];
+
+  const addNewBtn = (i) => (
+    <button type="button" onClick={()=>setAddingNew({field:i,val:''})}
+      style={{marginLeft:6,padding:'2px 8px',background:'var(--gold)',color:'var(--bd)',
+        border:'none',borderRadius:5,fontSize:'.68rem',fontWeight:700,cursor:'pointer'}}>
+      + Nueva
+    </button>
+  );
 
   const inputStyle = (i) => ({
     background:'var(--g1)',
@@ -496,19 +524,57 @@ const ModalEdit = ({ record, onSave, onClose }) => {
   });
 
   const renderField = (i) => {
+    // Inline "add new" input
+    if (addingNew && addingNew.field === i) return (
+      <div style={{display:'flex',gap:5}}>
+        <input autoFocus type="text" style={{...inputStyle(i),flex:1}}
+          placeholder="Escribe el nuevo valor…"
+          value={addingNew.val}
+          onChange={e=>setAddingNew(a=>({...a,val:e.target.value}))}
+          onKeyDown={e=>{if(e.key==='Enter')confirmAddNew();if(e.key==='Escape')setAddingNew(null);}}/>
+        <button type="button" onClick={confirmAddNew}
+          style={{padding:'0 12px',background:'var(--grn)',color:'#fff',border:'none',borderRadius:6,fontWeight:700,cursor:'pointer'}}>✓</button>
+        <button type="button" onClick={()=>setAddingNew(null)}
+          style={{padding:'0 10px',background:'var(--g3)',color:'var(--g7)',border:'none',borderRadius:6,cursor:'pointer'}}>✕</button>
+      </div>
+    );
+    if (i===0) return (
+      <div style={{display:'flex',alignItems:'center',gap:4}}>
+        <select value={form[i]} onChange={e=>setField(i,e.target.value)} style={{...inputStyle(i),flex:1}}>
+          <option value="">— Seleccionar —</option>
+          {listas.marcas.map(c=><option key={c}>{c}</option>)}
+        </select>
+        {addNewBtn(i)}
+      </div>
+    );
+    if (i===6) return (
+      <div style={{display:'flex',alignItems:'center',gap:4}}>
+        <select value={form[i]} onChange={e=>setField(i,e.target.value)} style={{...inputStyle(i),flex:1}}>
+          <option value="">— Seleccionar —</option>
+          {listas.descStd.map(c=><option key={c}>{c}</option>)}
+        </select>
+        {addNewBtn(i)}
+      </div>
+    );
     if (i===7) return (
-      <select value={form[i]} onChange={e=>setField(i,e.target.value)} style={inputStyle(i)}>
-        <option value="">— Seleccionar —</option>
-        {CLASIFICACIONES.map(c=><option key={c}>{c}</option>)}
-      </select>
+      <div style={{display:'flex',alignItems:'center',gap:4}}>
+        <select value={form[i]} onChange={e=>setField(i,e.target.value)} style={{...inputStyle(i),flex:1}}>
+          <option value="">— Seleccionar —</option>
+          {listas.clasif.map(c=><option key={c}>{c}</option>)}
+        </select>
+        {addNewBtn(i)}
+      </div>
     );
     if (i===8) return (
-      <select value={form[i]} onChange={e=>setField(i,e.target.value)} style={inputStyle(i)}>
-        <option value="">— Seleccionar —</option>
-        {SUBCLASIFICACIONES.map(c=><option key={c}>{c}</option>)}
-      </select>
+      <div style={{display:'flex',alignItems:'center',gap:4}}>
+        <select value={form[i]} onChange={e=>setField(i,e.target.value)} style={{...inputStyle(i),flex:1}}>
+          <option value="">— Seleccionar —</option>
+          {listas.subs.map(c=><option key={c}>{c}</option>)}
+        </select>
+        {addNewBtn(i)}
+      </div>
     );
-    const upper = [0,1,2,6].includes(i);
+    const upper = [1,2].includes(i);
     return (
       <input type="text" style={inputStyle(i)} value={form[i]}
         onChange={e => setField(i, upper ? e.target.value.toUpperCase() : e.target.value)}/>
@@ -846,6 +912,44 @@ function CatalogoApp() {
 
   const debRef = useRef(null);
 
+  // ── Listas dinámicas (marcas, clasificaciones, subclasificaciones, desc estándar) ──
+  const [extraMarcas,  setExtraMarcas]  = useState([]);
+  const [extraClasif,  setExtraClasif]  = useState([]);
+  const [extraSubs,    setExtraSubs]    = useState([]);
+  const [extraDescStd, setExtraDescStd] = useState([]);
+
+  // Derivar listas únicas: base + extras + lo que ya existe en records
+  const allMarcas = useMemo(()=>{
+    const fromRecs = records.map(r=>r.fields[0]).filter(Boolean);
+    return [...new Set([...MARCAS_DEFAULT, ...extraMarcas, ...fromRecs])].sort();
+  },[records, extraMarcas]);
+
+  const allClasif = useMemo(()=>{
+    const fromRecs = records.map(r=>r.fields[7]).filter(Boolean);
+    return [...new Set([...CLASIFICACIONES_DEFAULT, ...extraClasif, ...fromRecs])].sort();
+  },[records, extraClasif]);
+
+  const allSubs = useMemo(()=>{
+    const fromRecs = records.map(r=>r.fields[8]).filter(Boolean);
+    return [...new Set([...SUBCLASIFICACIONES_DEFAULT, ...extraSubs, ...fromRecs])].sort();
+  },[records, extraSubs]);
+
+  const allDescStd = useMemo(()=>{
+    const fromRecs = records.map(r=>r.fields[6]).filter(Boolean);
+    return [...new Set([...DESC_STD_DEFAULT, ...extraDescStd, ...fromRecs])].sort();
+  },[records, extraDescStd]);
+
+  const listasValue = useMemo(()=>({
+    marcas:   allMarcas,
+    clasif:   allClasif,
+    subs:     allSubs,
+    descStd:  allDescStd,
+    addMarca:   v => setExtraMarcas(p=>[...new Set([...p, v])]),
+    addClasi:   v => setExtraClasif(p=>[...new Set([...p, v])]),
+    addSub:     v => setExtraSubs(p=>[...new Set([...p, v])]),
+    addDescStd: v => setExtraDescStd(p=>[...new Set([...p, v])]),
+  }),[allMarcas, allClasif, allSubs, allDescStd]);
+
   // ── Carga inicial — SOLO registros, changelog lazy ──
   useEffect(()=>{
     (async()=>{
@@ -882,7 +986,7 @@ function CatalogoApp() {
     if (changelogLoaded) return;
     try {
       const rawLogs = await fsGetAll(COL_CHANGELOG);
-      setChangelog(rawLogs.sort((a,b)=>(b._ts?.seconds||0)-(a._ts?.seconds||0)));
+      setChangelog(rawLogs.sort((a,b)=> new Date(b.created_at||0) - new Date(a.created_at||0)));
       setChangelogLoaded(true);
     } catch(e) {
       toast('Error cargando historial: ' + e.message, 'error');
@@ -907,9 +1011,9 @@ function CatalogoApp() {
   },[records,fMarca,fModelo]);
 
   const availableSubs = useMemo(()=>{
-    if(!fClasi) return SUBCLASIFICACIONES;
+    if(!fClasi) return allSubs;
     return [...new Set(records.filter(r=>r.fields[7]===fClasi).map(r=>r.fields[8]).filter(Boolean))].sort();
-  },[records,fClasi]);
+  },[records,fClasi,allSubs]);
 
   const filtered = useMemo(()=>{
     let r = records;
@@ -1024,23 +1128,25 @@ function CatalogoApp() {
     }finally{setLoading(false);}
   };
 
-  // ── Exportar ──
-  const exportCSV = ()=>{
+  // ── Exportar XLS ──
+  const exportCSV = async ()=>{
     if(!filtered.length){toast('No hay datos para exportar.','error');return;}
-    const csv=[COL_DEFS.map(c=>c.label),...filtered.map(r=>r.fields)]
-      .map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(','))
-      .join('\n');
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
-    a.download=`catalogo_${new Date().toISOString().slice(0,10)}.csv`;
-    a.click();
-    toast(`📥 ${filtered.length} registros exportados.`,'success');
+    try{
+      const xlsxLib = await loadXLSX();
+      const rows = [COL_DEFS.map(c=>c.label), ...filtered.map(r=>r.fields)];
+      const ws = xlsxLib.utils.aoa_to_sheet(rows);
+      const wb = xlsxLib.utils.book_new();
+      xlsxLib.utils.book_append_sheet(wb, ws, 'Catálogo');
+      xlsxLib.writeFile(wb, `catalogo_${new Date().toISOString().slice(0,10)}.xlsx`);
+      toast(`📥 ${filtered.length} registros exportados como Excel.`,'success');
+    }catch(e){toast('Error al exportar: '+e.message,'error');}
   };
 
   const activeCols = visibleCols.filter(c=>c.show);
   const fbDotColor = {connecting:'#D4A800',ok:'#4CAF50',error:'#C62828'}[fbStatus]||'#D4A800';
 
   return (
+    <ListasCtx.Provider value={listasValue}>
     <>
       <style>{STYLES}</style>
 
@@ -1068,7 +1174,7 @@ function CatalogoApp() {
           <button className="btn btn-g"
             onClick={()=>setModalEdit({_id:null,fields:Array(9).fill('')})}>➕ Nuevo</button>
           <button className="btn btn-c" onClick={()=>setShowImport(true)}>📂 Cargar base</button>
-          <button className="btn btn-c" onClick={exportCSV}>📥 CSV</button>
+          <button className="btn btn-c" onClick={exportCSV}>📥 Excel</button>
           <button className="btn btn-c" onClick={()=>setShowCols(true)}>👁 Columnas</button>
           <button className="btn btn-c" onClick={()=>{ loadChangelog(); setShowHistory(true); }}>
             📋 Historial
@@ -1097,10 +1203,10 @@ function CatalogoApp() {
       <div className="ac-sp">
         <div className="ac-fg">
           {[
-            {label:'🅱 Marca', val:fMarca, set:onMarcaChange, opts:MARCAS},
+            {label:'🅱 Marca', val:fMarca, set:onMarcaChange, opts:allMarcas},
             {label:'🚗 Modelo', val:fModelo, set:onModeloChange, opts:availableModels, placeholder:'Todos los modelos'},
             {label:'📅 Período',   val:fPeriodo,   set:v=>{setFPeriodo(v);setPage(1);}, opts:availablePeriodos, placeholder:'Todos los períodos'},
-            {label:'🔎 Clasificación', val:fClasi, set:onClasiChange, opts:CLASIFICACIONES, placeholder:'Todas'},
+            {label:'🔎 Clasificación', val:fClasi, set:onClasiChange, opts:allClasif, placeholder:'Todas'},
             {label:'📂 Subclasificación', val:fSub, set:v=>{setFSub(v);setPage(1);}, opts:availableSubs, placeholder:'Todas'},
           ].map(({label,val,set,opts,placeholder='Todas las marcas'})=>(
             <div key={label} className="ac-fl">
@@ -1255,6 +1361,7 @@ function CatalogoApp() {
       {showCols    && <ModalCols    visibleCols={visibleCols} onChange={(i,s)=>setVisibleCols(v=>v.map((c,ci)=>ci===i?{...c,show:s}:c))} onClose={()=>setShowCols(false)}/>}
       {showHistory && <ModalHistory changelog={changelog} onClose={()=>setShowHistory(false)}/>}
     </>
+    </ListasCtx.Provider>
   );
 }
 

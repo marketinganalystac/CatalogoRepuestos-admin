@@ -72,7 +72,7 @@ const SUBCLASIFICACIONES = [
   'Tensores','Terminales de Batería','Terminales y V','Trampa de Diesel','Zunchos'
 ];
 
-// [0]marca [1]modelo [2]modelo_orig [3]anio [4]desc_orig [5]codigo [6]desc_std [7]clasi [8]sub
+// [0]marca [1]modelo [2]modelo_orig [3]año [4]desc_orig [5]codigo [6]desc_std [7]clasi [8]sub
 const COL_DEFS = [
   { key:0, label:'Marca',            show:true  },
   { key:1, label:'Modelo',           show:true  },
@@ -85,7 +85,7 @@ const COL_DEFS = [
   { key:8, label:'Subclasificación', show:true  },
 ];
 
-const EXPECTED_FIELDS = ['marca','modelo','modelo_original','anio',
+const EXPECTED_FIELDS = ['marca','modelo','modelo_original','año',
   'descripcion_original','codigo','descripcion_estandar','clasificacion','subclasificacion'];
 
 // ============================================================
@@ -103,7 +103,7 @@ const normalizeDoc = (raw) => {
       String(raw.marca       ?? raw.f0 ?? ''),
       String(raw.modelo      ?? raw.f1 ?? ''),
       String(raw.modelo_orig ?? raw.f2 ?? ''),
-      String(raw.anio        ?? raw.f3 ?? ''),
+      String(raw.año        ?? raw.f3 ?? ''),
       String(raw.desc_orig   ?? raw.f4 ?? ''),
       String(raw.codigo      ?? raw.f5 ?? ''),
       String(raw.desc_std    ?? raw.f6 ?? ''),
@@ -149,7 +149,7 @@ const FIELD_ALIASES = {
   'marca':                  ['marca'],
   'modelo':                 ['modelo'],
   'modelo_original':        ['modelo_original','modelo_orig','original'],
-  'anio':                   ['anio','ano','a_o','year','a_no','ann','ann_o'],
+  'año':                   ['año','ano','a_o','year','a_no','ann','ann_o'],
   'descripcion_original':   ['descripcion_original','descripcion','desc','desc_orig','description'],
   'codigo':                 ['codigo','code','cod','sku','referencia','ref'],
   'descripcion_estandar':   ['descripcion_estandar','desc_estandar','estandar','desc_std','descripcion_std'],
@@ -788,7 +788,7 @@ function CatalogoApp() {
 
   const [fMarca,  setFMarca]  = useState('');
   const [fModelo, setFModelo] = useState('');
-  const [fAnio,   setFAnio]   = useState('');
+  const [fAño,   setFAño]   = useState('');
   const [fClasi,  setFClasi]  = useState('');
   const [fSub,    setFSub]    = useState('');
   const [fText,   setFText]   = useState('');
@@ -871,7 +871,7 @@ function CatalogoApp() {
     let r = records;
     if(fMarca)  r=r.filter(x=>x.fields[0]===fMarca);
     if(fModelo) r=r.filter(x=>x.fields[1]===fModelo);
-    if(fAnio)   r=r.filter(x=>x.fields[3]===fAnio);
+    if(fAño)   r=r.filter(x=>x.fields[3]===fAño);
     if(fClasi)  r=r.filter(x=>x.fields[7]===fClasi);
     if(fSub)    r=r.filter(x=>x.fields[8]===fSub);
     if(debText){const t=debText.toLowerCase(); r=r.filter(x=>x.fields.some(f=>String(f).toLowerCase().includes(t)));}
@@ -881,7 +881,7 @@ function CatalogoApp() {
       return sortAsc?av.localeCompare(bv):bv.localeCompare(av);
     });
     return r;
-  },[records,fMarca,fModelo,fAnio,fClasi,fSub,debText,sortCol,sortAsc]);
+  },[records,fMarca,fModelo,fAño,fClasi,fSub,debText,sortCol,sortAsc]);
 
   const totalPages = Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
   const paginated  = filtered.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
@@ -894,11 +894,11 @@ function CatalogoApp() {
     conCodigo: records.filter(r=>r.fields[5]).length,
   }),[records]);
 
-  const onMarcaChange  = v=>{setFMarca(v);setFModelo('');setFAnio('');setPage(1);};
-  const onModeloChange = v=>{setFModelo(v);setFAnio('');setPage(1);};
+  const onMarcaChange  = v=>{setFMarca(v);setFModelo('');setFAño('');setPage(1);};
+  const onModeloChange = v=>{setFModelo(v);setFAño('');setPage(1);};
   const onClasiChange  = v=>{setFClasi(v);setFSub('');setPage(1);};
   const clearAll = ()=>{
-    setFMarca('');setFModelo('');setFAnio('');setFClasi('');setFSub('');
+    setFMarca('');setFModelo('');setFAño('');setFClasi('');setFSub('');
     setFText('');setDebText('');setSortCol(-1);setSortAsc(true);setPage(1);
   };
   const handleSort = ci=>{
@@ -1037,7 +1037,7 @@ function CatalogoApp() {
           {[
             {label:'🅱 Marca', val:fMarca, set:onMarcaChange, opts:MARCAS},
             {label:'🚗 Modelo', val:fModelo, set:onModeloChange, opts:availableModels, placeholder:'Todos los modelos'},
-            {label:'📅 Año',   val:fAnio,   set:v=>{setFAnio(v);setPage(1);}, opts:availableYears, placeholder:'Todos los años'},
+            {label:'📅 Año',   val:fAño,   set:v=>{setFAño(v);setPage(1);}, opts:availableYears, placeholder:'Todos los años'},
             {label:'🔎 Clasificación', val:fClasi, set:onClasiChange, opts:CLASIFICACIONES, placeholder:'Todas'},
             {label:'📂 Subclasificación', val:fSub, set:v=>{setFSub(v);setPage(1);}, opts:availableSubs, placeholder:'Todas'},
           ].map(({label,val,set,opts,placeholder='Todas las marcas'})=>(
@@ -1070,7 +1070,7 @@ function CatalogoApp() {
         <span style={{marginLeft:'auto',display:'flex',gap:5,flexWrap:'wrap'}}>
           {fMarca &&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>🅱 {fMarca}</span>}
           {fModelo&&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>🚗 {fModelo}</span>}
-          {fAnio  &&<span className="ac-tag" style={{background:'rgba(212,168,0,.8)'}}>📅 {fAnio}</span>}
+          {fAño  &&<span className="ac-tag" style={{background:'rgba(212,168,0,.8)'}}>📅 {fAño}</span>}
           {fClasi &&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>🔎 {fClasi.substring(0,22)}</span>}
           {fSub   &&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>📂 {fSub}</span>}
           {debText&&<span className="ac-tag" style={{background:'rgba(212,168,0,.8)'}}>🔍 "{debText}"</span>}

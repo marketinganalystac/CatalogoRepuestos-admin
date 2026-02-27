@@ -31,13 +31,15 @@ const loadXLSX = () => new Promise((resolve, reject) => {
 //  🔥 FIREBASE CONFIG — reemplaza con los datos de tu proyecto
 // ============================================================
 const firebaseConfig = {
-  apiKey:            "TU_API_KEY",
-  authDomain:        "TU_PROJECT.firebaseapp.com",
-  projectId:         "TU_PROJECT_ID",
-  storageBucket:     "TU_PROJECT.appspot.com",
-  messagingSenderId: "TU_SENDER_ID",
-  appId:             "TU_APP_ID"
+  apiKey: "AIzaSyAr0SnRDII01gyosWghlSHjcnGe7eloWOQ",
+  authDomain: "repuestosaplicables-admin.firebaseapp.com",
+  projectId: "repuestosaplicables-admin",
+  storageBucket: "repuestosaplicables-admin.firebasestorage.app",
+  messagingSenderId: "271216016032",
+  appId: "1:271216016032:web:d55abadd8080f3c4f527c5",
+  measurementId: "G-LF8GPKHZ1M"
 };
+
 
 const firebaseApp = initializeApp(firebaseConfig);
 const db_fs       = getFirestore(firebaseApp);

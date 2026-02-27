@@ -6,8 +6,8 @@ import { createClient } from "@supabase/supabase-js";
 // ============================================================
 
 const supabase = createClient(
-  "https://TU_PROJECT_ID.supabase.co",
-  "TU_ANON_PUBLIC_KEY"
+  "https://vzjhzuvahejosdojllcm.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6amh6dXZhaGVqb3Nkb2psbGNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTI3NTAsImV4cCI6MjA4Nzc4ODc1MH0.8PNlIh3HQDIq1u6IiRQeKx3o9gZyNWU3SeZ4qJ_F7Ew"
 );
 
 // ============================================================

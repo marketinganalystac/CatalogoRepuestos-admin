@@ -18,13 +18,13 @@ import {
 //  FIREBASE CONFIG — Auto Centro Repuestos Aplicables
 // ============================================================
 const firebaseConfig = {
-  apiKey: "AIzaSyCpHNFZR0tcDtEGkAeKxPZVUahe52Zeh3s",
-  authDomain: "catalogorepuestos-admin.firebaseapp.com",
-  projectId: "catalogorepuestos-admin",
-  storageBucket: "catalogorepuestos-admin.firebasestorage.app",
-  messagingSenderId: "353407521874",
-  appId: "1:353407521874:web:45d481e3a6147e38d13b8b",
-  measurementId: "G-9VLPWNQYMZ"
+  apiKey:            "AIzaSyAr0SnRDII01gyosWghlSHjcnGe7eloWOQ",
+  authDomain:        "repuestosaplicables-admin.firebaseapp.com",
+  projectId:         "repuestosaplicables-admin",
+  storageBucket:     "repuestosaplicables-admin.firebasestorage.app",
+  messagingSenderId: "271216016032",
+  appId:             "1:271216016032:web:d55abadd8080f3c4f527c5",
+  measurementId:     "G-LF8GPKHZ1M",
 };
 
 // HMR-safe: no reinicializar si ya existe
@@ -72,12 +72,12 @@ const SUBCLASIFICACIONES = [
   'Tensores','Terminales de Batería','Terminales y V','Trampa de Diesel','Zunchos'
 ];
 
-// [0]marca [1]modelo [2]modelo_orig [3]año [4]desc_orig [5]codigo [6]desc_std [7]clasi [8]sub
+// [0]marca [1]modelo [2]modelo_orig [3]periodo [4]desc_orig [5]codigo [6]desc_std [7]clasi [8]sub
 const COL_DEFS = [
   { key:0, label:'Marca',            show:true  },
   { key:1, label:'Modelo',           show:true  },
   { key:2, label:'Modelo Original',  show:false },
-  { key:3, label:'Año',              show:true  },
+  { key:3, label:'Período',              show:true  },
   { key:4, label:'Descripción',      show:true  },
   { key:5, label:'Código',           show:true  },
   { key:6, label:'Desc. Estándar',   show:false },
@@ -85,7 +85,7 @@ const COL_DEFS = [
   { key:8, label:'Subclasificación', show:true  },
 ];
 
-const EXPECTED_FIELDS = ['marca','modelo','modelo_original','año',
+const EXPECTED_FIELDS = ['marca','modelo','modelo_original','periodo',
   'descripcion_original','codigo','descripcion_estandar','clasificacion','subclasificacion'];
 
 // ============================================================
@@ -103,7 +103,7 @@ const normalizeDoc = (raw) => {
       String(raw.marca       ?? raw.f0 ?? ''),
       String(raw.modelo      ?? raw.f1 ?? ''),
       String(raw.modelo_orig ?? raw.f2 ?? ''),
-      String(raw.año        ?? raw.f3 ?? ''),
+      String(raw.periodo        ?? raw.f3 ?? ''),
       String(raw.desc_orig   ?? raw.f4 ?? ''),
       String(raw.codigo      ?? raw.f5 ?? ''),
       String(raw.desc_std    ?? raw.f6 ?? ''),
@@ -149,33 +149,40 @@ const FIELD_ALIASES = {
   'marca':                  ['marca'],
   'modelo':                 ['modelo'],
   'modelo_original':        ['modelo_original','modelo_orig','original'],
-  'año':                   ['año','ano','a_o','year','a_no','ann','ann_o'],
-  'descripcion_original':   ['descripcion_original','descripcion','desc','desc_orig','description'],
-  'codigo':                 ['codigo','code','cod','sku','referencia','ref'],
-  'descripcion_estandar':   ['descripcion_estandar','desc_estandar','estandar','desc_std','descripcion_std'],
-  'clasificacion':          ['clasificacion','clasificac','categoria','category'],
-  'subclasificacion':       ['subclasificacion','subclasif','subcategoria','sub'],
+  'periodo': ['periodo','period','per','ano','anio','año','year','a_no','yr','fecha'],
+  'descripcion_original':   ['descripcion_original','descripcion','desc','desc_orig','description','descripcion_orig'],
+  'codigo':                 ['codigo','code','cod','sku','referencia','ref','part_number','part','numero'],
+  'descripcion_estandar':   ['descripcion_estandar','desc_estandar','estandar','desc_std','descripcion_std','descripcion_est'],
+  'clasificacion':          ['clasificacion','clasificac','categoria','category','clasi','clasificacion'],
+  'subclasificacion':       ['subclasificacion','subclasif','subcategoria','sub','subcat','subclasi'],
 };
 
 function parseWorkbook(wb, xlsxLib) {
   const sheet = wb.Sheets[wb.SheetNames[0]];
   const rows  = xlsxLib.utils.sheet_to_json(sheet, { header:1, defval:'' });
-  if (rows.length < 2) return { records:[], headers:[], colMap:[] };
+  if (rows.length < 2) return { records:[], headers:[], origHeaders:[], colMap:[], displayMapping:[] };
 
-  // Normalizar headers del archivo
-  const rawH = rows[0].map(normalizeHeader);
+  // Guardar headers originales (para mostrar al usuario tal como están en el archivo)
+  const origHeaders = rows[0].map(h => String(h).trim());
+  // Normalizar headers para comparación interna
+  const rawH = origHeaders.map(normalizeHeader);
 
   // Mapeo inteligente con aliases
   const colMap = EXPECTED_FIELDS.map(field => {
-    const aliases = FIELD_ALIASES[field] || [field];
+    // Normalizar el field también para comparación justa
+    const normField = normalizeHeader(field);
+    const aliases = FIELD_ALIASES[field] || [normField];
     for (const alias of aliases) {
-      const idx = rawH.findIndex(h => h === alias || h.startsWith(alias));
+      const idx = rawH.findIndex(h => h === alias || h.startsWith(alias + '_') || h.startsWith(alias));
       if (idx >= 0) return idx;
     }
-    // Fallback: busca si algún header contiene la primera palabra del campo
-    const first = field.split('_')[0];
-    const idx = rawH.findIndex(h => h.includes(first));
-    return idx; // -1 si no se encuentra
+    // Fallback: busca si algún header normalizado contiene la primera palabra del field normalizado
+    const first = normField.split('_')[0];
+    if (first.length >= 3) {
+      const idx = rawH.findIndex(h => h.includes(first));
+      if (idx >= 0) return idx;
+    }
+    return -1;
   });
 
   const records = rows.slice(1)
@@ -189,7 +196,7 @@ function parseWorkbook(wb, xlsxLib) {
     if (srcIdx >= 0 && srcIdx < rawH.length) displayMapping[srcIdx] = destIdx;
   });
 
-  return { records, headers: rawH, colMap, displayMapping };
+  return { records, headers: rawH, origHeaders, colMap, displayMapping };
 }
 
 const clasiBgColor = c => ({
@@ -399,6 +406,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .wb{margin-top:12px;padding:10px 13px;background:#FFF8E1;border-radius:7px;font-size:.76rem;color:#8B6000;border-left:3px solid var(--gold)}
 .cmr{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
 .cmrow{display:flex;align-items:center;gap:6px;font-size:.78rem;background:var(--g1);padding:5px 9px;border-radius:6px}
+.cmrow.cmrow-ok{background:#E8F5E9;border:1px solid #C8E6C9}
 .cmrow span{color:var(--g5);min-width:130px;font-size:.74rem}
 .cmrow select{flex:1;padding:3px 7px;font-size:.76rem}
 .dr{display:flex;gap:8px;margin-bottom:8px;font-size:.82rem}
@@ -469,7 +477,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
     catch(e) { toast('Error al guardar: ' + e.message, 'error'); setSaving(false); }
   };
 
-  const labels = ['Marca *','Modelo *','Modelo Original','Año *',
+  const labels = ['Marca *','Modelo *','Modelo Original','Período *',
     'Descripción Original *','Código','Descripción Estándar','Clasificación','Subclasificación'];
 
   const inputStyle = (i) => ({
@@ -562,7 +570,7 @@ const ModalDelete = ({ record, onConfirm, onClose }) => {
 // ============================================================
 const ModalDetail = ({ record, onClose, onEdit }) => {
   if (!record) return null;
-  const labels = ['Marca','Modelo','Modelo Original','Año',
+  const labels = ['Marca','Modelo','Modelo Original','Período',
     'Descripción Original','Código','Descripción Estándar','Clasificación','Subclasificación'];
   return (
     <div className="mo show">
@@ -659,11 +667,15 @@ const ModalImport = ({ onClose, onImport }) => {
               </ul>
             </div>
             <div style={{marginTop:12}}>
-              <p style={{fontSize:'.8rem',fontWeight:700,color:'var(--g7)',marginBottom:6}}>🗂 Mapeo de columnas</p>
+              <p style={{fontSize:'.8rem',fontWeight:700,color:'var(--g7)',marginBottom:6}}>🗂 Mapeo de columnas
+                <span style={{fontWeight:400,color:'var(--grn)',marginLeft:8,fontSize:'.72rem'}}>
+                  ✅ {mapping.filter(v=>v>=0).length} de {parsed.headers.length} columnas detectadas automáticamente
+                </span>
+              </p>
               <div className="cmr">
-                {parsed.headers.map((h,si)=>(
-                  <div key={si} className="cmrow">
-                    <span>{h}</span>
+                {(parsed.origHeaders || parsed.headers).map((h,si)=>(
+                  <div key={si} className={`cmrow${mapping[si]>=0?' cmrow-ok':''}`}>
+                    <span title={`Columna original: "${h}"`}>{h}</span>
                     <select value={mapping[si]??-1}
                       onChange={e=>setMapping(m=>{const n=[...m];n[si]=Number(e.target.value);return n;})}>
                       <option value={-1}>— ignorar —</option>
@@ -806,7 +818,7 @@ function CatalogoApp() {
 
   const [fMarca,  setFMarca]  = useState('');
   const [fModelo, setFModelo] = useState('');
-  const [fAño,   setFAño]   = useState('');
+  const [fPeriodo, setFPeriodo]   = useState('');
   const [fClasi,  setFClasi]  = useState('');
   const [fSub,    setFSub]    = useState('');
   const [fText,   setFText]   = useState('');
@@ -880,7 +892,7 @@ function CatalogoApp() {
     return [...new Set(records.filter(r=>r.fields[0]===fMarca).map(r=>r.fields[1]).filter(Boolean))].sort();
   },[records,fMarca]);
 
-  const availableYears = useMemo(()=>{
+  const availablePeriodos = useMemo(()=>{
     let b = fMarca ? records.filter(r=>r.fields[0]===fMarca) : records;
     if(fModelo) b = b.filter(r=>r.fields[1]===fModelo);
     return [...new Set(b.map(r=>r.fields[3]).filter(Boolean))].sort();
@@ -895,7 +907,7 @@ function CatalogoApp() {
     let r = records;
     if(fMarca)  r=r.filter(x=>x.fields[0]===fMarca);
     if(fModelo) r=r.filter(x=>x.fields[1]===fModelo);
-    if(fAño)   r=r.filter(x=>x.fields[3]===fAño);
+    if(fPeriodo)   r=r.filter(x=>x.fields[3]===fPeriodo);
     if(fClasi)  r=r.filter(x=>x.fields[7]===fClasi);
     if(fSub)    r=r.filter(x=>x.fields[8]===fSub);
     if(debText){const t=debText.toLowerCase(); r=r.filter(x=>x.fields.some(f=>String(f).toLowerCase().includes(t)));}
@@ -905,7 +917,7 @@ function CatalogoApp() {
       return sortAsc?av.localeCompare(bv):bv.localeCompare(av);
     });
     return r;
-  },[records,fMarca,fModelo,fAño,fClasi,fSub,debText,sortCol,sortAsc]);
+  },[records,fMarca,fModelo,fPeriodo,fClasi,fSub,debText,sortCol,sortAsc]);
 
   const totalPages = Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
   const paginated  = filtered.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
@@ -918,11 +930,11 @@ function CatalogoApp() {
     conCodigo: records.filter(r=>r.fields[5]).length,
   }),[records]);
 
-  const onMarcaChange  = v=>{setFMarca(v);setFModelo('');setFAño('');setPage(1);};
-  const onModeloChange = v=>{setFModelo(v);setFAño('');setPage(1);};
+  const onMarcaChange  = v=>{setFMarca(v);setFModelo('');setFPeriodo('');setPage(1);};
+  const onModeloChange = v=>{setFModelo(v);setFPeriodo('');setPage(1);};
   const onClasiChange  = v=>{setFClasi(v);setFSub('');setPage(1);};
   const clearAll = ()=>{
-    setFMarca('');setFModelo('');setFAño('');setFClasi('');setFSub('');
+    setFMarca('');setFModelo('');setFPeriodo('');setFClasi('');setFSub('');
     setFText('');setDebText('');setSortCol(-1);setSortAsc(true);setPage(1);
   };
   const handleSort = ci=>{
@@ -1081,7 +1093,7 @@ function CatalogoApp() {
           {[
             {label:'🅱 Marca', val:fMarca, set:onMarcaChange, opts:MARCAS},
             {label:'🚗 Modelo', val:fModelo, set:onModeloChange, opts:availableModels, placeholder:'Todos los modelos'},
-            {label:'📅 Año',   val:fAño,   set:v=>{setFAño(v);setPage(1);}, opts:availableYears, placeholder:'Todos los años'},
+            {label:'📅 Período',   val:fPeriodo,   set:v=>{setFPeriodo(v);setPage(1);}, opts:availablePeriodos, placeholder:'Todos los períodos'},
             {label:'🔎 Clasificación', val:fClasi, set:onClasiChange, opts:CLASIFICACIONES, placeholder:'Todas'},
             {label:'📂 Subclasificación', val:fSub, set:v=>{setFSub(v);setPage(1);}, opts:availableSubs, placeholder:'Todas'},
           ].map(({label,val,set,opts,placeholder='Todas las marcas'})=>(
@@ -1114,7 +1126,7 @@ function CatalogoApp() {
         <span style={{marginLeft:'auto',display:'flex',gap:5,flexWrap:'wrap'}}>
           {fMarca &&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>🅱 {fMarca}</span>}
           {fModelo&&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>🚗 {fModelo}</span>}
-          {fAño  &&<span className="ac-tag" style={{background:'rgba(212,168,0,.8)'}}>📅 {fAño}</span>}
+          {fPeriodo  &&<span className="ac-tag" style={{background:'rgba(212,168,0,.8)'}}>📅 {fPeriodo}</span>}
           {fClasi &&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>🔎 {fClasi.substring(0,22)}</span>}
           {fSub   &&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>📂 {fSub}</span>}
           {debText&&<span className="ac-tag" style={{background:'rgba(212,168,0,.8)'}}>🔍 "{debText}"</span>}

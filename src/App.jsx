@@ -182,7 +182,14 @@ function parseWorkbook(wb, xlsxLib) {
     .filter(r => r.some(c => String(c).trim() !== ''))
     .map(r => colMap.map(ci => ci >= 0 ? String(r[ci] ?? '').trim() : ''));
 
-  return { records, headers: rawH, colMap };
+  // displayMapping[srcColIdx] = destFieldIdx (-1 = ignorar)
+  // La UI itera por columnas fuente, necesita saber a qué campo destino va cada una
+  const displayMapping = Array(rawH.length).fill(-1);
+  colMap.forEach((srcIdx, destIdx) => {
+    if (srcIdx >= 0 && srcIdx < rawH.length) displayMapping[srcIdx] = destIdx;
+  });
+
+  return { records, headers: rawH, colMap, displayMapping };
 }
 
 const clasiBgColor = c => ({
@@ -427,6 +434,16 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .fb-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,167,38,.18);
   border:1px solid rgba(255,167,38,.4);border-radius:12px;padding:2px 9px;font-size:.65rem;font-weight:700;color:#FF8F00}
 .fb-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+/* ── BARRA DE PROGRESO ── */
+.ac-progress-wrap{background:var(--bd);padding:0;overflow:hidden;height:0;transition:height .25s ease}
+.ac-progress-wrap.active{height:36px}
+.ac-progress-inner{display:flex;align-items:center;gap:12px;padding:0 24px;height:36px}
+.ac-progress-label{font-size:.72rem;color:rgba(255,255,255,.85);font-weight:600;white-space:nowrap;min-width:220px}
+.ac-progress-bar-bg{flex:1;background:rgba(255,255,255,.15);border-radius:20px;height:8px;overflow:hidden}
+.ac-progress-bar-fill{height:100%;background:var(--gold);border-radius:20px;transition:width .3s ease}
+.ac-progress-bar-fill.indeterminate{width:40%!important;animation:progress-slide 1.2s ease-in-out infinite}
+@keyframes progress-slide{0%{margin-left:-40%}100%{margin-left:100%}}
+.ac-progress-pct{font-size:.72rem;color:var(--gold);font-weight:700;min-width:38px;text-align:right}
 `;
 
 // ============================================================
@@ -588,7 +605,7 @@ const ModalImport = ({ onClose, onImport }) => {
       const result  = parseWorkbook(wb, xlsxLib);
       if (!result.records.length) { toast('Archivo vacío o sin datos válidos.','error'); return; }
       setParsed(result);
-      setMapping(result.colMap);
+      setMapping(result.displayMapping); // displayMapping[srcCol] = destField (dirección correcta)
       toast(`✅ ${result.records.length} registros detectados.`,'success');
     } catch(e) {
       toast('Error leyendo archivo: ' + e.message, 'error');
@@ -785,6 +802,7 @@ function CatalogoApp() {
   const [loading,   setLoading]   = useState(true);
   const [records,   setRecords]   = useState([]);
   const [changelog, setChangelog] = useState([]);
+  const [loadProgress, setLoadProgress] = useState({ active:false, pct:0, msg:'', indeterminate:true });
 
   const [fMarca,  setFMarca]  = useState('');
   const [fModelo, setFModelo] = useState('');
@@ -813,18 +831,24 @@ function CatalogoApp() {
     (async()=>{
       try {
         setLoading(true);
+        setLoadProgress({ active:true, pct:0, msg:'Conectando a Firebase…', indeterminate:true });
         // Cargamos SOLO repuestos al inicio para mayor velocidad
         // El changelog se carga cuando el usuario abre el historial
         const rawRecs = await fsGetAll(COL_RECORDS, (n) => {
           // Firestore entrega todos los docs juntos — actualizamos badge temprano
           console.log('[Firebase] docs recibidos:', n);
+          setLoadProgress({ active:true, pct:80, msg:`Procesando ${n.toLocaleString()} registros…`, indeterminate:false });
         });
+        setLoadProgress({ active:true, pct:95, msg:'Normalizando datos…', indeterminate:false });
         const normalized = rawRecs.map(normalizeDoc).filter(Boolean);
         setRecords(normalized);
         setFbStatus('ok');
+        setLoadProgress({ active:true, pct:100, msg:`✅ ${normalized.length.toLocaleString()} registros cargados`, indeterminate:false });
+        setTimeout(()=>setLoadProgress(p=>({...p,active:false})), 1800);
       } catch(e) {
         console.error('[Firebase]', e);
         setFbStatus('error');
+        setLoadProgress({ active:false, pct:0, msg:'', indeterminate:true });
         toast('❌ Error Firebase: ' + e.message, 'error');
       } finally {
         setLoading(false);
@@ -948,10 +972,10 @@ function CatalogoApp() {
   const handleImport = async (rows, mode)=>{
     setLoading(true);
     const total = rows.length;
-    toast(`⏳ Preparando ${total} registros…`,'info');
+    setLoadProgress({ active:true, pct:0, msg:`Preparando ${total.toLocaleString()} registros…`, indeterminate:false });
     try{
       if(mode==='replace'){
-        toast('⏳ Eliminando registros anteriores…','info');
+        setLoadProgress({ active:true, pct:5, msg:'Eliminando registros anteriores…', indeterminate:true });
         await fsDeleteAll();
       }
       // Escritura en batches con progreso visual
@@ -962,16 +986,22 @@ function CatalogoApp() {
           batch.set(doc(collection(db_fs, COL_RECORDS)), {fields:f, _ts:serverTimestamp()})
         );
         await batch.commit();
-        const pct = Math.round(Math.min(((i+CHUNK)/total)*100, 100));
-        toast(`⏳ Guardando… ${pct}% (${Math.min(i+CHUNK,total)}/${total})`, 'info');
+        const pct = Math.round(Math.min(((i+CHUNK)/total)*85, 85)) + 5;
+        const done = Math.min(i+CHUNK, total);
+        setLoadProgress({ active:true, pct, msg:`Subiendo… ${done.toLocaleString()} / ${total.toLocaleString()} registros`, indeterminate:false });
+        toast(`⏳ Guardando… ${pct}% (${done}/${total})`, 'info');
       }
+      setLoadProgress({ active:true, pct:93, msg:'Recargando datos desde Firebase…', indeterminate:true });
       // Recargar desde Firestore
       const fresh = await fsGetAll(COL_RECORDS);
       setRecords(fresh.map(normalizeDoc).filter(Boolean));
       await logEntry('IMPORTAR',`${mode==='replace'?'Reemplazo':'Adición'} de ${total} registros`);
+      setLoadProgress({ active:true, pct:100, msg:`✅ ${total.toLocaleString()} registros importados`, indeterminate:false });
+      setTimeout(()=>setLoadProgress(p=>({...p,active:false})), 2500);
       toast(`✅ ${total} registros importados correctamente.`,'success');
       clearAll();
     }catch(e){
+      setLoadProgress({ active:false, pct:0, msg:'', indeterminate:true });
       toast('Error importación: '+e.message,'error');
     }finally{setLoading(false);}
   };
@@ -1028,6 +1058,20 @@ function CatalogoApp() {
               borderRadius:10,padding:'1px 7px',fontSize:'.7rem',marginLeft:4}}>
               {changelog.length}</span>}
           </button>
+        </div>
+      </div>
+
+      {/* BARRA DE PROGRESO GLOBAL */}
+      <div className={`ac-progress-wrap${loadProgress.active?' active':''}`}>
+        <div className="ac-progress-inner">
+          <span className="ac-progress-label">{loadProgress.msg}</span>
+          <div className="ac-progress-bar-bg">
+            <div
+              className={`ac-progress-bar-fill${loadProgress.indeterminate?' indeterminate':''}`}
+              style={!loadProgress.indeterminate?{width:`${loadProgress.pct}%`}:{}}
+            />
+          </div>
+          {!loadProgress.indeterminate && <span className="ac-progress-pct">{loadProgress.pct}%</span>}
         </div>
       </div>
 

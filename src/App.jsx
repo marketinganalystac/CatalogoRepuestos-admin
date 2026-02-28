@@ -74,9 +74,9 @@ const COL_DEFS = [
   { key:1, label:'Modelo',           show:true  },
   { key:2, label:'Modelo Original',  show:false },
   { key:3, label:'Período',              show:true  },
-  { key:4, label:'Descripción',      show:true  },
+  { key:4, label:'Descripción',      show:false  },
   { key:5, label:'Código',           show:true  },
-  { key:6, label:'Desc. Estándar',   show:false },
+  { key:6, label:'Desc. Estándar',   show:true },
   { key:7, label:'Clasificación',    show:true  },
   { key:8, label:'Subclasificación', show:true  },
 ];

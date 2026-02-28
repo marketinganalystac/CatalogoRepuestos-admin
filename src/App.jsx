@@ -28,46 +28,73 @@ const supabase = createClient(
 const AuthCtx = createContext(null);
 const useAuth = () => useContext(AuthCtx);
 
-// Tabla user_roles: id, user_id (uuid), role ('admin'|'viewer')
-// Se crea vía SQL en Supabase (ver instrucciones al final)
-const getUserRole = async (userId) => {
-  const { data, error } = await supabase
-    .from('user_roles')
-    .select('role')
-    .eq('user_id', userId)
-    .single();
-  if (error) return 'viewer'; // default seguro
-  return data?.role || 'viewer';
-};
+// getUserRole ya está integrado en AuthProvider.fetchRole con reintentos
 
 function AuthProvider({ children }) {
   const [user,    setUser]    = useState(null);
-  const [role,    setRole]    = useState(null);   // 'admin' | 'viewer'
+  const [role,    setRole]    = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Lee el rol con reintentos para evitar problemas de timing con RLS
+  const fetchRole = async (userId, attempts = 3) => {
+    for (let i = 0; i < attempts; i++) {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .maybeSingle();
+      if (!error && data?.role) return data.role;
+      if (i < attempts - 1) await new Promise(r => setTimeout(r, 600));
+    }
+    return 'viewer';
+  };
+
   useEffect(() => {
-    // Sesión activa al cargar
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const r = await getUserRole(session.user.id);
-        setUser(session.user); setRole(r);
+    // Timeout de seguridad: si en 8s no resuelve, quitar loading
+    const safetyTimer = setTimeout(() => setLoading(false), 8000);
+
+    // Usar SOLO onAuthStateChange — es la fuente de verdad de Supabase
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        setUser(null);
+        setRole(null);
+        setLoading(false);
+        clearTimeout(safetyTimer);
+        return;
       }
-      setLoading(false);
-    });
-    // Listener para cambios de sesión
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        const r = await getUserRole(session.user.id);
-        setUser(session.user); setRole(r);
-      } else {
-        setUser(null); setRole(null);
+        const r = await fetchRole(session.user.id);
+        setUser(session.user);
+        setRole(r);
+        setLoading(false);
+        clearTimeout(safetyTimer);
       }
     });
-    return () => subscription.unsubscribe();
+
+    // Verificar sesión existente al arrancar
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        setLoading(false);
+        clearTimeout(safetyTimer);
+      }
+      // Si hay sesión, onAuthStateChange la manejará con INITIAL_SESSION
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(safetyTimer);
+    };
   }, []);
 
-  const signIn  = (email, password) => supabase.auth.signInWithPassword({ email, password });
-  const signOut = () => supabase.auth.signOut();
+  const signIn = (email, password) =>
+    supabase.auth.signInWithPassword({ email, password });
+
+  const signOut = async () => {
+    setUser(null);
+    setRole(null);
+    await supabase.auth.signOut();
+  };
+
   const isAdmin = role === 'admin';
 
   return (
@@ -1754,7 +1781,8 @@ function CatalogoApp() {
 //  GATE — Muestra login si no hay sesión
 // ============================================================
 function AuthGate() {
-  const { user, loading } = useAuth();
+  const { user, role, loading } = useAuth();
+
   if (loading) return (
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',
       background:'linear-gradient(135deg,#0d2a4a,#1A3F6F)',fontFamily:"'Segoe UI',Arial,sans-serif"}}>
@@ -1765,7 +1793,10 @@ function AuthGate() {
       </div>
     </div>
   );
-  if (!user) return <LoginScreen />;
+
+  // No hay sesión o rol aún no cargado → login
+  if (!user || !role) return <LoginScreen />;
+
   return (
     <ToastProvider>
       <CatalogoApp />

@@ -23,6 +23,160 @@ const supabase = createClient(
 );
 
 // ============================================================
+//  AUTH — Context y helpers
+// ============================================================
+const AuthCtx = createContext(null);
+const useAuth = () => useContext(AuthCtx);
+
+// Tabla user_roles: id, user_id (uuid), role ('admin'|'viewer')
+// Se crea vía SQL en Supabase (ver instrucciones al final)
+const getUserRole = async (userId) => {
+  const { data, error } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', userId)
+    .single();
+  if (error) return 'viewer'; // default seguro
+  return data?.role || 'viewer';
+};
+
+function AuthProvider({ children }) {
+  const [user,    setUser]    = useState(null);
+  const [role,    setRole]    = useState(null);   // 'admin' | 'viewer'
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Sesión activa al cargar
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        const r = await getUserRole(session.user.id);
+        setUser(session.user); setRole(r);
+      }
+      setLoading(false);
+    });
+    // Listener para cambios de sesión
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        const r = await getUserRole(session.user.id);
+        setUser(session.user); setRole(r);
+      } else {
+        setUser(null); setRole(null);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signIn  = (email, password) => supabase.auth.signInWithPassword({ email, password });
+  const signOut = () => supabase.auth.signOut();
+  const isAdmin = role === 'admin';
+
+  return (
+    <AuthCtx.Provider value={{ user, role, isAdmin, loading, signIn, signOut }}>
+      {children}
+    </AuthCtx.Provider>
+  );
+}
+
+// ============================================================
+//  PANTALLA DE LOGIN
+// ============================================================
+function LoginScreen() {
+  const { signIn } = useAuth();
+  const [email,    setEmail]    = useState('');
+  const [password, setPassword] = useState('');
+  const [error,    setError]    = useState('');
+  const [loading,  setLoading]  = useState(false);
+  const [showPw,   setShowPw]   = useState(false);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError(''); setLoading(true);
+    const { error: err } = await signIn(email.trim(), password);
+    if (err) { setError(err.message); setLoading(false); }
+  };
+
+  return (
+    <div style={{
+      minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center',
+      background:'linear-gradient(135deg,#0d2a4a 0%,#1A3F6F 50%,#0060A0 100%)',
+      fontFamily:"'Segoe UI',Arial,sans-serif", padding:16
+    }}>
+      <div style={{
+        background:'#fff', borderRadius:16, width:'min(420px,100%)',
+        boxShadow:'0 32px 80px rgba(0,0,0,.35)', overflow:'hidden'
+      }}>
+        {/* Header */}
+        <div style={{background:'linear-gradient(135deg,#1A3F6F,#0060A0)',padding:'28px 32px 22px',
+          borderBottom:'3px solid #D4A800',textAlign:'center'}}>
+          <img src={LOGO_SRC} alt="Auto Centro" style={{height:48,objectFit:'contain',marginBottom:10}}/>
+          <div style={{color:'rgba(255,255,255,.7)',fontSize:'.72rem',textTransform:'uppercase',letterSpacing:1.5,fontWeight:600}}>
+            Sistema de Gestión
+          </div>
+          <div style={{color:'#fff',fontSize:'1.05rem',fontWeight:700,marginTop:2}}>
+            Catálogo de Repuestos
+          </div>
+        </div>
+        {/* Form */}
+        <div style={{padding:'28px 32px 32px'}}>
+          <p style={{fontSize:'.82rem',color:'#78909C',marginBottom:20,textAlign:'center'}}>
+            Ingresa con tu cuenta para continuar
+          </p>
+          <form onSubmit={handleLogin} style={{display:'flex',flexDirection:'column',gap:14}}>
+            <div style={{display:'flex',flexDirection:'column',gap:4}}>
+              <label style={{fontSize:'.68rem',color:'#0060A0',fontWeight:700,textTransform:'uppercase',letterSpacing:.6}}>
+                Correo electrónico
+              </label>
+              <input type="email" value={email} onChange={e=>setEmail(e.target.value)}
+                placeholder="usuario@empresa.com" required autoFocus
+                style={{background:'#F5F7FA',border:'1.5px solid #CFD8DC',borderRadius:8,
+                  padding:'10px 13px',fontSize:'.88rem',outline:'none',transition:'.18s'}}
+                onFocus={e=>e.target.style.borderColor='#0060A0'}
+                onBlur={e=>e.target.style.borderColor='#CFD8DC'}/>
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:4}}>
+              <label style={{fontSize:'.68rem',color:'#0060A0',fontWeight:700,textTransform:'uppercase',letterSpacing:.6}}>
+                Contraseña
+              </label>
+              <div style={{position:'relative'}}>
+                <input type={showPw?'text':'password'} value={password} onChange={e=>setPassword(e.target.value)}
+                  placeholder="••••••••" required
+                  style={{background:'#F5F7FA',border:'1.5px solid #CFD8DC',borderRadius:8,
+                    padding:'10px 40px 10px 13px',fontSize:'.88rem',outline:'none',width:'100%',transition:'.18s'}}
+                  onFocus={e=>e.target.style.borderColor='#0060A0'}
+                  onBlur={e=>e.target.style.borderColor='#CFD8DC'}/>
+                <button type="button" onClick={()=>setShowPw(p=>!p)}
+                  style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',
+                    background:'none',border:'none',cursor:'pointer',color:'#78909C',fontSize:'.85rem'}}>
+                  {showPw?'🙈':'👁'}
+                </button>
+              </div>
+            </div>
+            {error && (
+              <div style={{background:'#FFEBEE',border:'1px solid #FFCDD2',borderRadius:7,
+                padding:'9px 13px',fontSize:'.79rem',color:'#C62828',display:'flex',gap:7,alignItems:'center'}}>
+                ⚠ {error === 'Invalid login credentials' ? 'Correo o contraseña incorrectos' : error}
+              </div>
+            )}
+            <button type="submit" disabled={loading}
+              style={{marginTop:4,background:'#0060A0',color:'#fff',border:'none',borderRadius:8,
+                padding:'11px',fontSize:'.88rem',fontWeight:700,cursor:loading?'default':'pointer',
+                opacity:loading?.65:1,transition:'.18s',display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
+              {loading
+                ? <><span style={{display:'inline-block',width:16,height:16,border:'2px solid rgba(255,255,255,.3)',
+                    borderTopColor:'#fff',borderRadius:'50%',animation:'spin .75s linear infinite'}}/> Ingresando…</>
+                : '🔐 Ingresar'}
+            </button>
+          </form>
+          <p style={{marginTop:18,fontSize:'.72rem',color:'#90A4AE',textAlign:'center'}}>
+            ¿Sin acceso? Contacta al administrador del sistema.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 //  XLSX  —  carga dinámica CDN (sin dependencia npm)
 // ============================================================
 let _xlsxLib = null;
@@ -69,17 +223,20 @@ const DESC_STD_DEFAULT = [];
 const ListasCtx = createContext(null);
 
 // [0]marca [1]modelo [2]modelo_orig [3]periodo [4]desc_orig [5]codigo [6]desc_std [7]clasi [8]sub
+// DEFAULT ORDER: Marca, Modelo, Período, Desc.Estándar, Código, Clasificación, Subclasificación
 const COL_DEFS = [
-  { key:0, label:'Marca',            show:true  },
-  { key:1, label:'Modelo',           show:true  },
-  { key:2, label:'Modelo Original',  show:false },
-  { key:3, label:'Período',              show:true  },
-  { key:4, label:'Descripción',      show:false  },
-  { key:5, label:'Código',           show:true  },
-  { key:6, label:'Desc. Estándar',   show:true },
-  { key:7, label:'Clasificación',    show:true  },
-  { key:8, label:'Subclasificación', show:true  },
+  { key:0, label:'Marca',            show:true,  width:110 },
+  { key:1, label:'Modelo',           show:true,  width:130 },
+  { key:2, label:'Modelo Original',  show:false, width:130 },
+  { key:3, label:'Período',          show:true,  width:90  },
+  { key:4, label:'Descripción',      show:false, width:200 },
+  { key:5, label:'Código',           show:true,  width:110 },
+  { key:6, label:'Desc. Estándar',   show:true,  width:200 },
+  { key:7, label:'Clasificación',    show:true,  width:150 },
+  { key:8, label:'Subclasificación', show:true,  width:150 },
 ];
+// Ordered display: Marca, Modelo, Período, Desc.Estándar, Código, Clasificación, Sub
+const COL_DEFS_ORDER = [0,1,3,6,5,7,8,2,4];
 
 const EXPECTED_FIELDS = ['marca','modelo','modelo_original','periodo',
   'descripcion_original','codigo','descripcion_estandar','clasificacion','subclasificacion'];
@@ -470,6 +627,44 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .ac-progress-bar-fill.indeterminate{width:40%!important;animation:progress-slide 1.2s ease-in-out infinite}
 @keyframes progress-slide{0%{margin-left:-40%}100%{margin-left:100%}}
 .ac-progress-pct{font-size:.72rem;color:var(--gold);font-weight:700;min-width:38px;text-align:right}
+/* ── RESPONSIVE / MOBILE ── */
+@media(max-width:768px){
+  .ac-header{padding:8px 12px;min-height:auto;gap:6px}
+  .ac-hl{gap:8px;flex-wrap:wrap}
+  .ac-htitle .s2{font-size:.8rem}
+  .ac-htitle .s1{display:none}
+  .ac-badge{display:none}
+  .fb-badge{font-size:.6rem;padding:2px 7px}
+  .ac-hact{gap:5px;flex-wrap:wrap}
+  .btn{padding:5px 9px;font-size:.73rem}
+  .ac-sp{padding:10px 12px}
+  .ac-fg{grid-template-columns:1fr 1fr;gap:7px}
+  .ac-sr{flex-direction:column;gap:7px}
+  .ac-sr .ac-fl{min-width:0}
+  .ac-sb{padding:5px 12px;gap:8px;font-size:.7rem}
+  .ac-qs{padding:6px 12px;gap:7px}
+  .ac-qi{padding:4px 9px}
+  .ac-qi .n{font-size:.88rem}
+  .ac-tw{max-height:calc(100vh - 260px)}
+  table{font-size:.75rem}
+  thead th{padding:7px 8px;font-size:.62rem}
+  tbody td{padding:5px 8px}
+  .ac-pg{padding:7px 12px;gap:4px}
+  .pb{padding:4px 8px;font-size:.7rem}
+  .md{width:96vw!important;max-width:96vw!important}
+  .fgrid{grid-template-columns:1fr}
+  .cmr{grid-template-columns:1fr}
+  .hlog-item{grid-template-columns:1fr;border-bottom:2px solid var(--g2)}
+  .hlog-dt,.hlog-op{border-right:none;border-bottom:1px solid var(--g2)}
+  .mhist-wrap{max-height:55vh}
+}
+@media(max-width:480px){
+  .ac-fg{grid-template-columns:1fr}
+  .ac-hact .btn-c:not(:first-child):not(:nth-child(2)){display:none}
+  .ac-tw{max-height:calc(100vh - 240px)}
+  thead th{padding:6px 6px;font-size:.6rem}
+  tbody td{padding:4px 6px;font-size:.73rem}
+}
 `;
 
 // ============================================================
@@ -791,29 +986,129 @@ const ModalImport = ({ onClose, onImport }) => {
 };
 
 // ============================================================
-//  MODAL — COLUMNAS
+//  MODAL — COLUMNAS (con reordenamiento drag & drop)
 // ============================================================
-const ModalCols = ({ visibleCols, onChange, onClose }) => (
-  <div className="mo show">
-    <div className="md sm">
-      <div className="mh"><h2>👁 Columnas visibles</h2><button className="mx" onClick={onClose}>×</button></div>
-      <div className="mb">
-        <p style={{fontSize:'.82rem',color:'var(--g5)',marginBottom:14}}>Activa o desactiva columnas.</p>
-        <div style={{display:'flex',flexDirection:'column',gap:8}}>
-          {visibleCols.map((col,i)=>(
-            <label key={i} className="col-toggle-label">
-              <input type="checkbox" checked={col.show}
-                onChange={e=>onChange(i,e.target.checked)}
-                style={{width:16,height:16,accentColor:'var(--bm)'}}/>
-              {col.label}
-            </label>
-          ))}
+const ModalCols = ({ visibleCols, colOrder, onChange, onReorder, onClose }) => {
+  const [localOrder, setLocalOrder] = React.useState([...colOrder]);
+  const [dragging, setDragging] = React.useState(null);
+
+  const orderedCols = localOrder.map(k => visibleCols.find(c=>c.key===k)).filter(Boolean);
+  const getIdx = key => visibleCols.findIndex(c=>c.key===key);
+
+  return (
+    <div className="mo show">
+      <div className="md sm">
+        <div className="mh"><h2>👁 Columnas — Visibilidad y Orden</h2><button className="mx" onClick={onClose}>×</button></div>
+        <div className="mb">
+          <p style={{fontSize:'.78rem',color:'var(--g5)',marginBottom:10}}>
+            ☑ Activa/desactiva · <strong>Arrastra</strong> para reordenar
+          </p>
+          <div style={{display:'flex',flexDirection:'column',gap:6}}>
+            {orderedCols.map((col,li)=>(
+              <div key={col.key}
+                draggable
+                onDragStart={()=>setDragging(col.key)}
+                onDragOver={e=>{e.preventDefault();}}
+                onDrop={()=>{
+                  if(dragging===null||dragging===col.key)return;
+                  setLocalOrder(prev=>{
+                    const arr=[...prev];
+                    const fi=arr.indexOf(dragging);const ti=arr.indexOf(col.key);
+                    arr.splice(fi,1);arr.splice(ti,0,dragging);return arr;
+                  });setDragging(null);
+                }}
+                style={{display:'flex',alignItems:'center',gap:10,padding:'7px 10px',
+                  borderRadius:6,background:dragging===col.key?'var(--bl)':'var(--g1)',
+                  border:'1px solid var(--g2)',cursor:'grab'}}>
+                <span style={{color:'var(--g3)',fontSize:'1rem',cursor:'grab'}}>⠿</span>
+                <input type="checkbox" checked={col.show}
+                  onChange={e=>onChange(getIdx(col.key),e.target.checked)}
+                  style={{width:15,height:15,accentColor:'var(--bm)',cursor:'pointer'}}/>
+                <span style={{fontSize:'.84rem',flex:1,color:col.show?'var(--g9)':'var(--g5)'}}>{col.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="mf">
+          <button className="btn btn-o" onClick={onClose}>Cancelar</button>
+          <button className="btn btn-p" onClick={()=>{onReorder(localOrder);onClose();}}>✓ Aplicar</button>
         </div>
       </div>
-      <div className="mf"><button className="btn btn-p" onClick={onClose}>Aplicar</button></div>
     </div>
-  </div>
-);
+  );
+};
+
+// ============================================================
+//  MODAL — REEMPLAZO MASIVO
+// ============================================================
+const ModalReplace = ({ cols, onReplace, onClose }) => {
+  const [fieldIdx, setFieldIdx] = React.useState(0);
+  const [searchVal, setSearchVal] = React.useState('');
+  const [replaceVal, setReplaceVal] = React.useState('');
+  const [matchExact, setMatchExact] = React.useState(false);
+  const [running, setRunning] = React.useState(false);
+  const [result, setResult] = React.useState(null);
+
+  const doReplace = async () => {
+    if (!searchVal.trim()) return;
+    setRunning(true); setResult(null);
+    const count = await onReplace(Number(fieldIdx), searchVal, replaceVal, matchExact);
+    setResult(count); setRunning(false);
+  };
+
+  return (
+    <div className="mo show">
+      <div className="md sm">
+        <div className="mh"><h2>🔄 Reemplazo Masivo</h2><button className="mx" onClick={onClose}>×</button></div>
+        <div className="mb">
+          <p style={{fontSize:'.8rem',color:'var(--g5)',marginBottom:14,lineHeight:1.5}}>
+            Busca un valor en un campo y lo reemplaza en <strong>todos los registros que coincidan</strong>.
+          </p>
+          <div style={{display:'flex',flexDirection:'column',gap:12}}>
+            <div className="fg2">
+              <label>Campo a modificar</label>
+              <select value={fieldIdx} onChange={e=>setFieldIdx(e.target.value)} style={{background:'var(--g1)',border:'1.5px solid var(--g3)',borderRadius:7,padding:'8px 11px',fontSize:'.84rem',width:'100%'}}>
+                {cols.map(c=><option key={c.key} value={c.key}>{c.label}</option>)}
+              </select>
+            </div>
+            <div className="fg2">
+              <label>Buscar</label>
+              <input type="text" value={searchVal} onChange={e=>setSearchVal(e.target.value)}
+                placeholder="Ej: VIGO"
+                style={{background:'var(--g1)',border:'1.5px solid var(--g3)',borderRadius:7,padding:'8px 11px',fontSize:'.84rem',width:'100%',outline:'none'}}/>
+            </div>
+            <div className="fg2">
+              <label>Reemplazar por</label>
+              <input type="text" value={replaceVal} onChange={e=>setReplaceVal(e.target.value)}
+                placeholder="Ej: HILUX VIGO"
+                style={{background:'var(--g1)',border:'1.5px solid var(--g3)',borderRadius:7,padding:'8px 11px',fontSize:'.84rem',width:'100%',outline:'none'}}/>
+            </div>
+            <label style={{display:'flex',alignItems:'center',gap:8,fontSize:'.82rem',color:'var(--g7)',cursor:'pointer'}}>
+              <input type="checkbox" checked={matchExact} onChange={e=>setMatchExact(e.target.checked)} style={{width:15,height:15,accentColor:'var(--bm)'}}/>
+              Solo coincidencia exacta (no parcial)
+            </label>
+            {result !== null && (
+              <div style={{padding:'10px 14px',borderRadius:7,background:result>0?'#E8F5E9':'#FFF8E1',
+                border:`1px solid ${result>0?'#C8E6C9':'#FFE082'}`,fontSize:'.82rem',
+                color:result>0?'var(--grn)':'#8B6000',fontWeight:600}}>
+                {result>0 ? `✅ ${result} registro${result>1?'s':''} actualizado${result>1?'s':''}` : '⚠ Sin coincidencias'}
+              </div>
+            )}
+          </div>
+          <div style={{marginTop:12,padding:'9px 13px',background:'#FFF8E1',borderRadius:7,fontSize:'.74rem',color:'#8B6000',borderLeft:'3px solid var(--gold)'}}>
+            ⚠ Esta acción modifica la base de datos en Supabase. No se puede deshacer automáticamente.
+          </div>
+        </div>
+        <div className="mf">
+          <button className="btn btn-o" onClick={onClose} disabled={running}>Cerrar</button>
+          <button className="btn btn-p" onClick={doReplace} disabled={running||!searchVal.trim()}>
+            {running ? <><span className="spin" style={{width:13,height:13,borderWidth:2}}/>Procesando…</> : '🔄 Reemplazar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // ============================================================
 //  MODAL — HISTORIAL
@@ -887,6 +1182,7 @@ const ModalHistory = ({ changelog, onClose }) => {
 // ============================================================
 function CatalogoApp() {
   const toast = useToast();
+  const { isAdmin, user, role, signOut } = useAuth();
 
   const [fbStatus,  setFbStatus]  = useState('connecting');
   const [loading,   setLoading]   = useState(true);
@@ -905,6 +1201,8 @@ function CatalogoApp() {
   const [sortCol,     setSortCol]     = useState(-1);
   const [sortAsc,     setSortAsc]     = useState(true);
   const [page,        setPage]        = useState(1);
+  const [colOrder, setColOrder] = useState(COL_DEFS_ORDER);
+  const [colWidths, setColWidths] = useState(()=>Object.fromEntries(COL_DEFS.map(c=>[c.key,c.width||120])));
   const [visibleCols, setVisibleCols] = useState(COL_DEFS.map(c=>({...c})));
 
   const [modalEdit,   setModalEdit]   = useState(null);
@@ -1096,6 +1394,42 @@ function CatalogoApp() {
     }catch(e){toast('Error: '+e.message,'error');}
   };
 
+  // ── Reemplazo masivo ──
+  const handleBulkReplace = async (fieldIdx, searchVal, replaceVal, matchExact) => {
+    const search = searchVal.trim();
+    const replace = replaceVal.trim();
+    if (!search) return 0;
+    let count = 0;
+    const updated = [];
+    for (const rec of records) {
+      const cur = rec.fields[fieldIdx] || '';
+      let newVal;
+      if (matchExact) {
+        newVal = cur === search ? replace : cur;
+      } else {
+        newVal = cur.replace(new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi'), replace);
+      }
+      if (newVal !== cur) {
+        updated.push({ rec, newFields: [...rec.fields.slice(0,fieldIdx), newVal, ...rec.fields.slice(fieldIdx+1)] });
+        count++;
+      }
+    }
+    for (const { rec, newFields } of updated) {
+      await fsUpdate(rec._id, { fields: newFields });
+    }
+    if (count > 0) {
+      setRecords(prev => prev.map(r => {
+        const u = updated.find(x => x.rec._id === r._id);
+        return u ? { ...r, fields: u.newFields } : r;
+      }));
+      await logEntry('EDITAR', `Reemplazo masivo: campo ${COL_DEFS.find(c=>c.key===fieldIdx)?.label} — "${search}" → "${replace}" (${count} registros)`);
+      toast(`✅ ${count} registros actualizados.`, 'success');
+    } else {
+      toast('No se encontraron coincidencias.', 'info');
+    }
+    return count;
+  };
+
   // ── Importar ──
   const handleImport = async (rows, mode)=>{
     setLoading(true);
@@ -1146,7 +1480,11 @@ function CatalogoApp() {
     }catch(e){toast('Error al exportar: '+e.message,'error');}
   };
 
-  const activeCols = visibleCols.filter(c=>c.show);
+  const activeCols = colOrder
+    .map(k => visibleCols.find(c => c.key === k))
+    .filter(c => c && c.show);
+  const [showReplace, setShowReplace] = useState(false);
+  const [dragCol, setDragCol] = useState(null);
   const fbDotColor = {connecting:'#D4A800',ok:'#4CAF50',error:'#C62828'}[fbStatus]||'#D4A800';
 
   return (
@@ -1174,17 +1512,29 @@ function CatalogoApp() {
           </span>
         </div>
         <div className="ac-hact">
-          <button className="btn btn-g"
-            onClick={()=>setModalEdit({_id:null,fields:Array(9).fill('')})}>➕ Nuevo</button>
-          <button className="btn btn-c" onClick={()=>setShowImport(true)}>📂 Cargar base</button>
+          {isAdmin && <button className="btn btn-g"
+            onClick={()=>setModalEdit({_id:null,fields:Array(9).fill('')})}>➕ Nuevo</button>}
+          {isAdmin && <button className="btn btn-c" onClick={()=>setShowImport(true)}>📂 Cargar base</button>}
           <button className="btn btn-c" onClick={exportCSV}>📥 Excel</button>
           <button className="btn btn-c" onClick={()=>setShowCols(true)}>👁 Columnas</button>
-          <button className="btn btn-c" onClick={()=>{ loadChangelog(); setShowHistory(true); }}>
+          {isAdmin && <button className="btn btn-c" onClick={()=>setShowReplace(true)}>🔄 Reemplazar</button>}
+          {isAdmin && <button className="btn btn-c" onClick={()=>{ loadChangelog(); setShowHistory(true); }}>
             📋 Historial
             {changelog.length>0&&<span style={{background:'var(--gold)',color:'var(--bd)',
               borderRadius:10,padding:'1px 7px',fontSize:'.7rem',marginLeft:4}}>
               {changelog.length}</span>}
-          </button>
+          </button>}
+          <div style={{display:'flex',alignItems:'center',gap:6,marginLeft:4,paddingLeft:8,borderLeft:'1px solid rgba(255,255,255,.2)'}}>
+            <span style={{fontSize:'.68rem',color:'rgba(255,255,255,.75)',maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+              {user?.email?.split('@')[0]}
+            </span>
+            <span style={{background:isAdmin?'rgba(212,168,0,.3)':'rgba(255,255,255,.15)',color:isAdmin?'#FFE082':'rgba(255,255,255,.8)',
+              fontSize:'.6rem',fontWeight:700,padding:'1px 7px',borderRadius:10,textTransform:'uppercase',letterSpacing:.5}}>
+              {role}
+            </span>
+            <button className="btn btn-c btn-sm" onClick={signOut} title="Cerrar sesión"
+              style={{padding:'3px 9px',fontSize:'.68rem'}}>⏏ Salir</button>
+          </div>
         </div>
       </div>
 
@@ -1282,12 +1632,41 @@ function CatalogoApp() {
         ) : (
           <table>
             <thead><tr>
-              {activeCols.map(col=>(
-                <th key={col.key} className={sortCol===col.key?'sorted':''} onClick={()=>handleSort(col.key)}>
-                  {col.label}<span className="si">{sortCol===col.key?(sortAsc?'↑':'↓'):'↕'}</span>
+              <th style={{width:80,minWidth:70,background:'var(--bd)',position:'sticky',top:0,zIndex:11}}>Acciones</th>
+              {activeCols.map((col,ci)=>(
+                <th key={col.key}
+                  className={sortCol===col.key?'sorted':''}
+                  draggable
+                  onDragStart={e=>{e.dataTransfer.effectAllowed='move';setDragCol(col.key);}}
+                  onDragOver={e=>{e.preventDefault();e.dataTransfer.dropEffect='move';e.currentTarget.style.borderLeft='3px solid var(--gold)';}}
+                  onDragLeave={e=>{e.currentTarget.style.borderLeft='';}}
+                  onDrop={e=>{
+                    e.preventDefault();e.currentTarget.style.borderLeft='';
+                    if(dragCol===null||dragCol===col.key) return;
+                    setColOrder(prev=>{
+                      const arr=[...prev];
+                      const fromIdx=arr.indexOf(dragCol);
+                      const toIdx=arr.indexOf(col.key);
+                      arr.splice(fromIdx,1);arr.splice(toIdx,0,dragCol);
+                      return arr;
+                    });setDragCol(null);
+                  }}
+                  style={{width:colWidths[col.key]||120,minWidth:60,position:'relative',cursor:'grab'}}
+                  onClick={()=>handleSort(col.key)}>
+                  <span style={{pointerEvents:'none'}}>{col.label}<span className="si">{sortCol===col.key?(sortAsc?'↑':'↓'):'↕'}</span></span>
+                  <span
+                    style={{position:'absolute',right:0,top:0,bottom:0,width:6,cursor:'col-resize',background:'transparent',zIndex:12}}
+                    onClick={e=>e.stopPropagation()}
+                    onMouseDown={e=>{
+                      e.preventDefault();e.stopPropagation();
+                      const startX=e.clientX;const startW=colWidths[col.key]||120;
+                      const onMove=ev=>setColWidths(p=>({...p,[col.key]:Math.max(60,startW+ev.clientX-startX)}));
+                      const onUp=()=>{document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp);};
+                      document.addEventListener('mousemove',onMove);document.addEventListener('mouseup',onUp);
+                    }}
+                  />
                 </th>
               ))}
-              <th style={{width:90}}>Acciones</th>
             </tr></thead>
             <tbody>
               {paginated.map((rec,ri)=>{
@@ -1307,15 +1686,17 @@ function CatalogoApp() {
                 };
                 return (
                   <tr key={rec._id||ri}>
+                    <td className="cac" onClick={e=>e.stopPropagation()} style={{width:80,minWidth:70}}>
+                      {isAdmin ? <>
+                        <button className="btn-edit" onClick={()=>setModalEdit(rec)}>✏</button>
+                        <button className="btn-del"  onClick={()=>setModalDel(rec)}>🗑</button>
+                      </> : <button className="btn-edit" onClick={()=>setModalDetail(rec)}>👁</button>}
+                    </td>
                     {activeCols.map(col=>(
-                      <td key={col.key} onClick={()=>setModalDetail(rec)} style={{cursor:'pointer'}}>
+                      <td key={col.key} onClick={()=>setModalDetail(rec)} style={{cursor:'pointer',width:colWidths[col.key]||120,maxWidth:colWidths[col.key]||120,overflow:'hidden',textOverflow:'ellipsis'}}>
                         {cell[col.key]?cell[col.key]():f[col.key]}
                       </td>
                     ))}
-                    <td className="cac" onClick={e=>e.stopPropagation()}>
-                      <button className="btn-edit" onClick={()=>setModalEdit(rec)}>✏ Edit</button>
-                      <button className="btn-del"  onClick={()=>setModalDel(rec)}>🗑</button>
-                    </td>
                   </tr>
                 );
               })}
@@ -1348,7 +1729,7 @@ function CatalogoApp() {
       )}
 
       {/* MODALS */}
-      {modalEdit && (
+      {modalEdit && isAdmin && (
         <ModalEdit
           record={modalEdit._id?modalEdit:null}
           onSave={async(data)=>{
@@ -1358,24 +1739,47 @@ function CatalogoApp() {
           onClose={()=>setModalEdit(null)}
         />
       )}
-      {modalDel    && <ModalDelete  record={modalDel}    onConfirm={handleDelete} onClose={()=>setModalDel(null)}/>}
+      {modalDel && isAdmin && <ModalDelete record={modalDel} onConfirm={handleDelete} onClose={()=>setModalDel(null)}/>}
       {modalDetail && <ModalDetail  record={modalDetail}  onClose={()=>setModalDetail(null)} onEdit={r=>{setModalDetail(null);setModalEdit(r);}}/>}
       {showImport  && <ModalImport  onClose={()=>setShowImport(false)}  onImport={handleImport}/>}
-      {showCols    && <ModalCols    visibleCols={visibleCols} onChange={(i,s)=>setVisibleCols(v=>v.map((c,ci)=>ci===i?{...c,show:s}:c))} onClose={()=>setShowCols(false)}/>}
+      {showCols    && <ModalCols    visibleCols={visibleCols} colOrder={colOrder} onChange={(i,s)=>setVisibleCols(v=>v.map((c,ci)=>ci===i?{...c,show:s}:c))} onReorder={setColOrder} onClose={()=>setShowCols(false)}/>}
       {showHistory && <ModalHistory changelog={changelog} onClose={()=>setShowHistory(false)}/>}
+      {showReplace && <ModalReplace cols={COL_DEFS} onReplace={handleBulkReplace} onClose={()=>setShowReplace(false)}/>}
     </>
     </ListasCtx.Provider>
   );
 }
 
 // ============================================================
-//  EXPORT DEFAULT  ← ToastProvider envuelve todo
-//  main.jsx puede hacer: import App from './App'  (sin cambios)
+//  GATE — Muestra login si no hay sesión
 // ============================================================
-export default function App() {
+function AuthGate() {
+  const { user, loading } = useAuth();
+  if (loading) return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',
+      background:'linear-gradient(135deg,#0d2a4a,#1A3F6F)',fontFamily:"'Segoe UI',Arial,sans-serif"}}>
+      <div style={{textAlign:'center',color:'#fff'}}>
+        <div style={{width:36,height:36,border:'3px solid rgba(255,255,255,.2)',borderTopColor:'#D4A800',
+          borderRadius:'50%',animation:'spin .75s linear infinite',margin:'0 auto 14px'}}/>
+        <div style={{fontSize:'.85rem',opacity:.7}}>Verificando sesión…</div>
+      </div>
+    </div>
+  );
+  if (!user) return <LoginScreen />;
   return (
     <ToastProvider>
       <CatalogoApp />
     </ToastProvider>
+  );
+}
+
+// ============================================================
+//  EXPORT DEFAULT
+// ============================================================
+export default function App() {
+  return (
+    <AuthProvider>
+      <AuthGate />
+    </AuthProvider>
   );
 }

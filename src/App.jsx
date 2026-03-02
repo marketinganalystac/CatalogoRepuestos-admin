@@ -24,75 +24,91 @@ const supabase = createClient(
 
 // ============================================================
 //  AUTH — Context y helpers
+//  - Sesión por PESTAÑA (sessionStorage) → se destruye al cerrar
+//  - Rol se lee directo desde user_roles SIN RLS de lectura
+//  - Sin reintentos ni timeouts largos
 // ============================================================
 const AuthCtx = createContext(null);
 const useAuth = () => useContext(AuthCtx);
 
-// getUserRole ya está integrado en AuthProvider.fetchRole con reintentos
+// Supabase configurado con persistSession:false + storage sessionStorage
+// para que la sesión NO sobreviva al cerrar la pestaña
+const supabaseSession = createClient(
+  "https://vzjhzuvahejosdojllcm.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6amh6dXZhaGVqb3Nkb2psbGNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTI3NTAsImV4cCI6MjA4Nzc4ODc1MH0.8PNlIh3HQDIq1u6IiRQeKx3o9gZyNWU3SeZ4qJ_F7Ew",
+  { auth: { storage: window.sessionStorage, persistSession: true, detectSessionInUrl: false } }
+);
 
 function AuthProvider({ children }) {
   const [user,    setUser]    = useState(null);
   const [role,    setRole]    = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Lee el rol con reintentos para evitar problemas de timing con RLS
-  const fetchRole = async (userId, attempts = 3) => {
-    for (let i = 0; i < attempts; i++) {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .maybeSingle();
-      if (!error && data?.role) return data.role;
-      if (i < attempts - 1) await new Promise(r => setTimeout(r, 600));
-    }
-    return 'viewer';
+  // Lee rol usando el cliente global (supabase) que tiene el JWT activo
+  const fetchRole = async (userId) => {
+    const { data } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .maybeSingle();
+    return data?.role || 'viewer';
   };
 
   useEffect(() => {
-    // Timeout de seguridad: si en 8s no resuelve, quitar loading
-    const safetyTimer = setTimeout(() => setLoading(false), 8000);
+    let mounted = true;
 
-    // Usar SOLO onAuthStateChange — es la fuente de verdad de Supabase
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
+    const init = async () => {
+      // Verificar sesión guardada en sessionStorage
+      const { data: { session } } = await supabaseSession.auth.getSession();
+      if (!mounted) return;
+      if (!session?.user) {
+        setLoading(false);
+        return;
+      }
+      // Hay sesión activa — leer rol inmediatamente con JWT válido
+      const r = await fetchRole(session.user.id);
+      if (!mounted) return;
+      setUser(session.user);
+      setRole(r);
+      setLoading(false);
+    };
+
+    init();
+
+    // Escuchar cambios (login / logout)
+    const { data: { subscription } } = supabaseSession.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+      if (event === 'SIGNED_OUT' || !session?.user) {
         setUser(null);
         setRole(null);
         setLoading(false);
-        clearTimeout(safetyTimer);
         return;
       }
-      if (session?.user) {
+      if (event === 'SIGNED_IN') {
         const r = await fetchRole(session.user.id);
+        if (!mounted) return;
         setUser(session.user);
         setRole(r);
         setLoading(false);
-        clearTimeout(safetyTimer);
       }
-    });
-
-    // Verificar sesión existente al arrancar
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        setLoading(false);
-        clearTimeout(safetyTimer);
-      }
-      // Si hay sesión, onAuthStateChange la manejará con INITIAL_SESSION
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
-      clearTimeout(safetyTimer);
     };
   }, []);
 
-  const signIn = (email, password) =>
-    supabase.auth.signInWithPassword({ email, password });
+  const signIn = async (email, password) => {
+    const result = await supabaseSession.auth.signInWithPassword({ email, password });
+    return result;
+  };
 
   const signOut = async () => {
     setUser(null);
     setRole(null);
-    await supabase.auth.signOut();
+    setLoading(false);
+    await supabaseSession.auth.signOut();
   };
 
   const isAdmin = role === 'admin';
@@ -1781,7 +1797,7 @@ function CatalogoApp() {
 //  GATE — Muestra login si no hay sesión
 // ============================================================
 function AuthGate() {
-  const { user, role, loading } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) return (
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',
@@ -1789,13 +1805,12 @@ function AuthGate() {
       <div style={{textAlign:'center',color:'#fff'}}>
         <div style={{width:36,height:36,border:'3px solid rgba(255,255,255,.2)',borderTopColor:'#D4A800',
           borderRadius:'50%',animation:'spin .75s linear infinite',margin:'0 auto 14px'}}/>
-        <div style={{fontSize:'.85rem',opacity:.7}}>Verificando sesión…</div>
+        <div style={{fontSize:'.85rem',opacity:.7}}>Cargando…</div>
       </div>
     </div>
   );
 
-  // No hay sesión o rol aún no cargado → login
-  if (!user || !role) return <LoginScreen />;
+  if (!user) return <LoginScreen />;
 
   return (
     <ToastProvider>

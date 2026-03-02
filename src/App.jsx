@@ -150,7 +150,13 @@ function LoginScreen() {
         {/* Header */}
         <div style={{background:'linear-gradient(135deg,#1A3F6F,#0060A0)',padding:'28px 32px 22px',
           borderBottom:'3px solid #D4A800',textAlign:'center'}}>
-          <img src={LOGO_SRC} alt="Auto Centro" style={{height:48,objectFit:'contain',marginBottom:10}}/>
+<div style={{ display: "flex", justifyContent: "center" }}>
+  <img 
+    src={LOGO_SRC} 
+    alt="Auto Centro" 
+    style={{ height: 48, objectFit: "contain", marginBottom: 10 }}
+  />
+</div>
           <div style={{color:'rgba(255,255,255,.7)',fontSize:'.72rem',textTransform:'uppercase',letterSpacing:1.5,fontWeight:600}}>
             Sistema de Gestión
           </div>

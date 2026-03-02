@@ -10,7 +10,7 @@ import React, {
 
 import { createClient } from '@supabase/supabase-js';
 
-const LOGO_SRC = "/logo.png";
+const LOGO_SRC = "/src/assets/logo.png";
 
 
 // ============================================================

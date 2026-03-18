@@ -713,6 +713,143 @@ tbody td{padding:7px 13px;vertical-align:middle}
   thead th{padding:6px 6px;font-size:.6rem}
   tbody td{padding:4px 6px;font-size:.73rem}
 }
+
+/* ── TABS ── */
+.ac-tabs{display:flex;gap:0;background:var(--bd);padding:0 24px;border-bottom:3px solid var(--gold)}
+.ac-tab{padding:9px 20px;font-size:.78rem;font-weight:700;color:rgba(255,255,255,.6);
+  cursor:pointer;border:none;background:none;border-bottom:3px solid transparent;
+  margin-bottom:-3px;transition:.15s;letter-spacing:.3px;white-space:nowrap}
+.ac-tab:hover{color:rgba(255,255,255,.9)}
+.ac-tab.active{color:#fff;border-bottom-color:var(--gold);background:rgba(255,255,255,.08)}
+
+/* ── DECODIFICADOR ── */
+.dec-wrap{background:var(--g1);min-height:calc(100vh - 120px);padding:16px 24px 24px}
+.dec-card{background:#fff;border-radius:10px;border:1px solid var(--g2);
+  box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden}
+.dec-top{display:flex;align-items:center;gap:10px;padding:12px 16px;flex-wrap:wrap;
+  background:linear-gradient(135deg,var(--bd),var(--bm));border-bottom:2px solid var(--gold)}
+.dec-label{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.dec-tag{font-family:'Courier New',monospace;font-size:.65rem;color:var(--gold);
+  border:1px solid rgba(212,168,0,.5);padding:2px 7px;border-radius:3px;letter-spacing:.08em;white-space:nowrap}
+.dec-title{font-size:.82rem;font-weight:700;color:#fff;white-space:nowrap}
+.dec-title span{color:var(--gold)}
+.dec-search{display:flex;gap:7px;flex:1;min-width:200px}
+.dec-input{flex:1;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+  border-radius:6px;color:#fff;font-family:'Courier New',monospace;font-size:.82rem;
+  padding:7px 11px;letter-spacing:.05em;outline:none;transition:border-color .2s;min-width:0}
+.dec-input:focus{border-color:var(--gold);background:rgba(255,255,255,.18)}
+.dec-input::placeholder{color:rgba(255,255,255,.4);font-size:.72rem}
+.dec-btn{background:var(--gold);color:var(--bd);border:none;border-radius:6px;
+  font-family:'Courier New',monospace;font-size:.72rem;font-weight:700;padding:7px 13px;
+  cursor:pointer;letter-spacing:.05em;transition:opacity .2s;white-space:nowrap}
+.dec-btn:hover{opacity:.85}
+.dec-result{padding:10px 14px;display:none}
+.dec-result.visible{display:block}
+.dec-result-hdr{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.dec-code{font-family:'Courier New',monospace;font-size:1rem;font-weight:800;color:var(--bm)}
+.dec-two{display:grid;grid-template-columns:1.1fr 0.9fr;gap:10px;align-items:start;margin-top:2px}
+@media(max-width:580px){.dec-two{grid-template-columns:1fr}}
+.dec-grid{display:grid;grid-template-columns:1fr;gap:3px}
+.dec-row{display:flex;gap:8px;padding:4px 8px;background:var(--g1);border-radius:6px;align-items:flex-start;border:1px solid var(--g2)}
+.dec-key{font-family:'Courier New',monospace;font-size:.68rem;color:var(--g5);
+  letter-spacing:.06em;white-space:nowrap;min-width:72px;padding-top:2px}
+.dec-val{font-size:.82rem;color:var(--g9);font-weight:600;line-height:1.4}
+.dec-badge{display:inline-block;font-family:'Courier New',monospace;font-size:.68rem;
+  padding:1px 7px;border-radius:3px;letter-spacing:.05em;font-weight:700}
+.badge-oem{background:#E8F2FA;color:var(--bm);border:1px solid #90CAF9}
+.badge-after{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7}
+.badge-medida{background:#FFF8E1;color:#8B6000;border:1px solid #FFE082}
+.badge-ref{background:#F3E5F5;color:#6A1B9A;border:1px solid #CE93D8}
+.badge-unknown{background:#FFEBEE;color:var(--red);border:1px solid #FFCDD2}
+.hl-blue{color:var(--bm);font-weight:700}
+.hl-green{color:#2E7D32;font-weight:700}
+.hl-amber{color:#8B6000;font-weight:700}
+
+/* anatomy */
+.dec-anatomy{background:var(--bl);border:1px solid #B3D4F0;border-radius:8px;padding:12px 14px 14px}
+.dec-anat-title{font-size:.72rem;font-weight:700;color:var(--bd);letter-spacing:.04em;
+  margin-bottom:10px;text-align:center;text-transform:uppercase}
+.dec-anat-title span{color:var(--bm);font-family:'Courier New',monospace}
+.dec-seg-row{display:flex;align-items:flex-start;justify-content:center;gap:6px;flex-wrap:wrap}
+.dec-seg{display:flex;flex-direction:column;align-items:center;min-width:70px;flex:1;max-width:130px}
+.dec-seg-box{font-family:'Courier New',monospace;font-size:1.1rem;font-weight:800;
+  padding:8px 8px;border-radius:7px;border:2px solid transparent;width:100%;text-align:center}
+.seg-blue{color:var(--bm);background:#E8F2FA;border-color:#90CAF9}
+.seg-green{color:#2E7D32;background:#E8F5E9;border-color:#A5D6A7}
+.seg-amber{color:#8B6000;background:#FFF8E1;border-color:#FFE082}
+.seg-purple{color:#6A1B9A;background:#F3E5F5;border-color:#CE93D8}
+.dec-seg-line{width:1px;height:10px;background:var(--g3);margin-top:0}
+.dec-seg-label{font-size:.7rem;font-weight:700;text-align:center;line-height:1.3;padding:0 3px}
+.lbl-blue{color:var(--bm)}.lbl-green{color:#2E7D32}.lbl-amber{color:#8B6000}.lbl-purple{color:#6A1B9A}
+.dec-seg-sub-line{width:1px;height:7px;background:var(--g2);margin-top:3px}
+.dec-seg-sub{font-size:.62rem;color:var(--g5);text-align:center;margin-top:2px;line-height:1.3;padding:0 3px}
+.dec-sep{font-family:'Courier New',monospace;font-size:1.1rem;color:var(--g3);font-weight:700;
+  padding:0 2px;align-self:center;margin-top:3px;flex:0;min-width:auto}
+
+/* not found / suggest */
+.dec-notfound{font-size:.79rem;color:var(--red);margin-top:8px;padding:8px 12px;
+  background:#FFEBEE;border-radius:6px;border:1px solid #FFCDD2;display:none}
+.dec-notfound.visible{display:block}
+.dec-suggest{margin-top:7px;padding:9px 12px;background:var(--g1);border-radius:6px;border:1px solid var(--g2);display:none}
+.dec-suggest-title{font-family:'Courier New',monospace;font-size:.65rem;color:var(--g5);
+  letter-spacing:.08em;margin-bottom:6px}
+.dec-suggest-list{display:flex;flex-wrap:wrap;gap:5px}
+.dec-chip{background:#fff;border:1.5px solid #90CAF9;border-radius:4px;
+  font-family:'Courier New',monospace;font-size:.72rem;color:var(--bm);padding:3px 8px;
+  cursor:pointer;transition:border-color .15s,color .15s}
+.dec-chip:hover{border-color:var(--bm);background:var(--bl)}
+
+/* comparador */
+.dec-comp-toggle{display:flex;align-items:center;gap:5px;margin-top:7px;padding:5px 8px;
+  background:var(--g1);border:1px solid var(--g3);border-radius:6px;cursor:pointer;
+  font-family:'Courier New',monospace;font-size:.67rem;color:var(--g5);letter-spacing:.07em;
+  transition:border-color .15s,color .15s;width:100%;text-align:left}
+.dec-comp-toggle:hover{border-color:var(--bm);color:var(--bm)}
+.dec-comp-toggle .arr{transition:transform .2s}
+.dec-comp-toggle.open .arr{transform:rotate(90deg)}
+.dec-comparador{margin-top:6px;background:var(--bl);border:1px solid #B3D4F0;border-radius:7px;padding:10px 12px;display:none}
+.dec-comparador.visible{display:block}
+.dec-comp-inputs{display:grid;grid-template-columns:1fr auto 1fr;gap:7px;align-items:center;margin-bottom:8px}
+.dec-comp-vs{font-family:'Courier New',monospace;font-size:.72rem;color:var(--g5);text-align:center;font-weight:700}
+.dec-comp-input{background:#fff;border:1.5px solid var(--g3);border-radius:5px;color:var(--g9);
+  font-family:'Courier New',monospace;font-size:.79rem;padding:5px 9px;outline:none;
+  transition:border-color .2s;width:100%;box-sizing:border-box;letter-spacing:.04em}
+.dec-comp-input:focus{border-color:var(--bm);box-shadow:0 0 0 3px rgba(0,96,160,.1)}
+.dec-comp-btn{width:100%;margin-bottom:9px;background:var(--bm);border:none;border-radius:5px;
+  color:#fff;font-family:'Courier New',monospace;font-size:.72rem;font-weight:700;
+  padding:5px 10px;cursor:pointer;letter-spacing:.05em;transition:background .15s}
+.dec-comp-btn:hover{background:var(--bd)}
+.dec-comp-table{display:none}
+.dec-comp-table.visible{display:block}
+.dec-verdict{text-align:center;padding:5px 12px;border-radius:6px;
+  font-family:'Courier New',monospace;font-size:.72rem;font-weight:700;
+  letter-spacing:.05em;margin-bottom:7px}
+.vrd-ok{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7}
+.vrd-mir{background:var(--bl);color:var(--bm);border:1px solid #90CAF9}
+.vrd-sim{background:#FFF8E1;color:#8B6000;border:1px solid #FFE082}
+.vrd-diff{background:#FFEBEE;color:var(--red);border:1px solid #FFCDD2}
+.dec-cmp-row{display:grid;grid-template-columns:68px 1fr 1fr;gap:3px;margin-bottom:3px;align-items:start}
+.dec-cmp-lbl{font-family:'Courier New',monospace;font-size:.63rem;color:var(--g5);
+  letter-spacing:.07em;padding-top:3px}
+.dec-cmp-cell{font-size:.77rem;padding:3px 7px;border-radius:4px;line-height:1.35;border:1px solid transparent}
+.ccell-match{background:#E8F5E9;color:#2E7D32;border-color:#C8E6C9}
+.ccell-mir{background:var(--bl);color:var(--bm);border-color:#B3D4F0}
+.ccell-diff{background:#FFEBEE;color:var(--red);border-color:#FFCDD2}
+.ccell-na{background:var(--g1);color:var(--g5);font-style:italic}
+
+/* db toolbar */
+.dec-db-bar{display:flex;align-items:center;gap:8px;margin-top:8px;padding:8px 16px;
+  background:var(--g1);border-top:1px solid var(--g2);flex-wrap:wrap}
+.dec-db-label{font-family:'Courier New',monospace;font-size:.67rem;color:var(--g5);
+  letter-spacing:.07em;flex:1}
+.dec-db-label span{color:var(--bm);font-weight:700}
+.dec-db-btn{background:#fff;color:var(--bm);border:1.5px solid #90CAF9;border-radius:5px;
+  font-family:'Courier New',monospace;font-size:.7rem;font-weight:700;padding:4px 10px;
+  cursor:pointer;letter-spacing:.04em;transition:border-color .15s,background .15s;white-space:nowrap}
+.dec-db-btn:hover{border-color:var(--bm);background:var(--bl)}
+.dec-db-status{font-family:'Courier New',monospace;font-size:.67rem;color:var(--g5);
+  padding:0 16px 6px;min-height:14px;transition:color .3s}
+.dec-db-status.ok{color:#2E7D32}.dec-db-status.err{color:var(--red)}
 `;
 
 // ============================================================
@@ -1226,6 +1363,631 @@ const ModalHistory = ({ changelog, onClose }) => {
 };
 
 // ============================================================
+//  DECODIFICADOR — Carga BD desde Supabase "base_codigos"
+// ============================================================
+const COL_BASE_CODIGOS = 'base_codigos';
+
+// Segmento colors cycle
+const SEG_COLORS = ['blue','green','amber','purple'];
+
+const SYSTEM_PREFIX_MAP = {
+  '546':'Suspensión delantera','548':'Suspensión delantera','549':'Suspensión delantera',
+  '545':'Dirección','553':'Dirección','554':'Dirección','555':'Suspensión',
+  '565':'Suspensión trasera','568':'Amortiguador trasero','569':'Suspensión trasera',
+  '577':'Eje trasero','513':'Plataforma','517':'Ejes / Ruedas','527':'Semieje',
+  '581':'Frenos delanteros','583':'Frenos','584':'Frenos traseros','585':'Frenos delanteros',
+  '586':'Frenos','281':'Filtros','971':'Filtros A/C','263':'Motor','265':'Motor',
+  '178':'Filtros','871':'Filtros A/C','165':'Combustible','164':'Combustible',
+  '484':'Suspensión','485':'Amortiguador','486':'Resorte','480':'Bucha/Buje',
+  '488':'Barra estabilizadora','435':'Disco freno','424':'Disco trasero','442':'Cubo/Hub',
+  '450':'Pastillas','451':'Pastillas','044':'Pastillas',
+};
+
+const FMT_ORIGEN = {
+  hyundai_kia:'🇰🇷 Coreana', honda:'🇯🇵 Honda',
+  toyota_nissan:'🇯🇵 Japonesa', mazda:'🇯🇵 Mazda', mitsubishi:'🇯🇵 Mitsubishi',
+  suzuki:'🇯🇵 Suzuki', isuzu:'🇯🇵 Isuzu', ford:'🇺🇸 Ford',
+  gm:'🇺🇸 GM / Chevrolet', subaru:'🇯🇵 Subaru',
+  gates_medida:'📏 Medida (Correa)', aftermarket:'🔧 Aftermarket',
+  referencia:'📋 Catálogo', landrover:'🇬🇧 Británica',
+  china:'🇨🇳 China',
+};
+
+function detectFabFormat(fab) {
+  if (!fab) return 'aftermarket';
+  const f = fab.toLowerCase();
+  if (f.includes('hyundai') || f.includes('kia')) return 'hyundai_kia';
+  if (f.includes('honda'))     return 'honda';
+  if (f.includes('toyota') || f.includes('nissan') || f.includes('infiniti')) return 'toyota_nissan';
+  if (f.includes('mazda'))     return 'mazda';
+  if (f.includes('mitsubishi'))return 'mitsubishi';
+  if (f.includes('suzuki'))    return 'suzuki';
+  if (f.includes('isuzu'))     return 'isuzu';
+  if (f.includes('ford'))      return 'ford';
+  if (f.includes('gm') || f.includes('chevrolet')) return 'gm';
+  if (f.includes('subaru'))    return 'subaru';
+  if (f.includes('gates') || f.includes('dayco') || f.includes('bando')) return 'gates_medida';
+  if (f.includes('aftermarket') || f.includes('ntk') || f.includes('ngk') ||
+      f.includes('frame') || f.includes('wix') || f.includes('fram') ||
+      f.includes('moog') || f.includes('monroe') || f.includes('kyb') ||
+      f.includes('nsk') || f.includes('skf') || f.includes('autolite') ||
+      f.includes('bendix') || f.includes('dba') || f.includes('aip') ||
+      f.includes('acp') || f.includes('flp') || f.includes('olp') || f.includes('rs '))
+    return 'aftermarket';
+  if (f.includes('referencia'))  return 'referencia';
+  return 'aftermarket';
+}
+
+function getSegMeta(segIdx, totalSegs, familia, sistema, posicion, vehiculo, fab) {
+  const fmt = detectFabFormat(fab);
+  const fam = familia && familia !== '—' ? familia : null;
+  const sis = sistema && sistema !== '—' ? sistema : null;
+  const veh = vehiculo && vehiculo !== '—' ? vehiculo : null;
+
+  // 2-fragment codes
+  if (totalSegs === 2) {
+    if (segIdx === 0) return { label: fam || 'Marca / Familia', sub: fab || 'Prefijo' };
+    return { label: 'Número de parte', sub: 'Secuencial' };
+  }
+
+  // 3-fragment: Honda / Toyota style
+  const maps3 = {
+    honda:[
+      { label:'Tipo de pieza', sub: sis || 'Prefijo numérico' },
+      { label:'Plataforma', sub: veh || 'Código de modelo' },
+      { label:'Variante', sub: 'Revisión de diseño' },
+    ],
+    toyota_nissan:[
+      { label:'Sistema vehicular', sub: SYSTEM_PREFIX_MAP[segIdx===0?'485':''] || sis || 'Prefijo (3 dig.)' },
+      { label:'Plataforma / Chasis', sub: veh || 'Código modelo' },
+      { label:'Variante', sub: 'Revisión' },
+    ],
+    mazda:[
+      { label:'Marca', sub: 'Código marca Mazda' },
+      { label:'Categoría', sub: fam || sis },
+      { label:'Número/Variante', sub: veh || 'Detalle' },
+    ],
+    mitsubishi:[
+      { label:'Serie', sub: 'Prefijo Mitsubishi' },
+      { label:'Número de parte', sub: 'Secuencial interno' },
+      { label:'Variante', sub: 'Sufijo revisión' },
+    ],
+    aftermarket:[
+      { label: fam || 'Marca/Familia', sub: fab || 'Prefijo marca' },
+      { label: 'Tipo de parte', sub: sis || 'Referencia' },
+      { label: 'Número', sub: 'Secuencial' },
+    ],
+  };
+  const L3 = maps3[fmt] || maps3['aftermarket'];
+  if (totalSegs === 3) return L3[segIdx] || { label:'Segmento', sub:'' };
+
+  // 4-fragment default: Hyundai/Kia style
+  const maps4 = {
+    hyundai_kia:[
+      { label:'Sistema vehicular', sub: sis || (SYSTEM_PREFIX_MAP['583'] || 'Prefijo sistema') },
+      { label: fam ? 'Master / Cañerías freno' : 'Parte específica', sub: fam || 'Grupo de parte' },
+      { label:'Plataforma / Chasis', sub: veh || 'Código modelo' },
+      { label:'Versión / año rediseño', sub: 'Revisión de diseño' },
+    ],
+    honda:[
+      { label:'Tipo de pieza', sub:'Número identificador' },
+      { label:'Plataforma / Chasis', sub: veh || 'Código modelo' },
+      { label:'Variante / Revisión', sub:'Versión plataforma' },
+      { label:'Versión', sub:'Dígito de revisión' },
+    ],
+    toyota_nissan:[
+      { label:'Sistema vehicular', sub: sis || 'Prefijo sistema' },
+      { label:'Parte específica', sub:'Subtipo de pieza' },
+      { label:'Plataforma', sub: veh || 'Código modelo' },
+      { label:'Revisión', sub:'Versión/variante' },
+    ],
+    mazda:[
+      { label:'Marca', sub:'Prefijo Mazda' },
+      { label:'Categoría', sub: fam || sis },
+      { label:'Número de parte', sub:'Secuencial' },
+      { label:'Revisión', sub:'Sufijo' },
+    ],
+    mitsubishi:[
+      { label:'Prefijo', sub:'Código Mitsubishi' },
+      { label:'Número de parte', sub:'Secuencial' },
+      { label:'Variante', sub:'Detalle' },
+      { label:'Revisión', sub:'Sufijo' },
+    ],
+    suzuki:[
+      { label:'Sistema vehicular', sub: sis || 'Prefijo sistema' },
+      { label:'Parte específica', sub:'Código función' },
+      { label:'Modelo aplicación', sub: veh || 'Código vehículo' },
+      { label:'Versión', sub:'Revisión/variante' },
+    ],
+    isuzu:[
+      { label:'Prefijo marca', sub:'Código Isuzu' },
+      { label:'Número parte', sub:'Secuencial' },
+      { label:'Variante', sub:'Especificación' },
+      { label:'Revisión', sub:'Sufijo' },
+    ],
+    gm:[
+      { label:'Sistema vehicular', sub: sis || 'Prefijo GM' },
+      { label:'Número base', sub:'Secuencial' },
+      { label:'Variante', sub:'Código aplicación' },
+      { label:'Revisión', sub:'Sufijo' },
+    ],
+    gates_medida:[
+      { label: fam || 'Tipo / Canales', sub:'Prefijo correa' },
+      { label:'Longitud (mm)', sub:'Medida exterior' },
+      { label:'Variante', sub:'Sufijo especial' },
+      { label:'Revisión', sub:'Dígito de revisión' },
+    ],
+    ford:[
+      { label:'Plataforma Ford', sub:'Prefijo año/serie' },
+      { label:'Sistema', sub: sis || 'Código sistema' },
+      { label:'Número de parte', sub:'Secuencial' },
+      { label:'Revisión', sub:'Dígito de revisión' },
+    ],
+    landrover:[
+      { label:'Prefijo marca', sub:'LR = Land Rover / JLR' },
+      { label:'Categoría', sub: fam || sis },
+      { label:'Número de parte', sub:'Secuencial interno' },
+      { label:'Revisión', sub:'Sufijo de versión' },
+    ],
+    china:[
+      { label:'Sistema', sub: sis || 'Prefijo sistema (4 díg.)' },
+      { label:'Subsistema', sub: fam || 'Grupo funcional' },
+      { label:'Número de parte', sub:'Secuencial (4-6 dígitos)' },
+      { label:'Variante', sub: veh || 'Versión/aplicación' },
+    ],
+    aftermarket:[
+      { label: fam || 'Marca / Familia', sub: fab || 'Prefijo marca' },
+      { label: sis || 'Sistema', sub:'Clasificación' },
+      { label:'Número de parte', sub:'Secuencial' },
+      { label:'Variante', sub:'Sufijo' },
+    ],
+  };
+  const L4 = maps4[fmt] || maps4['hyundai_kia'];
+  return L4[segIdx] || { label:'Segmento', sub:'' };
+}
+
+const DEC_TYPE_LABELS = {
+  'OEM':         ['OEM',         'badge-oem'],
+  'Aftermarket': ['AFTERMARKET', 'badge-after'],
+  'Medida':      ['MEDIDA',      'badge-medida'],
+  'Referencia':  ['REFERENCIA',  'badge-ref'],
+  'Desconocido': ['DESCONOCIDO', 'badge-unknown'],
+};
+
+function DecodificadorTab() {
+  const toast = useToast();
+  const { isAdmin } = useAuth();
+  const [decDB,     setDecDB]     = useState({});
+  const [dbCount,   setDbCount]   = useState(0);
+  const [dbStatus,  setDbStatus]  = useState('');
+  const [dbStatusCls, setDbStatusCls] = useState('');
+  const [dbLoading, setDbLoading] = useState(true);
+
+  const [query,       setQuery]       = useState('');
+  const [result,      setResult]      = useState(null);   // { code, data: [...] }
+  const [notFound,    setNotFound]    = useState('');
+  const [suggests,    setSuggests]    = useState([]);
+  const [anatomy,     setAnatomy]     = useState(null);   // { code, parts[] }
+
+  const [compOpen,    setCompOpen]    = useState(false);
+  const [compB,       setCompB]       = useState('');
+  const [compResult,  setCompResult]  = useState(null);
+
+  // ── Load BD from Supabase ──────────────────────────────────
+  useEffect(() => {
+    (async () => {
+      setDbLoading(true);
+      setDbStatus('Cargando base de códigos…');
+      try {
+        const PAGE = 1000; let all = []; let from = 0;
+        while (true) {
+          const { data, error } = await supabase
+            .from(COL_BASE_CODIGOS)
+            .select('*')
+            .range(from, from + PAGE - 1);
+          if (error) throw new Error(error.message);
+          if (!data || data.length === 0) break;
+          all = all.concat(data);
+          if (data.length < PAGE) break;
+          from += PAGE;
+        }
+        // Build dict: { CODIGO: [tipo, fab, veh, familia, sistema, posicion, f1,f2,f3,f4] }
+        const db = {};
+        all.forEach(row => {
+          const c = String(row.codigo || '').trim().toUpperCase().replace(/\s/g,'');
+          if (!c) return;
+          db[c] = [
+            row.tipo       || 'Desconocido',
+            row.fabricante || '—',
+            row.vehiculo   || '—',
+            row.familia    || '—',
+            row.sistema    || '—',
+            row.posicion   || '—',
+            String(row.frag_1 || '—'),
+            String(row.frag_2 || '—'),
+            String(row.frag_3 || '—'),
+            String(row.frag_4 || '—'),
+          ];
+        });
+        setDecDB(db);
+        setDbCount(Object.keys(db).length);
+        setDbStatus(`✓ ${Object.keys(db).length.toLocaleString()} códigos activos`);
+        setDbStatusCls('ok');
+      } catch (e) {
+        setDbStatus('✗ Error: ' + e.message);
+        setDbStatusCls('err');
+        toast('Error cargando BD del Decodificador: ' + e.message, 'error');
+      } finally {
+        setDbLoading(false);
+      }
+    })();
+  }, []); // eslint-disable-line
+
+  // ── Upload XLSX to Supabase ─────────────────────────────────
+  const handleUploadBD = async (file) => {
+    if (!file) return;
+    setDbStatus('Leyendo archivo…'); setDbStatusCls('');
+    try {
+      const xlsxLib = await loadXLSX();
+      const buf  = await file.arrayBuffer();
+      const wb   = xlsxLib.read(buf, { type:'array' });
+      const sheetName = wb.SheetNames.find(n => n.toUpperCase().startsWith('BASE')) || wb.SheetNames[0];
+      const ws   = wb.Sheets[sheetName];
+      const rows = xlsxLib.utils.sheet_to_json(ws, { defval:'' });
+
+      let ok = 0, skip = 0;
+      const upsertRows = [];
+      for (const row of rows) {
+        const code = (row['CODIGO'] || '').toString().trim().toUpperCase().replace(/\s/g,'');
+        if (!code) { skip++; continue; }
+        upsertRows.push({
+          codigo:     code,
+          tipo:       row['TIPO']       || 'Desconocido',
+          fabricante: row['FABRICANTE'] || '—',
+          vehiculo:   row['VEHICULO']   || '—',
+          familia:    row['FAMILIA']    || '—',
+          sistema:    row['SISTEMA']    || '—',
+          posicion:   row['POSICION']   || '—',
+          frag_1:     String(row['FRAG_1'] || '') || '—',
+          frag_2:     String(row['FRAG_2'] || '') || '—',
+          frag_3:     String(row['FRAG_3'] || '') || '—',
+          frag_4:     String(row['FRAG_4'] || '') || '—',
+        });
+        ok++;
+      }
+      // Upsert in batches of 500
+      const BATCH = 500;
+      for (let i = 0; i < upsertRows.length; i += BATCH) {
+        const { error } = await supabase
+          .from(COL_BASE_CODIGOS)
+          .upsert(upsertRows.slice(i, i + BATCH), { onConflict:'codigo' });
+        if (error) throw new Error(error.message);
+        setDbStatus(`Subiendo… ${Math.min(i+BATCH, ok)}/${ok}`);
+      }
+      // Reload local DB
+      const db = {};
+      upsertRows.forEach(r => { db[r.codigo] = [r.tipo,r.fabricante,r.vehiculo,r.familia,r.sistema,r.posicion,r.frag_1,r.frag_2,r.frag_3,r.frag_4]; });
+      setDecDB(db);
+      setDbCount(ok);
+      setDbStatus(`✓ BD cargada — ${ok} códigos desde "${file.name}"${skip?`, ${skip} omitidas`:''}`);
+      setDbStatusCls('ok');
+      toast(`✅ ${ok} códigos del Decodificador cargados en Supabase.`, 'success');
+    } catch (e) {
+      setDbStatus('✗ Error: ' + e.message); setDbStatusCls('err');
+      toast('Error cargando BD Decodificador: ' + e.message, 'error');
+    }
+  };
+
+  // ── Download BD as XLSX ─────────────────────────────────────
+  const handleDownloadBD = async () => {
+    try {
+      const xlsxLib = await loadXLSX();
+      const COLS = ['CODIGO','TIPO','FABRICANTE','VEHICULO','FAMILIA','SISTEMA','POSICION','FRAG_1','FRAG_2','FRAG_3','FRAG_4'];
+      const data = [COLS];
+      for (const [code, r] of Object.entries(decDB)) {
+        data.push([code, r[0],r[1],r[2],r[3],r[4],r[5],
+          r[6]==='—'?'':r[6], r[7]==='—'?'':r[7], r[8]==='—'?'':r[8], r[9]==='—'?'':r[9]]);
+      }
+      const ws = xlsxLib.utils.aoa_to_sheet(data);
+      ws['!cols'] = [26,12,34,38,38,26,22,10,10,10,10].map(w=>({wch:w}));
+      const wb = xlsxLib.utils.book_new();
+      xlsxLib.utils.book_append_sheet(wb, ws, 'BASE_CODIGOS');
+      xlsxLib.writeFile(wb, 'base_codigos_decodificador.xlsx');
+      toast(`📥 ${data.length-1} códigos exportados.`, 'success');
+    } catch (e) {
+      toast('Error al exportar: ' + e.message, 'error');
+    }
+  };
+
+  // ── Build anatomy parts ─────────────────────────────────────
+  const buildAnatomyParts = (code, frags, familia, sistema, posicion, vehiculo, fab) => {
+    const realFrags = frags.filter(f => f && f !== '—');
+    const useFrags = realFrags.length > 0 ? realFrags : [code];
+    const parts = [];
+    let remaining = code, fragIdx = 0, segColorIdx = 0;
+    while (fragIdx < useFrags.length) {
+      const frag = useFrags[fragIdx];
+      const pos  = remaining.indexOf(frag);
+      if (pos < 0) { fragIdx++; continue; }
+      const dashPos = remaining.indexOf('-');
+      if (dashPos >= 0 && dashPos < pos) {
+        if (parts.length > 0 && !parts[parts.length-1].sep) parts.push({ sep:true });
+        remaining = remaining.substring(dashPos + 1);
+        continue;
+      }
+      parts.push({ text: frag, idx: segColorIdx });
+      segColorIdx++;
+      remaining = remaining.substring(pos + frag.length);
+      fragIdx++;
+    }
+    const totalSegs = parts.filter(p => !p.sep).length;
+    return parts.map(p => {
+      if (p.sep) return { sep: true };
+      const color = SEG_COLORS[p.idx % SEG_COLORS.length];
+      const meta  = getSegMeta(p.idx, totalSegs, familia, sistema, posicion, vehiculo, fab);
+      return { text: p.text, color, meta };
+    });
+  };
+
+  // ── Decode ──────────────────────────────────────────────────
+  const decode = (rawCode) => {
+    const raw = (rawCode || query).trim().toUpperCase().replace(/\s/g,'');
+    setResult(null); setNotFound(''); setSuggests([]); setCompOpen(false); setCompResult(null);
+    if (!raw) return;
+
+    if (decDB[raw]) {
+      showResultData(raw, decDB[raw]);
+      return;
+    }
+    const keys = Object.keys(decDB);
+    const matches = keys.filter(k => k.startsWith(raw) || k.includes(raw)).slice(0, 12);
+    if (matches.length === 1) { showResultData(matches[0], decDB[matches[0]]); setQuery(matches[0]); return; }
+    if (matches.length > 1) { setNotFound('Código exacto no encontrado. Resultados similares:'); setSuggests(matches); }
+    else setNotFound(`No se encontró el código "${raw}" en la base de datos.`);
+  };
+
+  const showResultData = (code, r) => {
+    const [tipo, fab, vehiculo, familia, sistema, posicion, f1, f2, f3, f4] = r;
+    setResult({ code, tipo, fab, vehiculo, familia, sistema, posicion, frags:[f1,f2,f3,f4].filter(f=>f&&f!=='—') });
+    const origCode = detectFabFormat(fab);
+    const origen   = FMT_ORIGEN[origCode] || '';
+    const parts = buildAnatomyParts(code, [f1,f2,f3,f4], familia, sistema, posicion, vehiculo, fab);
+    setAnatomy({ code, origen, parts });
+    setCompB('');
+  };
+
+  // ── Compare ─────────────────────────────────────────────────
+  const compare = () => {
+    const cA = result?.code;
+    const cB = compB.trim().toUpperCase().replace(/\s/g,'');
+    if (!cA || !cB) { setCompResult({ error: 'Ingresa ambos códigos' }); return; }
+    const rA = decDB[cA];
+    const rB = decDB[cB];
+    if (!rA && !rB) { setCompResult({ error: 'Ninguno de los dos códigos está en la BD' }); return; }
+
+    const CAMPOS = [['TIPO',0],['FABRICANTE',1],['FAMILIA',3],['SISTEMA',4],['VEHÍCULO',2],['POSICIÓN',5]];
+    const posA = rA ? rA[5] : '—';
+    const posB = rB ? rB[5] : '—';
+    const mirrorPairs = [
+      ['Izquierdo','Derecho'],['Derecho','Izquierdo'],
+      ['Izquierdo','Derecho (algunos sistemas)'],['Derecho (algunos sistemas)','Izquierdo'],
+      ['Derecho','Derecho (algunos sistemas)'],['Derecho (algunos sistemas)','Derecho'],
+    ];
+    const isMirror = rA && rB && mirrorPairs.some(([a,b]) => posA===a && posB===b);
+    let matches = 0, total = 0;
+    if (rA && rB) {
+      CAMPOS.forEach(([,i]) => { if (i===5) return; total++; if (rA[i]===rB[i]) matches++; });
+    }
+    const score = rA && rB ? matches/total : 0;
+    let vrdCls, vrdTxt;
+    if (!rA || !rB)       { vrdCls='vrd-diff'; vrdTxt='⚠ UN CÓDIGO NO ESTÁ EN LA BASE'; }
+    else if (cA===cB)     { vrdCls='vrd-ok';   vrdTxt='✓ MISMO CÓDIGO'; }
+    else if (isMirror && score>=0.8) { vrdCls='vrd-mir'; vrdTxt='⇄ ESPEJO — Lado contrario del mismo conjunto'; }
+    else if (score===1)   { vrdCls='vrd-ok';   vrdTxt='✓ INTERCAMBIABLES — Misma familia y sistema'; }
+    else if (score>=0.6)  { vrdCls='vrd-sim';  vrdTxt='~ SIMILARES — Verificar aplicación'; }
+    else                  { vrdCls='vrd-diff'; vrdTxt='✗ DIFERENTE — Familia o sistema distinto'; }
+
+    const rows = CAMPOS.map(([label, idx]) => {
+      const vA = rA ? (rA[idx]||'—') : '—';
+      const vB = rB ? (rB[idx]||'—') : '—';
+      const match = vA===vB;
+      const isPos = idx===5;
+      let clsA = match ? 'ccell-match' : (isPos&&isMirror ? 'ccell-mir' : 'ccell-diff');
+      let clsB = clsA;
+      if (!rA) clsA='ccell-na'; if (!rB) clsB='ccell-na';
+      return { label, vA, vB, clsA, clsB };
+    });
+    setCompResult({ vrdCls, vrdTxt, codeA:cA, codeB:cB, rows });
+  };
+
+  const fileRef = useRef(null);
+  const posColor = p => p==='Izquierdo'?'hl-green': p.includes('Derecho')?'hl-amber':p==='—'?'':'hl-blue';
+
+  return (
+    <div className="dec-wrap">
+      <div className="dec-card">
+        {/* ── Search bar ── */}
+        <div className="dec-top">
+          <div className="dec-label">
+            <span className="dec-tag">BASE v2025</span>
+            <span className="dec-title">Decodificador de <span>Códigos</span></span>
+          </div>
+          <div className="dec-search">
+            <input className="dec-input" type="text" value={query}
+              placeholder="Ej: 54650-H9150, OLP-006, 6PK1228…"
+              maxLength={30}
+              onChange={e => setQuery(e.target.value.toUpperCase())}
+              onKeyDown={e => e.key==='Enter' && decode()}
+            />
+            <button className="dec-btn" onClick={() => decode()}>BUSCAR</button>
+          </div>
+        </div>
+
+        {/* ── Loading state ── */}
+        {dbLoading && (
+          <div className="loading" style={{padding:'20px',background:'var(--bl)',borderRadius:0}}>
+            <span className="spin"/>Cargando base de códigos desde Supabase…
+          </div>
+        )}
+
+        {/* ── Not found ── */}
+        {notFound && (
+          <div className="dec-notfound visible" style={{margin:'8px 14px 0'}}>
+            {notFound}
+          </div>
+        )}
+
+        {/* ── Suggestions ── */}
+        {suggests.length > 0 && (
+          <div className="dec-suggest" style={{display:'block', margin:'6px 14px 0'}}>
+            <div className="dec-suggest-title">SIMILARES ENCONTRADOS</div>
+            <div className="dec-suggest-list">
+              {suggests.map(k => (
+                <span key={k} className="dec-chip" onClick={() => { setQuery(k); decode(k); setSuggests([]); setNotFound(''); }}>
+                  {k}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Result ── */}
+        {result && (
+          <div className="dec-result visible">
+            <div className="dec-result-hdr">
+              <span className="dec-code">{result.code}</span>
+            </div>
+            <div className="dec-two">
+              {/* Left: anatomy */}
+              <div>
+                {anatomy && anatomy.parts.length > 0 && (
+                  <div className="dec-anatomy">
+                    <div className="dec-anat-title">
+                      ANATOMÍA DEL CÓDIGO &nbsp;—&nbsp; <span>{anatomy.code}</span>
+                      {anatomy.origen && <span style={{fontSize:'.62rem',opacity:.6,marginLeft:8,fontFamily:'inherit'}}>{anatomy.origen}</span>}
+                    </div>
+                    <div className="dec-seg-row">
+                      {anatomy.parts.map((p, i) => p.sep ? (
+                        <div key={i} className="dec-sep">-</div>
+                      ) : (
+                        <div key={i} className="dec-seg">
+                          <div className={`dec-seg-box seg-${p.color}`}>{p.text}</div>
+                          <div className="dec-seg-line"/>
+                          <div className={`dec-seg-label lbl-${p.color}`}
+                            dangerouslySetInnerHTML={{__html: p.meta.label.replace(/\n/g,'<br/>')}}/>
+                          <div className="dec-seg-sub-line"/>
+                          <div className="dec-seg-sub">{p.meta.sub}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Right: details + comparador */}
+              <div>
+                <div className="dec-grid">
+                  {[
+                    ['TIPO',      <span className={`dec-badge ${DEC_TYPE_LABELS[result.tipo]?.[1]||'badge-unknown'}`}>{DEC_TYPE_LABELS[result.tipo]?.[0]||result.tipo}</span>],
+                    ['FABRICANTE', result.fab],
+                    ['FAMILIA',   <span className="hl-blue">{result.familia}</span>],
+                    ['SISTEMA',   result.sistema],
+                    ['VEHÍCULO',  result.vehiculo==='—'
+                      ? <span style={{color:'var(--g5)',fontStyle:'italic'}}>Universal / Verificar</span>
+                      : result.vehiculo],
+                    ['POSICIÓN',  result.posicion==='—'
+                      ? <span style={{color:'var(--g5)'}}>—</span>
+                      : <span className={posColor(result.posicion)}>{result.posicion}</span>],
+                    ...(result.frags.length>0 ? [['FRAGMENTOS',
+                      <span>{result.frags.map(f=>(
+                        <span key={f} style={{display:'inline-block',background:'var(--bl)',border:'1px solid #90CAF9',
+                          borderRadius:3,padding:'1px 6px',fontFamily:'Courier New,monospace',fontSize:'.72rem',marginRight:3,color:'var(--bm)'}}>
+                          {f}
+                        </span>
+                      ))}</span>
+                    ]] : []),
+                  ].map(([k,v]) => (
+                    <div key={k} className="dec-row">
+                      <div className="dec-key">{k}</div>
+                      <div className="dec-val">{v}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Comparador toggle */}
+                <button
+                  className={`dec-comp-toggle${compOpen?' open':''}`}
+                  onClick={() => { setCompOpen(o=>!o); if (!compOpen) setTimeout(()=>document.getElementById('dec-comp-b')?.focus(),50); }}
+                >
+                  <span className="arr">▶</span> COMPARAR CON OTRO CÓDIGO
+                </button>
+
+                {compOpen && (
+                  <div className="dec-comparador visible">
+                    <div className="dec-comp-inputs">
+                      <input className="dec-comp-input" value={result.code} readOnly style={{color:'var(--bm)',fontWeight:700}}/>
+                      <div className="dec-comp-vs">VS</div>
+                      <input id="dec-comp-b" className="dec-comp-input" type="text"
+                        value={compB} placeholder="Código B…" maxLength={30}
+                        onChange={e => setCompB(e.target.value.toUpperCase())}
+                        onKeyDown={e => e.key==='Enter' && compare()}
+                      />
+                    </div>
+                    <button className="dec-comp-btn" onClick={compare}>⇄ COMPARAR</button>
+
+                    {compResult && (
+                      <div className="dec-comp-table visible">
+                        {compResult.error
+                          ? <div style={{fontSize:'.78rem',color:'var(--red)',textAlign:'center'}}>{compResult.error}</div>
+                          : <>
+                            <div className={`dec-verdict ${compResult.vrdCls}`}>{compResult.vrdTxt}</div>
+                            <div className="dec-cmp-row" style={{marginBottom:4}}>
+                              <div className="dec-cmp-lbl"/>
+                              <div style={{fontFamily:'Courier New,monospace',fontSize:'.65rem',color:'var(--g5)',padding:'0 7px'}}>{compResult.codeA}</div>
+                              <div style={{fontFamily:'Courier New,monospace',fontSize:'.65rem',color:'var(--g5)',padding:'0 7px'}}>{compResult.codeB}</div>
+                            </div>
+                            {compResult.rows.map(({label,vA,vB,clsA,clsB}) => (
+                              <div key={label} className="dec-cmp-row">
+                                <div className="dec-cmp-lbl">{label}</div>
+                                <div className={`dec-cmp-cell ${clsA}`}>{vA}</div>
+                                <div className={`dec-cmp-cell ${clsB}`}>{vB}</div>
+                              </div>
+                            ))}
+                          </>
+                        }
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── DB toolbar ── */}
+        <div className="dec-db-bar">
+          <div className="dec-db-label">
+            BASE: <span id="dec-db-count">{dbCount.toLocaleString()}</span> códigos activos
+          </div>
+          {isAdmin && (
+            <>
+              <button className="dec-db-btn" onClick={() => fileRef.current?.click()}>
+                ⬆ CARGAR BD (.xlsx)
+              </button>
+              <input ref={fileRef} type="file" accept=".xlsx,.xls" style={{display:'none'}}
+                onChange={e => { if(e.target.files[0]) handleUploadBD(e.target.files[0]); e.target.value=''; }}
+              />
+            </>
+          )}
+          <button className="dec-db-btn" onClick={handleDownloadBD}>⬇ DESCARGAR BD (.xlsx)</button>
+        </div>
+        <div className={`dec-db-status${dbStatusCls?' '+dbStatusCls:''}`}>{dbStatus}</div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 //  APP PRINCIPAL  (interna — sin exports)
 // ============================================================
 function CatalogoApp() {
@@ -1237,6 +1999,7 @@ function CatalogoApp() {
   const [records,   setRecords]   = useState([]);
   const [changelog, setChangelog] = useState([]);
   const [loadProgress, setLoadProgress] = useState({ active:false, pct:0, msg:'', indeterminate:true });
+  const [activeTab, setActiveTab] = useState('catalogo');
 
   const [fMarca,  setFMarca]  = useState('');
   const [fModelo, setFModelo] = useState('');
@@ -1600,6 +2363,22 @@ function CatalogoApp() {
         </div>
       </div>
 
+      {/* TABS */}
+      <div className="ac-tabs">
+        <button className={`ac-tab${activeTab==='catalogo'?' active':''}`} onClick={()=>setActiveTab('catalogo')}>
+          📋 Catálogo
+        </button>
+        <button className={`ac-tab${activeTab==='decodificador'?' active':''}`} onClick={()=>setActiveTab('decodificador')}>
+          🔍 Decodificador
+        </button>
+      </div>
+
+      {/* ── DECODIFICADOR TAB ── */}
+      {activeTab==='decodificador' && <DecodificadorTab/>}
+
+      {/* ── CATÁLOGO TAB ── */}
+      {activeTab==='catalogo' && <>
+
       {/* FILTROS */}
       <div className="ac-sp">
         <div className="ac-fg">
@@ -1793,6 +2572,7 @@ function CatalogoApp() {
       {showCols    && <ModalCols    visibleCols={visibleCols} colOrder={colOrder} onChange={(i,s)=>setVisibleCols(v=>v.map((c,ci)=>ci===i?{...c,show:s}:c))} onReorder={setColOrder} onClose={()=>setShowCols(false)}/>}
       {showHistory && <ModalHistory changelog={changelog} onClose={()=>setShowHistory(false)}/>}
       {showReplace && <ModalReplace cols={COL_DEFS} onReplace={handleBulkReplace} onClose={()=>setShowReplace(false)}/>}
+    </>}
     </>
     </ListasCtx.Provider>
   );

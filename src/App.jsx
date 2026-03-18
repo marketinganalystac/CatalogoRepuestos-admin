@@ -714,16 +714,14 @@ tbody td{padding:7px 13px;vertical-align:middle}
   tbody td{padding:4px 6px;font-size:.73rem}
 }
 
-/* ── TABS ── */
-.ac-tabs{display:flex;gap:0;background:var(--bd);padding:0 24px;border-bottom:3px solid var(--gold)}
-.ac-tab{padding:9px 20px;font-size:.78rem;font-weight:700;color:rgba(255,255,255,.6);
-  cursor:pointer;border:none;background:none;border-bottom:3px solid transparent;
-  margin-bottom:-3px;transition:.15s;letter-spacing:.3px;white-space:nowrap}
-.ac-tab:hover{color:rgba(255,255,255,.9)}
-.ac-tab.active{color:#fff;border-bottom-color:var(--gold);background:rgba(255,255,255,.08)}
-
 /* ── DECODIFICADOR ── */
-.dec-wrap{background:var(--g1);min-height:calc(100vh - 120px);padding:16px 24px 24px}
+.dec-wrap{background:var(--g1);padding:0 0 24px}
+.dec-section-title{background:linear-gradient(135deg,var(--bd),var(--bm));
+  padding:10px 24px;border-top:3px solid var(--gold);
+  display:flex;align-items:center;gap:10px}
+.dec-section-label{font-size:.8rem;font-weight:700;color:#fff;letter-spacing:.3px}
+.dec-section-sub{font-size:.67rem;color:rgba(255,255,255,.6)}
+.dec-inner{padding:12px 24px 0}
 .dec-card{background:#fff;border-radius:10px;border:1px solid var(--g2);
   box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:hidden}
 .dec-top{display:flex;align-items:center;gap:10px;padding:12px 16px;flex-wrap:wrap;
@@ -1635,23 +1633,27 @@ function DecodificadorTab() {
       const ws   = wb.Sheets[sheetName];
       const rows = xlsxLib.utils.sheet_to_json(ws, { defval:'' });
 
+      // Helper: read a field accepting both UPPER and lower case headers
+      const g = (row, key) => row[key] ?? row[key.toUpperCase()] ?? row[key.toLowerCase()] ?? '';
+
       let ok = 0, skip = 0;
       const upsertRows = [];
       for (const row of rows) {
-        const code = (row['CODIGO'] || '').toString().trim().toUpperCase().replace(/\s/g,'');
+        const raw = String(g(row,'codigo') || g(row,'CODIGO') || '');
+        const code = raw.trim().toUpperCase().replace(/\s/g,'');
         if (!code) { skip++; continue; }
         upsertRows.push({
           codigo:     code,
-          tipo:       row['TIPO']       || 'Desconocido',
-          fabricante: row['FABRICANTE'] || '—',
-          vehiculo:   row['VEHICULO']   || '—',
-          familia:    row['FAMILIA']    || '—',
-          sistema:    row['SISTEMA']    || '—',
-          posicion:   row['POSICION']   || '—',
-          frag_1:     String(row['FRAG_1'] || '') || '—',
-          frag_2:     String(row['FRAG_2'] || '') || '—',
-          frag_3:     String(row['FRAG_3'] || '') || '—',
-          frag_4:     String(row['FRAG_4'] || '') || '—',
+          tipo:       g(row,'tipo')       || g(row,'TIPO')       || 'Desconocido',
+          fabricante: g(row,'fabricante') || g(row,'FABRICANTE') || '—',
+          vehiculo:   g(row,'vehiculo')   || g(row,'VEHICULO')   || '—',
+          familia:    g(row,'familia')    || g(row,'FAMILIA')    || '—',
+          sistema:    g(row,'sistema')    || g(row,'SISTEMA')    || '—',
+          posicion:   g(row,'posicion')   || g(row,'POSICION')   || '—',
+          frag_1:     String(g(row,'frag_1') || g(row,'FRAG_1') || '') || '—',
+          frag_2:     String(g(row,'frag_2') || g(row,'FRAG_2') || '') || '—',
+          frag_3:     String(g(row,'frag_3') || g(row,'FRAG_3') || '') || '—',
+          frag_4:     String(g(row,'frag_4') || g(row,'FRAG_4') || '') || '—',
         });
         ok++;
       }
@@ -1678,11 +1680,12 @@ function DecodificadorTab() {
     }
   };
 
-  // ── Download BD as XLSX ─────────────────────────────────────
+  // ── Download BD as XLSX — headers en minúsculas para compatibilidad con Supabase ──
   const handleDownloadBD = async () => {
     try {
       const xlsxLib = await loadXLSX();
-      const COLS = ['CODIGO','TIPO','FABRICANTE','VEHICULO','FAMILIA','SISTEMA','POSICION','FRAG_1','FRAG_2','FRAG_3','FRAG_4'];
+      // Lowercase headers match Supabase column names exactly
+      const COLS = ['codigo','tipo','fabricante','vehiculo','familia','sistema','posicion','frag_1','frag_2','frag_3','frag_4'];
       const data = [COLS];
       for (const [code, r] of Object.entries(decDB)) {
         data.push([code, r[0],r[1],r[2],r[3],r[4],r[5],
@@ -1805,11 +1808,26 @@ function DecodificadorTab() {
 
   return (
     <div className="dec-wrap">
+      {/* Section header */}
+      <div className="dec-section-title">
+        <span style={{fontSize:'1.1rem'}}>🔍</span>
+        <div>
+          <div className="dec-section-label">Decodificador de Códigos</div>
+          <div className="dec-section-sub">Identifica fabricante, sistema, vehículo y posición por código de parte</div>
+        </div>
+        <span style={{marginLeft:'auto',fontFamily:'Courier New,monospace',fontSize:'.65rem',
+          color:'rgba(255,255,255,.5)',background:'rgba(255,255,255,.08)',padding:'2px 8px',
+          borderRadius:4,border:'1px solid rgba(255,255,255,.15)'}}>
+          BASE v2025 · {dbCount.toLocaleString()} códigos
+        </span>
+      </div>
+
+      <div className="dec-inner">
       <div className="dec-card">
         {/* ── Search bar ── */}
         <div className="dec-top">
           <div className="dec-label">
-            <span className="dec-tag">BASE v2025</span>
+            <span className="dec-tag">BÚSQUEDA</span>
             <span className="dec-title">Decodificador de <span>Códigos</span></span>
           </div>
           <div className="dec-search">
@@ -1983,6 +2001,7 @@ function DecodificadorTab() {
         </div>
         <div className={`dec-db-status${dbStatusCls?' '+dbStatusCls:''}`}>{dbStatus}</div>
       </div>
+      </div>{/* /dec-inner */}
     </div>
   );
 }
@@ -1999,7 +2018,6 @@ function CatalogoApp() {
   const [records,   setRecords]   = useState([]);
   const [changelog, setChangelog] = useState([]);
   const [loadProgress, setLoadProgress] = useState({ active:false, pct:0, msg:'', indeterminate:true });
-  const [activeTab, setActiveTab] = useState('catalogo');
 
   const [fMarca,  setFMarca]  = useState('');
   const [fModelo, setFModelo] = useState('');
@@ -2363,22 +2381,6 @@ function CatalogoApp() {
         </div>
       </div>
 
-      {/* TABS */}
-      <div className="ac-tabs">
-        <button className={`ac-tab${activeTab==='catalogo'?' active':''}`} onClick={()=>setActiveTab('catalogo')}>
-          📋 Catálogo
-        </button>
-        <button className={`ac-tab${activeTab==='decodificador'?' active':''}`} onClick={()=>setActiveTab('decodificador')}>
-          🔍 Decodificador
-        </button>
-      </div>
-
-      {/* ── DECODIFICADOR TAB ── */}
-      {activeTab==='decodificador' && <DecodificadorTab/>}
-
-      {/* ── CATÁLOGO TAB ── */}
-      {activeTab==='catalogo' && <>
-
       {/* FILTROS */}
       <div className="ac-sp">
         <div className="ac-fg">
@@ -2572,7 +2574,9 @@ function CatalogoApp() {
       {showCols    && <ModalCols    visibleCols={visibleCols} colOrder={colOrder} onChange={(i,s)=>setVisibleCols(v=>v.map((c,ci)=>ci===i?{...c,show:s}:c))} onReorder={setColOrder} onClose={()=>setShowCols(false)}/>}
       {showHistory && <ModalHistory changelog={changelog} onClose={()=>setShowHistory(false)}/>}
       {showReplace && <ModalReplace cols={COL_DEFS} onReplace={handleBulkReplace} onClose={()=>setShowReplace(false)}/>}
-    </>}
+
+      {/* ── DECODIFICADOR — al final de la página principal ── */}
+      <DecodificadorTab/>
     </>
     </ListasCtx.Provider>
   );

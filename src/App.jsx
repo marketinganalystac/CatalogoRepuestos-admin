@@ -2318,7 +2318,6 @@ function CatalogoApp() {
   const activeCols = colOrder
     .map(k => visibleCols.find(c => c.key === k))
     .filter(c => c && c.show);
-  const [showReplace, setShowReplace] = useState(false);
   const [dragCol, setDragCol] = useState(null);
   const fbDotColor = {connecting:'#D4A800',ok:'#4CAF50',error:'#C62828'}[fbStatus]||'#D4A800';
 

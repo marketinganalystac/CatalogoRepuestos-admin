@@ -1830,32 +1830,7 @@ function DecodificadorTab({ selectedCode = null }) {
   return (
     <div className="dec-wrap" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:1000,maxHeight:expanded?'60vh':'40px',overflow:'hidden',background:'var(--dark)',transition:'maxHeight 0.3s ease'}}>
       {/* Section header */}
-      <div className="dec-section-title">
-        <div style={{display:'flex',alignItems:'center',gap:6}}>
-          <span style={{fontSize:'1rem'}}>🔍</span>
-          <div>
-            <div className="dec-section-label">Decodificador de Códigos</div>
-            <div className="dec-section-sub">{dbCount.toLocaleString()} códigos</div>
-          </div>
-        </div>
-        
-        {/* DB Toolbar compacto en header */}
-        <div style={{display:'flex',alignItems:'center',gap:6,marginRight:8}}>
-          {isAdmin && (
-            <button className="dec-db-btn" style={{padding:'2px 6px',fontSize:'.58rem'}} onClick={() => fileRef.current?.click()}>
-              ⬆ Cargar
-            </button>
-          )}
-          <button className="dec-db-btn" style={{padding:'2px 6px',fontSize:'.58rem'}} onClick={handleDownloadBD}>⬇ Descargar</button>
-          <input ref={fileRef} type="file" accept=".xlsx,.xls" style={{display:'none'}}
-            onChange={e => { if(e.target.files[0]) handleUploadBD(e.target.files[0]); e.target.value=''; }}
-          />
-        </div>
-        
-        {/* Botón expandir/colapsar */}
-        <button onClick={() => setExpanded(!expanded)} style={{background:'none',border:'none',color:'#fff',cursor:'pointer',fontSize:'1rem',padding:'0 4px',display:'flex',alignItems:'center'}}>
-          {expanded ? '▼' : '▶'}
-        </button>
+      <div className="dec-section-title" style={{display:'none'}}>
       </div>
 
       <div className="dec-inner">
@@ -2180,13 +2155,13 @@ function CatalogoApp() {
     return r;
   },[records,fMarca,fModelo,fPeriodo,fClasi,fSub,debText,sortCol,sortAsc]);
 
-  // ── Auto-activar decodificador al buscar en la tabla ──
+  // ── Auto-activar decodificador al buscar en la tabla o usar filtros ──
   useEffect(() => {
-    if (filtered.length > 0 && debText) {
+    if (filtered.length > 0) {
       const firstCode = filtered[0].fields[5];
       if (firstCode) setSelectedCode(firstCode);
     }
-  }, [debText, filtered]);
+  }, [debText, filtered, fMarca, fModelo, fPeriodo, fClasi, fSub]);
 
   const totalPages = Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
   const paginated  = filtered.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
@@ -2353,10 +2328,6 @@ function CatalogoApp() {
           {/* LOGO */}
           <img src={LOGO_SRC} alt='Auto Centro' style={{height:42,objectFit:'contain',flexShrink:0}}/>
           <div className="ac-hdiv"/>
-          <div className="ac-htitle">
-            <span className="s1">Sistema de Gestión</span>
-            <span className="s2">Catálogo de Repuestos</span>
-          </div>
           <span className="ac-badge">{records.length.toLocaleString()} registros</span>
           <span className="fb-badge">
             <span className="fb-dot" style={{
@@ -2468,6 +2439,9 @@ function CatalogoApp() {
           </React.Fragment>
         ))}
       </div>
+
+      {/* ── DECODIFICADOR — Debajo de valores de resultado ── */}
+      <DecodificadorTab selectedCode={selectedCode} />
 
       {/* TABLE */}
       <div className="ac-tw">
@@ -2601,8 +2575,6 @@ function CatalogoApp() {
       {showHistory && <ModalHistory changelog={changelog} onClose={()=>setShowHistory(false)}/>}
       {showReplace && <ModalReplace cols={COL_DEFS} onReplace={handleBulkReplace} onClose={()=>setShowReplace(false)}/>}
 
-      {/* ── DECODIFICADOR — al final de la página principal ── */}
-      <DecodificadorTab selectedCode={selectedCode} />
     </>
     </ListasCtx.Provider>
   );

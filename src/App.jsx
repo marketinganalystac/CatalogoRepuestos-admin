@@ -1,6 +1,6 @@
 // ============================================================
-//  Auto Centro — Catálogo de Repuestos
-//  App.jsx  |  Supabase + XLSX (CDN dinámico)
+//  Auto Centro â€” CatÃ¡logo de Repuestos
+//  App.jsx  |  Supabase + XLSX (CDN dinÃ¡mico)
 // ============================================================
 
 import React, {
@@ -14,7 +14,7 @@ const LOGO_SRC = "/logo.png";
 
 
 // ============================================================
-//  SUPABASE CONFIG — Auto Centro Repuestos Aplicables
+//  SUPABASE CONFIG â€” Auto Centro Repuestos Aplicables
 // ============================================================
 const supabase = createClient(
   "https://vzjhzuvahejosdojllcm.supabase.co",
@@ -22,8 +22,8 @@ const supabase = createClient(
 );
 
 // ============================================================
-//  AUTH — Context y helpers
-//  - Sesión por PESTAÑA (sessionStorage) → se destruye al cerrar
+//  AUTH â€” Context y helpers
+//  - SesiÃ³n por PESTAÃ‘A (sessionStorage) â†’ se destruye al cerrar
 //  - Rol se lee directo desde user_roles SIN RLS de lectura
 //  - Sin reintentos ni timeouts largos
 // ============================================================
@@ -31,7 +31,7 @@ const AuthCtx = createContext(null);
 const useAuth = () => useContext(AuthCtx);
 
 // Supabase configurado con persistSession:false + storage sessionStorage
-// para que la sesión NO sobreviva al cerrar la pestaña
+// para que la sesiÃ³n NO sobreviva al cerrar la pestaÃ±a
 const supabaseSession = createClient(
   "https://vzjhzuvahejosdojllcm.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6amh6dXZhaGVqb3Nkb2psbGNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTI3NTAsImV4cCI6MjA4Nzc4ODc1MH0.8PNlIh3HQDIq1u6IiRQeKx3o9gZyNWU3SeZ4qJ_F7Ew",
@@ -57,14 +57,14 @@ function AuthProvider({ children }) {
     let mounted = true;
 
     const init = async () => {
-      // Verificar sesión guardada en sessionStorage
+      // Verificar sesiÃ³n guardada en sessionStorage
       const { data: { session } } = await supabaseSession.auth.getSession();
       if (!mounted) return;
       if (!session?.user) {
         setLoading(false);
         return;
       }
-      // Hay sesión activa — leer rol inmediatamente con JWT válido
+      // Hay sesiÃ³n activa â€” leer rol inmediatamente con JWT vÃ¡lido
       const r = await fetchRole(session.user.id);
       if (!mounted) return;
       setUser(session.user);
@@ -158,10 +158,10 @@ function LoginScreen() {
   />
 </div>
           <div style={{color:'rgba(255,255,255,.7)',fontSize:'.72rem',textTransform:'uppercase',letterSpacing:1.5,fontWeight:600}}>
-            Sistema de Gestión
+            Sistema de GestiÃ³n
           </div>
           <div style={{color:'#fff',fontSize:'1.05rem',fontWeight:700,marginTop:2}}>
-            Catálogo de Repuestos
+            CatÃ¡logo de Repuestos
           </div>
         </div>
         {/* Form */}
@@ -172,7 +172,7 @@ function LoginScreen() {
           <form onSubmit={handleLogin} style={{display:'flex',flexDirection:'column',gap:14}}>
             <div style={{display:'flex',flexDirection:'column',gap:4}}>
               <label style={{fontSize:'.68rem',color:'#0060A0',fontWeight:700,textTransform:'uppercase',letterSpacing:.6}}>
-                Correo electrónico
+                Correo electrÃ³nico
               </label>
               <input type="email" value={email} onChange={e=>setEmail(e.target.value)}
                 placeholder="usuario@empresa.com" required autoFocus
@@ -183,11 +183,11 @@ function LoginScreen() {
             </div>
             <div style={{display:'flex',flexDirection:'column',gap:4}}>
               <label style={{fontSize:'.68rem',color:'#0060A0',fontWeight:700,textTransform:'uppercase',letterSpacing:.6}}>
-                Contraseña
+                ContraseÃ±a
               </label>
               <div style={{position:'relative'}}>
                 <input type={showPw?'text':'password'} value={password} onChange={e=>setPassword(e.target.value)}
-                  placeholder="••••••••" required
+                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required
                   style={{background:'#F5F7FA',border:'1.5px solid #CFD8DC',borderRadius:8,
                     padding:'10px 40px 10px 13px',fontSize:'.88rem',outline:'none',width:'100%',transition:'.18s'}}
                   onFocus={e=>e.target.style.borderColor='#0060A0'}
@@ -195,14 +195,14 @@ function LoginScreen() {
                 <button type="button" onClick={()=>setShowPw(p=>!p)}
                   style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',
                     background:'none',border:'none',cursor:'pointer',color:'#78909C',fontSize:'.85rem'}}>
-                  {showPw?'🙈':'👁'}
+                  {showPw?'ðŸ™ˆ':'ðŸ‘'}
                 </button>
               </div>
             </div>
             {error && (
               <div style={{background:'#FFEBEE',border:'1px solid #FFCDD2',borderRadius:7,
                 padding:'9px 13px',fontSize:'.79rem',color:'#C62828',display:'flex',gap:7,alignItems:'center'}}>
-                ⚠ {error === 'Invalid login credentials' ? 'Correo o contraseña incorrectos' : error}
+                âš  {error === 'Invalid login credentials' ? 'Correo o contraseÃ±a incorrectos' : error}
               </div>
             )}
             <button type="submit" disabled={loading}
@@ -211,12 +211,12 @@ function LoginScreen() {
                 opacity:loading?.65:1,transition:'.18s',display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
               {loading
                 ? <><span style={{display:'inline-block',width:16,height:16,border:'2px solid rgba(255,255,255,.3)',
-                    borderTopColor:'#fff',borderRadius:'50%',animation:'spin .75s linear infinite'}}/> Ingresando…</>
-                : '🔐 Ingresar'}
+                    borderTopColor:'#fff',borderRadius:'50%',animation:'spin .75s linear infinite'}}/> Ingresandoâ€¦</>
+                : 'ðŸ” Ingresar'}
             </button>
           </form>
           <p style={{marginTop:18,fontSize:'.72rem',color:'#90A4AE',textAlign:'center'}}>
-            ¿Sin acceso? Contacta al administrador del sistema.
+            Â¿Sin acceso? Contacta al administrador del sistema.
           </p>
         </div>
       </div>
@@ -225,7 +225,7 @@ function LoginScreen() {
 }
 
 // ============================================================
-//  XLSX  —  carga dinámica CDN (sin dependencia npm)
+//  XLSX  â€”  carga dinÃ¡mica CDN (sin dependencia npm)
 // ============================================================
 let _xlsxLib = null;
 const loadXLSX = () => new Promise((resolve, reject) => {
@@ -248,42 +248,42 @@ const COL_CHANGELOG = 'changelog';
 const MARCAS_DEFAULT = ['CHEVROLET','DAIHATSU','FORD','HONDA','HYUNDAI',
   'ISUZU','KIA','MAZDA','MITSUBISHI','NISSAN','SUZUKI','TOYOTA'];
 
-const CLASIFICACIONES_DEFAULT = ['BATERÍAS','BUJÍAS E IGNICIÓN','CLUTCH Y TRANSMISIÓN',
+const CLASIFICACIONES_DEFAULT = ['BATERÃAS','BUJÃAS E IGNICIÃ“N','CLUTCH Y TRANSMISIÃ“N',
   'COMBUSTIBLE Y DIESEL','EJES Y RUEDAS','FILTROS','FRENOS',
-  'MOTOR Y DISTRIBUCIÓN','SISTEMA ELÉCTRICO','SUSPENSIÓN Y DIRECCIÓN','ZUNCHOS'];
+  'MOTOR Y DISTRIBUCIÃ“N','SISTEMA ELÃ‰CTRICO','SUSPENSIÃ“N Y DIRECCIÃ“N','ZUNCHOS'];
 
 const SUBCLASIFICACIONES_DEFAULT = [
   'Amortiguadores','Balinera de Clutch','Balineras','Bandas de Freno',
-  'Barra Estabilizadora','Barra Suspensión','Base de Motor','Bases de Amortiguador',
-  'Baterías AGM','Baterías Especiales','Baterías MF','Baterías UMF','Bolas / Rótulas',
-  'Bomba de Agua','Brazos y Links','Bujes','Bujías','Bujías Iridium','Bujías Original',
-  'Bujías Platino','Bujías Racing','Bujías de Cobre','Calibración','Cilindros de Freno',
+  'Barra Estabilizadora','Barra SuspensiÃ³n','Base de Motor','Bases de Amortiguador',
+  'BaterÃ­as AGM','BaterÃ­as Especiales','BaterÃ­as MF','BaterÃ­as UMF','Bolas / RÃ³tulas',
+  'Bomba de Agua','Brazos y Links','Bujes','BujÃ­as','BujÃ­as Iridium','BujÃ­as Original',
+  'BujÃ­as Platino','BujÃ­as Racing','BujÃ­as de Cobre','CalibraciÃ³n','Cilindros de Freno',
   'Correas','Cremallera','Disco de Clutch','Discos de Freno','Esclavo de Clutch',
   'Filtro A/C','Filtro de Aceite','Filtro de Aire','Filtro de Combustible','Hub / Cubos',
-  'Kit de Buje','Kit de Tiempo','Master de Clutch','Master de Freno','Muñequilla / Ejes',
+  'Kit de Buje','Kit de Tiempo','Master de Clutch','Master de Freno','MuÃ±equilla / Ejes',
   'Pastillas / Tacos','Pernos','Plato de Clutch','Relay','Retenedoras','Tambores',
-  'Tensores','Terminales de Batería','Terminales y V','Trampa de Diesel','Zunchos'
+  'Tensores','Terminales de BaterÃ­a','Terminales y V','Trampa de Diesel','Zunchos'
 ];
 
 const DESC_STD_DEFAULT = [];
 
-// Context para listas dinámicas (marcas, clasificaciones, subclasificaciones, desc estándar)
+// Context para listas dinÃ¡micas (marcas, clasificaciones, subclasificaciones, desc estÃ¡ndar)
 const ListasCtx = createContext(null);
 
 // [0]marca [1]modelo [2]modelo_orig [3]periodo [4]desc_orig [5]codigo [6]desc_std [7]clasi [8]sub
-// DEFAULT ORDER: Marca, Modelo, Período, Desc.Estándar, Código, Clasificación, Subclasificación
+// DEFAULT ORDER: Marca, Modelo, PerÃ­odo, Desc.EstÃ¡ndar, CÃ³digo, ClasificaciÃ³n, SubclasificaciÃ³n
 const COL_DEFS = [
   { key:0, label:'Marca',            show:true,  width:110 },
   { key:1, label:'Modelo',           show:true,  width:130 },
   { key:2, label:'Modelo Original',  show:false, width:130 },
-  { key:3, label:'Período',          show:true,  width:90  },
-  { key:4, label:'Descripción',      show:false, width:200 },
-  { key:5, label:'Código',           show:true,  width:110 },
-  { key:6, label:'Desc. Estándar',   show:true,  width:200 },
-  { key:7, label:'Clasificación',    show:true,  width:150 },
-  { key:8, label:'Subclasificación', show:true,  width:150 },
+  { key:3, label:'PerÃ­odo',          show:true,  width:90  },
+  { key:4, label:'DescripciÃ³n',      show:false, width:200 },
+  { key:5, label:'CÃ³digo',           show:true,  width:110 },
+  { key:6, label:'Desc. EstÃ¡ndar',   show:true,  width:200 },
+  { key:7, label:'ClasificaciÃ³n',    show:true,  width:150 },
+  { key:8, label:'SubclasificaciÃ³n', show:true,  width:150 },
 ];
-// Ordered display: Marca, Modelo, Período, Desc.Estándar, Código, Clasificación, Sub
+// Ordered display: Marca, Modelo, PerÃ­odo, Desc.EstÃ¡ndar, CÃ³digo, ClasificaciÃ³n, Sub
 const COL_DEFS_ORDER = [0,1,3,6,5,7,8,2,4];
 
 const EXPECTED_FIELDS = ['marca','modelo','modelo_original','periodo',
@@ -292,7 +292,7 @@ const EXPECTED_FIELDS = ['marca','modelo','modelo_original','periodo',
 // ============================================================
 //  UTILIDADES
 // ============================================================
-/** Normaliza cualquier documento Supabase → { _id, fields:[9] } */
+/** Normaliza cualquier documento Supabase â†’ { _id, fields:[9] } */
 const normalizeDoc = (raw) => {
   if (!raw) return null;
   if (Array.isArray(raw.fields) && raw.fields.length === 9)
@@ -333,12 +333,12 @@ const highlightText = (text, query) => {
   );
 };
 
-// Normaliza un header de columna: quita acentos, ñ→n, espacios→_, minúsculas
+// Normaliza un header de columna: quita acentos, Ã±â†’n, espaciosâ†’_, minÃºsculas
 function normalizeHeader(h) {
   return String(h).trim().toLowerCase()
-    .replace(/ñ/g, 'n')           // ñ → n ANTES de normalize
-    .replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i')
-    .replace(/ó/g,'o').replace(/ú/g,'u').replace(/ü/g,'u')
+    .replace(/Ã±/g, 'n')           // Ã± â†’ n ANTES de normalize
+    .replace(/Ã¡/g,'a').replace(/Ã©/g,'e').replace(/Ã­/g,'i')
+    .replace(/Ã³/g,'o').replace(/Ãº/g,'u').replace(/Ã¼/g,'u')
     .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/[^a-z0-9]/g,'_')
     .replace(/_+/g,'_')
@@ -350,7 +350,7 @@ const FIELD_ALIASES = {
   'marca':                  ['marca'],
   'modelo':                 ['modelo'],
   'modelo_original':        ['modelo_original','modelo_orig','original'],
-  'periodo': ['periodo','period','per','ano','anio','año','year','a_no','yr','fecha'],
+  'periodo': ['periodo','period','per','ano','anio','aÃ±o','year','a_no','yr','fecha'],
   'descripcion_original':   ['descripcion_original','descripcion','desc','desc_orig','description','descripcion_orig'],
   'codigo':                 ['codigo','code','cod','sku','referencia','ref','part_number','part','numero'],
   'descripcion_estandar':   ['descripcion_estandar','desc_estandar','estandar','desc_std','descripcion_std','descripcion_est'],
@@ -363,21 +363,21 @@ function parseWorkbook(wb, xlsxLib) {
   const rows  = xlsxLib.utils.sheet_to_json(sheet, { header:1, defval:'' });
   if (rows.length < 2) return { records:[], headers:[], origHeaders:[], colMap:[], displayMapping:[] };
 
-  // Guardar headers originales (para mostrar al usuario tal como están en el archivo)
+  // Guardar headers originales (para mostrar al usuario tal como estÃ¡n en el archivo)
   const origHeaders = rows[0].map(h => String(h).trim());
-  // Normalizar headers para comparación interna
+  // Normalizar headers para comparaciÃ³n interna
   const rawH = origHeaders.map(normalizeHeader);
 
   // Mapeo inteligente con aliases
   const colMap = EXPECTED_FIELDS.map(field => {
-    // Normalizar el field también para comparación justa
+    // Normalizar el field tambiÃ©n para comparaciÃ³n justa
     const normField = normalizeHeader(field);
     const aliases = FIELD_ALIASES[field] || [normField];
     for (const alias of aliases) {
       const idx = rawH.findIndex(h => h === alias || h.startsWith(alias + '_') || h.startsWith(alias));
       if (idx >= 0) return idx;
     }
-    // Fallback: busca si algún header normalizado contiene la primera palabra del field normalizado
+    // Fallback: busca si algÃºn header normalizado contiene la primera palabra del field normalizado
     const first = normField.split('_')[0];
     if (first.length >= 3) {
       const idx = rawH.findIndex(h => h.includes(first));
@@ -391,7 +391,7 @@ function parseWorkbook(wb, xlsxLib) {
     .map(r => colMap.map(ci => ci >= 0 ? String(r[ci] ?? '').trim() : ''));
 
   // displayMapping[srcColIdx] = destFieldIdx (-1 = ignorar)
-  // La UI itera por columnas fuente, necesita saber a qué campo destino va cada una
+  // La UI itera por columnas fuente, necesita saber a quÃ© campo destino va cada una
   const displayMapping = Array(rawH.length).fill(-1);
   colMap.forEach((srcIdx, destIdx) => {
     if (srcIdx >= 0 && srcIdx < rawH.length) displayMapping[srcIdx] = destIdx;
@@ -401,10 +401,10 @@ function parseWorkbook(wb, xlsxLib) {
 }
 
 const clasiBgColor = c => ({
-  'BATERÍAS':'#1565C0','BUJÍAS E IGNICIÓN':'#6A1B9A','CLUTCH Y TRANSMISIÓN':'#4527A0',
+  'BATERÃAS':'#1565C0','BUJÃAS E IGNICIÃ“N':'#6A1B9A','CLUTCH Y TRANSMISIÃ“N':'#4527A0',
   'COMBUSTIBLE Y DIESEL':'#E65100','EJES Y RUEDAS':'#00695C','FILTROS':'#2E7D32',
-  'FRENOS':'#C62828','MOTOR Y DISTRIBUCIÓN':'#1B5E20','SISTEMA ELÉCTRICO':'#F57F17',
-  'SUSPENSIÓN Y DIRECCIÓN':'#0277BD','ZUNCHOS':'#37474F',
+  'FRENOS':'#C62828','MOTOR Y DISTRIBUCIÃ“N':'#1B5E20','SISTEMA ELÃ‰CTRICO':'#F57F17',
+  'SUSPENSIÃ“N Y DIRECCIÃ“N':'#0277BD','ZUNCHOS':'#37474F',
 }[c] || '#546E7A');
 
 // ============================================================
@@ -472,7 +472,7 @@ const fsDeleteAll = async () => {
 };
 
 // ============================================================
-//  TOAST CONTEXT  — SIEMPRE envuelto en el export default
+//  TOAST CONTEXT  â€” SIEMPRE envuelto en el export default
 // ============================================================
 const ToastCtx = createContext(null);
 
@@ -503,7 +503,7 @@ function ToastProvider({ children }) {
   );
 }
 
-// Fallback seguro: si por algún error no hay Provider, loguea en consola y no rompe
+// Fallback seguro: si por algÃºn error no hay Provider, loguea en consola y no rompe
 const useToast = () => useContext(ToastCtx) ?? ((m) => console.warn('[Toast sin Provider]', m));
 
 // ============================================================
@@ -665,7 +665,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .fb-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,167,38,.18);
   border:1px solid rgba(255,167,38,.4);border-radius:12px;padding:2px 9px;font-size:.65rem;font-weight:700;color:#FF8F00}
 .fb-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
-/* ── BARRA DE PROGRESO ── */
+/* â”€â”€ BARRA DE PROGRESO â”€â”€ */
 .ac-progress-wrap{background:var(--bd);padding:0;overflow:hidden;height:0;transition:height .25s ease}
 .ac-progress-wrap.active{height:36px}
 .ac-progress-inner{display:flex;align-items:center;gap:12px;padding:0 24px;height:36px}
@@ -675,7 +675,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .ac-progress-bar-fill.indeterminate{width:40%!important;animation:progress-slide 1.2s ease-in-out infinite}
 @keyframes progress-slide{0%{margin-left:-40%}100%{margin-left:100%}}
 .ac-progress-pct{font-size:.72rem;color:var(--gold);font-weight:700;min-width:38px;text-align:right}
-/* ── RESPONSIVE / MOBILE ── */
+/* â”€â”€ RESPONSIVE / MOBILE â”€â”€ */
 @media(max-width:768px){
   .ac-header{padding:8px 12px;min-height:auto;gap:6px}
   .ac-hl{gap:8px;flex-wrap:wrap}
@@ -714,7 +714,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
   tbody td{padding:4px 6px;font-size:.73rem}
 }
 
-/* ── DECODIFICADOR ── */
+/* â”€â”€ DECODIFICADOR â”€â”€ */
 .dec-wrap{background:var(--g1);padding:0 0 24px}
 .dec-section-title{background:linear-gradient(135deg,var(--bd),var(--bm));
   padding:10px 24px;border-top:3px solid var(--gold);
@@ -851,7 +851,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
 `;
 
 // ============================================================
-//  MODAL — EDITAR / NUEVO
+//  MODAL â€” EDITAR / NUEVO
 // ============================================================
 const ModalEdit = ({ record, onSave, onClose }) => {
   const toast  = useToast();
@@ -887,8 +887,8 @@ const ModalEdit = ({ record, onSave, onClose }) => {
     setAddingNew(null);
   };
 
-  const labels = ['Marca *','Modelo *','Modelo Original','Período *',
-    'Descripción Original *','Código','Descripción Estándar','Clasificación','Subclasificación'];
+  const labels = ['Marca *','Modelo *','Modelo Original','PerÃ­odo *',
+    'DescripciÃ³n Original *','CÃ³digo','DescripciÃ³n EstÃ¡ndar','ClasificaciÃ³n','SubclasificaciÃ³n'];
 
   const addNewBtn = (i) => (
     <button type="button" onClick={()=>setAddingNew({field:i,val:''})}
@@ -910,20 +910,20 @@ const ModalEdit = ({ record, onSave, onClose }) => {
     if (addingNew && addingNew.field === i) return (
       <div style={{display:'flex',gap:5}}>
         <input autoFocus type="text" style={{...inputStyle(i),flex:1}}
-          placeholder="Escribe el nuevo valor…"
+          placeholder="Escribe el nuevo valorâ€¦"
           value={addingNew.val}
           onChange={e=>setAddingNew(a=>({...a,val:e.target.value}))}
           onKeyDown={e=>{if(e.key==='Enter')confirmAddNew();if(e.key==='Escape')setAddingNew(null);}}/>
         <button type="button" onClick={confirmAddNew}
-          style={{padding:'0 12px',background:'var(--grn)',color:'#fff',border:'none',borderRadius:6,fontWeight:700,cursor:'pointer'}}>✓</button>
+          style={{padding:'0 12px',background:'var(--grn)',color:'#fff',border:'none',borderRadius:6,fontWeight:700,cursor:'pointer'}}>âœ“</button>
         <button type="button" onClick={()=>setAddingNew(null)}
-          style={{padding:'0 10px',background:'var(--g3)',color:'var(--g7)',border:'none',borderRadius:6,cursor:'pointer'}}>✕</button>
+          style={{padding:'0 10px',background:'var(--g3)',color:'var(--g7)',border:'none',borderRadius:6,cursor:'pointer'}}>âœ•</button>
       </div>
     );
     if (i===0) return (
       <div style={{display:'flex',alignItems:'center',gap:4}}>
         <select value={form[i]} onChange={e=>setField(i,e.target.value)} style={{...inputStyle(i),flex:1}}>
-          <option value="">— Seleccionar —</option>
+          <option value="">â€” Seleccionar â€”</option>
           {listas.marcas.map(c=><option key={c}>{c}</option>)}
         </select>
         {addNewBtn(i)}
@@ -932,7 +932,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
     if (i===6) return (
       <div style={{display:'flex',alignItems:'center',gap:4}}>
         <select value={form[i]} onChange={e=>setField(i,e.target.value)} style={{...inputStyle(i),flex:1}}>
-          <option value="">— Seleccionar —</option>
+          <option value="">â€” Seleccionar â€”</option>
           {listas.descStd.map(c=><option key={c}>{c}</option>)}
         </select>
         {addNewBtn(i)}
@@ -941,7 +941,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
     if (i===7) return (
       <div style={{display:'flex',alignItems:'center',gap:4}}>
         <select value={form[i]} onChange={e=>setField(i,e.target.value)} style={{...inputStyle(i),flex:1}}>
-          <option value="">— Seleccionar —</option>
+          <option value="">â€” Seleccionar â€”</option>
           {listas.clasif.map(c=><option key={c}>{c}</option>)}
         </select>
         {addNewBtn(i)}
@@ -950,7 +950,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
     if (i===8) return (
       <div style={{display:'flex',alignItems:'center',gap:4}}>
         <select value={form[i]} onChange={e=>setField(i,e.target.value)} style={{...inputStyle(i),flex:1}}>
-          <option value="">— Seleccionar —</option>
+          <option value="">â€” Seleccionar â€”</option>
           {listas.subs.map(c=><option key={c}>{c}</option>)}
         </select>
         {addNewBtn(i)}
@@ -967,8 +967,8 @@ const ModalEdit = ({ record, onSave, onClose }) => {
     <div className="mo show">
       <div className="md">
         <div className="mh">
-          <h2>{isNew ? '➕ Nuevo Registro' : '✏️ Editar Registro'}</h2>
-          <button className="mx" onClick={onClose}>×</button>
+          <h2>{isNew ? 'âž• Nuevo Registro' : 'âœï¸ Editar Registro'}</h2>
+          <button className="mx" onClick={onClose}>Ã—</button>
         </div>
         <div className="mb">
           <div className="fgrid">
@@ -984,7 +984,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
         <div className="mf">
           <button className="btn btn-o" onClick={onClose} disabled={saving}>Cancelar</button>
           <button className="btn btn-p" onClick={handleSave} disabled={saving}>
-            {saving ? <><span className="spin" style={{width:14,height:14,borderWidth:2}}/>Guardando…</> : '💾 Guardar'}
+            {saving ? <><span className="spin" style={{width:14,height:14,borderWidth:2}}/>Guardandoâ€¦</> : 'ðŸ’¾ Guardar'}
           </button>
         </div>
       </div>
@@ -993,7 +993,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
 };
 
 // ============================================================
-//  MODAL — ELIMINAR
+//  MODAL â€” ELIMINAR
 // ============================================================
 const ModalDelete = ({ record, onConfirm, onClose }) => {
   if (!record) return null;
@@ -1001,10 +1001,10 @@ const ModalDelete = ({ record, onConfirm, onClose }) => {
   return (
     <div className="mo show">
       <div className="md sm">
-        <div className="mh danger"><h2>🗑 Eliminar Registro</h2><button className="mx" onClick={onClose}>×</button></div>
+        <div className="mh danger"><h2>ðŸ—‘ Eliminar Registro</h2><button className="mx" onClick={onClose}>Ã—</button></div>
         <div className="mb">
           <p style={{fontSize:'.87rem',color:'var(--g7)',lineHeight:1.6}}>
-            ¿Confirmas la eliminación? Esta acción <strong>no se puede deshacer</strong>.
+            Â¿Confirmas la eliminaciÃ³n? Esta acciÃ³n <strong>no se puede deshacer</strong>.
           </p>
           <div style={{marginTop:12,background:'#FFF5F5',border:'1px solid #FFCDD2',
             borderLeft:'3px solid var(--red)',borderRadius:8,padding:11,fontSize:'.79rem',color:'var(--red)'}}>
@@ -1014,7 +1014,7 @@ const ModalDelete = ({ record, onConfirm, onClose }) => {
         </div>
         <div className="mf">
           <button className="btn btn-o" onClick={onClose}>Cancelar</button>
-          <button className="btn btn-r" onClick={onConfirm}>🗑 Eliminar</button>
+          <button className="btn btn-r" onClick={onConfirm}>ðŸ—‘ Eliminar</button>
         </div>
       </div>
     </div>
@@ -1022,16 +1022,16 @@ const ModalDelete = ({ record, onConfirm, onClose }) => {
 };
 
 // ============================================================
-//  MODAL — DETALLE
+//  MODAL â€” DETALLE
 // ============================================================
 const ModalDetail = ({ record, onClose, onEdit }) => {
   if (!record) return null;
-  const labels = ['Marca','Modelo','Modelo Original','Período',
-    'Descripción Original','Código','Descripción Estándar','Clasificación','Subclasificación'];
+  const labels = ['Marca','Modelo','Modelo Original','PerÃ­odo',
+    'DescripciÃ³n Original','CÃ³digo','DescripciÃ³n EstÃ¡ndar','ClasificaciÃ³n','SubclasificaciÃ³n'];
   return (
     <div className="mo show">
       <div className="md sm">
-        <div className="mh"><h2>📋 Detalle del Registro</h2><button className="mx" onClick={onClose}>×</button></div>
+        <div className="mh"><h2>ðŸ“‹ Detalle del Registro</h2><button className="mx" onClick={onClose}>Ã—</button></div>
         <div className="mb">
           {labels.map((lbl,i) => record.fields[i] ? (
             <div key={i} className="dr">
@@ -1041,7 +1041,7 @@ const ModalDetail = ({ record, onClose, onEdit }) => {
         </div>
         <div className="mf">
           <button className="btn btn-o" onClick={onClose}>Cerrar</button>
-          <button className="btn btn-p" onClick={()=>{onClose();onEdit(record);}}>✏ Editar</button>
+          <button className="btn btn-p" onClick={()=>{onClose();onEdit(record);}}>âœ Editar</button>
         </div>
       </div>
     </div>
@@ -1049,7 +1049,7 @@ const ModalDetail = ({ record, onClose, onEdit }) => {
 };
 
 // ============================================================
-//  MODAL — IMPORTAR
+//  MODAL â€” IMPORTAR
 // ============================================================
 const ModalImport = ({ onClose, onImport }) => {
   const toast    = useToast();
@@ -1067,10 +1067,10 @@ const ModalImport = ({ onClose, onImport }) => {
       const buf     = await file.arrayBuffer();
       const wb      = xlsxLib.read(buf, { type:'array' });
       const result  = parseWorkbook(wb, xlsxLib);
-      if (!result.records.length) { toast('Archivo vacío o sin datos válidos.','error'); return; }
+      if (!result.records.length) { toast('Archivo vacÃ­o o sin datos vÃ¡lidos.','error'); return; }
       setParsed(result);
-      setMapping(result.displayMapping); // displayMapping[srcCol] = destField (dirección correcta)
-      toast(`✅ ${result.records.length} registros detectados.`,'success');
+      setMapping(result.displayMapping); // displayMapping[srcCol] = destField (direcciÃ³n correcta)
+      toast(`âœ… ${result.records.length} registros detectados.`,'success');
     } catch(e) {
       toast('Error leyendo archivo: ' + e.message, 'error');
     } finally {
@@ -1087,14 +1087,14 @@ const ModalImport = ({ onClose, onImport }) => {
       });
       return mapped;
     });
-    onClose(); // cerrar modal antes de la operación larga
+    onClose(); // cerrar modal antes de la operaciÃ³n larga
     await onImport(records, mode);
   };
 
   return (
     <div className="mo show">
       <div className="md">
-        <div className="mh"><h2>📂 Cargar Base de Datos</h2><button className="mx" onClick={onClose}>×</button></div>
+        <div className="mh"><h2>ðŸ“‚ Cargar Base de Datos</h2><button className="mx" onClick={onClose}>Ã—</button></div>
         <div className="mb">
           <div
             className={`ib${isDrag?' drag':''}`}
@@ -1106,26 +1106,26 @@ const ModalImport = ({ onClose, onImport }) => {
             <input ref={fileRef} type="file" accept=".csv,.xls,.xlsx"
               style={{display:'none'}} onChange={e=>processFile(e.target.files[0])}/>
             {loading
-              ? <><span className="spin"/><p>Procesando archivo…</p></>
-              : <><div className="icon">📄</div>
-                  <p><strong>Haz clic o arrastra tu archivo aquí</strong></p>
-                  <p style={{marginTop:5,fontSize:'.76rem'}}>Formatos: <strong>.csv · .xls · .xlsx</strong></p>
+              ? <><span className="spin"/><p>Procesando archivoâ€¦</p></>
+              : <><div className="icon">ðŸ“„</div>
+                  <p><strong>Haz clic o arrastra tu archivo aquÃ­</strong></p>
+                  <p style={{marginTop:5,fontSize:'.76rem'}}>Formatos: <strong>.csv Â· .xls Â· .xlsx</strong></p>
                 </>
             }
           </div>
 
           {parsed && (<>
             <div className="ii">
-              <strong>📋 Archivo detectado</strong>
+              <strong>ðŸ“‹ Archivo detectado</strong>
               <ul>
                 <li>{parsed.records.length} registros encontrados</li>
                 <li>{parsed.headers.length} columnas detectadas</li>
               </ul>
             </div>
             <div style={{marginTop:12}}>
-              <p style={{fontSize:'.8rem',fontWeight:700,color:'var(--g7)',marginBottom:6}}>🗂 Mapeo de columnas
+              <p style={{fontSize:'.8rem',fontWeight:700,color:'var(--g7)',marginBottom:6}}>ðŸ—‚ Mapeo de columnas
                 <span style={{fontWeight:400,color:'var(--grn)',marginLeft:8,fontSize:'.72rem'}}>
-                  ✅ {mapping.filter(v=>v>=0).length} de {parsed.headers.length} columnas detectadas automáticamente
+                  âœ… {mapping.filter(v=>v>=0).length} de {parsed.headers.length} columnas detectadas automÃ¡ticamente
                 </span>
               </p>
               <div className="cmr">
@@ -1134,7 +1134,7 @@ const ModalImport = ({ onClose, onImport }) => {
                     <span title={`Columna original: "${h}"`}>{h}</span>
                     <select value={mapping[si]??-1}
                       onChange={e=>setMapping(m=>{const n=[...m];n[si]=Number(e.target.value);return n;})}>
-                      <option value={-1}>— ignorar —</option>
+                      <option value={-1}>â€” ignorar â€”</option>
                       {EXPECTED_FIELDS.map((f,fi)=><option key={fi} value={fi}>{f}</option>)}
                     </select>
                   </div>
@@ -1146,7 +1146,7 @@ const ModalImport = ({ onClose, onImport }) => {
               <div style={{marginTop:5}}>
                 {parsed.records.slice(0,5).map((r,i)=>(
                   <div key={i} style={{fontSize:'.72rem',color:'var(--g7)',padding:'2px 0',borderBottom:'1px solid var(--g2)'}}>
-                    {r.filter(Boolean).slice(0,6).join(' · ')}
+                    {r.filter(Boolean).slice(0,6).join(' Â· ')}
                   </div>
                 ))}
               </div>
@@ -1154,14 +1154,14 @@ const ModalImport = ({ onClose, onImport }) => {
           </>)}
 
           <div className="wb">
-            ⚠ <strong>Reemplazar</strong> borra todo y carga desde el archivo.
-            <strong> Agregar</strong> añade al catálogo sin borrar nada.
+            âš  <strong>Reemplazar</strong> borra todo y carga desde el archivo.
+            <strong> Agregar</strong> aÃ±ade al catÃ¡logo sin borrar nada.
           </div>
         </div>
         <div className="mf">
           <button className="btn btn-o" onClick={onClose}>Cancelar</button>
-          <button className="btn btn-org" onClick={()=>doImport('replace')} disabled={!parsed||loading}>🔄 Reemplazar</button>
-          <button className="btn btn-p"   onClick={()=>doImport('append')}  disabled={!parsed||loading}>➕ Agregar</button>
+          <button className="btn btn-org" onClick={()=>doImport('replace')} disabled={!parsed||loading}>ðŸ”„ Reemplazar</button>
+          <button className="btn btn-p"   onClick={()=>doImport('append')}  disabled={!parsed||loading}>âž• Agregar</button>
         </div>
       </div>
     </div>
@@ -1169,7 +1169,7 @@ const ModalImport = ({ onClose, onImport }) => {
 };
 
 // ============================================================
-//  MODAL — COLUMNAS (con reordenamiento drag & drop)
+//  MODAL â€” COLUMNAS (con reordenamiento drag & drop)
 // ============================================================
 const ModalCols = ({ visibleCols, colOrder, onChange, onReorder, onClose }) => {
   const [localOrder, setLocalOrder] = React.useState([...colOrder]);
@@ -1181,10 +1181,10 @@ const ModalCols = ({ visibleCols, colOrder, onChange, onReorder, onClose }) => {
   return (
     <div className="mo show">
       <div className="md sm">
-        <div className="mh"><h2>👁 Columnas — Visibilidad y Orden</h2><button className="mx" onClick={onClose}>×</button></div>
+        <div className="mh"><h2>ðŸ‘ Columnas â€” Visibilidad y Orden</h2><button className="mx" onClick={onClose}>Ã—</button></div>
         <div className="mb">
           <p style={{fontSize:'.78rem',color:'var(--g5)',marginBottom:10}}>
-            ☑ Activa/desactiva · <strong>Arrastra</strong> para reordenar
+            â˜‘ Activa/desactiva Â· <strong>Arrastra</strong> para reordenar
           </p>
           <div style={{display:'flex',flexDirection:'column',gap:6}}>
             {orderedCols.map((col,li)=>(
@@ -1203,7 +1203,7 @@ const ModalCols = ({ visibleCols, colOrder, onChange, onReorder, onClose }) => {
                 style={{display:'flex',alignItems:'center',gap:10,padding:'7px 10px',
                   borderRadius:6,background:dragging===col.key?'var(--bl)':'var(--g1)',
                   border:'1px solid var(--g2)',cursor:'grab'}}>
-                <span style={{color:'var(--g3)',fontSize:'1rem',cursor:'grab'}}>⠿</span>
+                <span style={{color:'var(--g3)',fontSize:'1rem',cursor:'grab'}}>â ¿</span>
                 <input type="checkbox" checked={col.show}
                   onChange={e=>onChange(getIdx(col.key),e.target.checked)}
                   style={{width:15,height:15,accentColor:'var(--bm)',cursor:'pointer'}}/>
@@ -1214,7 +1214,7 @@ const ModalCols = ({ visibleCols, colOrder, onChange, onReorder, onClose }) => {
         </div>
         <div className="mf">
           <button className="btn btn-o" onClick={onClose}>Cancelar</button>
-          <button className="btn btn-p" onClick={()=>{onReorder(localOrder);onClose();}}>✓ Aplicar</button>
+          <button className="btn btn-p" onClick={()=>{onReorder(localOrder);onClose();}}>âœ“ Aplicar</button>
         </div>
       </div>
     </div>
@@ -1222,7 +1222,7 @@ const ModalCols = ({ visibleCols, colOrder, onChange, onReorder, onClose }) => {
 };
 
 // ============================================================
-//  MODAL — REEMPLAZO MASIVO
+//  MODAL â€” REEMPLAZO MASIVO
 // ============================================================
 const ModalReplace = ({ cols, onReplace, onClose }) => {
   const [fieldIdx, setFieldIdx] = React.useState(0);
@@ -1242,7 +1242,7 @@ const ModalReplace = ({ cols, onReplace, onClose }) => {
   return (
     <div className="mo show">
       <div className="md sm">
-        <div className="mh"><h2>🔄 Reemplazo Masivo</h2><button className="mx" onClick={onClose}>×</button></div>
+        <div className="mh"><h2>ðŸ”„ Reemplazo Masivo</h2><button className="mx" onClick={onClose}>Ã—</button></div>
         <div className="mb">
           <p style={{fontSize:'.8rem',color:'var(--g5)',marginBottom:14,lineHeight:1.5}}>
             Busca un valor en un campo y lo reemplaza en <strong>todos los registros que coincidan</strong>.
@@ -1274,18 +1274,18 @@ const ModalReplace = ({ cols, onReplace, onClose }) => {
               <div style={{padding:'10px 14px',borderRadius:7,background:result>0?'#E8F5E9':'#FFF8E1',
                 border:`1px solid ${result>0?'#C8E6C9':'#FFE082'}`,fontSize:'.82rem',
                 color:result>0?'var(--grn)':'#8B6000',fontWeight:600}}>
-                {result>0 ? `✅ ${result} registro${result>1?'s':''} actualizado${result>1?'s':''}` : '⚠ Sin coincidencias'}
+                {result>0 ? `âœ… ${result} registro${result>1?'s':''} actualizado${result>1?'s':''}` : 'âš  Sin coincidencias'}
               </div>
             )}
           </div>
           <div style={{marginTop:12,padding:'9px 13px',background:'#FFF8E1',borderRadius:7,fontSize:'.74rem',color:'#8B6000',borderLeft:'3px solid var(--gold)'}}>
-            ⚠ Esta acción modifica la base de datos en Supabase. No se puede deshacer automáticamente.
+            âš  Esta acciÃ³n modifica la base de datos en Supabase. No se puede deshacer automÃ¡ticamente.
           </div>
         </div>
         <div className="mf">
           <button className="btn btn-o" onClick={onClose} disabled={running}>Cerrar</button>
           <button className="btn btn-p" onClick={doReplace} disabled={running||!searchVal.trim()}>
-            {running ? <><span className="spin" style={{width:13,height:13,borderWidth:2}}/>Procesando…</> : '🔄 Reemplazar'}
+            {running ? <><span className="spin" style={{width:13,height:13,borderWidth:2}}/>Procesandoâ€¦</> : 'ðŸ”„ Reemplazar'}
           </button>
         </div>
       </div>
@@ -1294,19 +1294,19 @@ const ModalReplace = ({ cols, onReplace, onClose }) => {
 };
 
 // ============================================================
-//  MODAL — HISTORIAL
+//  MODAL â€” HISTORIAL
 // ============================================================
 const ModalHistory = ({ changelog, onClose }) => {
   const [filter, setFilter] = useState('');
   const list = filter ? changelog.filter(e=>e.op===filter) : changelog;
-  const opIcon={AGREGAR:'✅',EDITAR:'✏️',ELIMINAR:'🗑',IMPORTAR:'📂'};
+  const opIcon={AGREGAR:'âœ…',EDITAR:'âœï¸',ELIMINAR:'ðŸ—‘',IMPORTAR:'ðŸ“‚'};
   const opCls ={AGREGAR:'hop-add',EDITAR:'hop-edit',ELIMINAR:'hop-del',IMPORTAR:'hop-imp'};
 
   const exportCSV = () => {
     if (!changelog.length) return;
-    const rows=[['#','Fecha','Hora','Operación','Resumen','Campos Cambiados']];
+    const rows=[['#','Fecha','Hora','OperaciÃ³n','Resumen','Campos Cambiados']];
     changelog.forEach(e=>{
-      const cambios=(e.cambios||[]).map(c=>`${c.campo}: "${c.antes}"→"${c.despues}"`).join(' | ');
+      const cambios=(e.cambios||[]).map(c=>`${c.campo}: "${c.antes}"â†’"${c.despues}"`).join(' | ');
       rows.push([e.id,e.fecha,e.hora,e.op,e.resumen,cambios]);
     });
     const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
@@ -1319,24 +1319,24 @@ const ModalHistory = ({ changelog, onClose }) => {
   return (
     <div className="mo show">
       <div className="md" style={{maxWidth:860,width:'95vw'}}>
-        <div className="mh"><h2>📋 Historial de Cambios</h2><button className="mx" onClick={onClose}>×</button></div>
+        <div className="mh"><h2>ðŸ“‹ Historial de Cambios</h2><button className="mx" onClick={onClose}>Ã—</button></div>
         <div className="hist-toolbar">
           <select value={filter} onChange={e=>setFilter(e.target.value)} style={{border:'1.5px solid var(--g3)',borderRadius:6}}>
             <option value="">Todas las operaciones</option>
-            <option value="AGREGAR">✅ Agregar</option>
-            <option value="EDITAR">✏️ Editar</option>
-            <option value="ELIMINAR">🗑 Eliminar</option>
-            <option value="IMPORTAR">📂 Importar</option>
+            <option value="AGREGAR">âœ… Agregar</option>
+            <option value="EDITAR">âœï¸ Editar</option>
+            <option value="ELIMINAR">ðŸ—‘ Eliminar</option>
+            <option value="IMPORTAR">ðŸ“‚ Importar</option>
           </select>
           <span style={{fontSize:'.76rem',color:'var(--g5)'}}>{list.length} registro(s)</span>
-          <button className="btn btn-dark btn-sm" style={{marginLeft:'auto'}} onClick={exportCSV}>📥 Exportar historial</button>
+          <button className="btn btn-dark btn-sm" style={{marginLeft:'auto'}} onClick={exportCSV}>ðŸ“¥ Exportar historial</button>
         </div>
         <div className="mhist-wrap">
           {list.length===0
-            ? <div className="hist-empty">Sin registros de cambios aún.</div>
+            ? <div className="hist-empty">Sin registros de cambios aÃºn.</div>
             : list.map((e,idx)=>(
               <div key={idx} className="hlog-item">
-                <div className="hlog-dt">📅 {e.fecha}<br/>🕐 {e.hora}</div>
+                <div className="hlog-dt">ðŸ“… {e.fecha}<br/>ðŸ• {e.hora}</div>
                 <div className={`hlog-op ${opCls[e.op]||''}`}>{opIcon[e.op]||''} {e.op}</div>
                 <div className="hlog-det">
                   <div><strong>{e.resumen}</strong></div>
@@ -1344,11 +1344,11 @@ const ModalHistory = ({ changelog, onClose }) => {
                     <span key={ci} className="field-chg">
                       <em>{c.campo}:</em>{' '}
                       {c.antes&&<span className="old">{c.antes}</span>}
-                      {c.antes&&c.despues&&'→'}
+                      {c.antes&&c.despues&&'â†’'}
                       {c.despues&&<span className="new">{c.despues}</span>}
                     </span>
                   ))}
-                  <div className="hlog-ip">🔥 Supabase</div>
+                  <div className="hlog-ip">ðŸ”¥ Supabase</div>
                 </div>
               </div>
             ))
@@ -1361,7 +1361,7 @@ const ModalHistory = ({ changelog, onClose }) => {
 };
 
 // ============================================================
-//  DECODIFICADOR — Carga BD desde Supabase "base_codigos"
+//  DECODIFICADOR â€” Carga BD desde Supabase "base_codigos"
 // ============================================================
 const COL_BASE_CODIGOS = 'base_codigos';
 
@@ -1369,26 +1369,26 @@ const COL_BASE_CODIGOS = 'base_codigos';
 const SEG_COLORS = ['blue','green','amber','purple'];
 
 const SYSTEM_PREFIX_MAP = {
-  '546':'Suspensión delantera','548':'Suspensión delantera','549':'Suspensión delantera',
-  '545':'Dirección','553':'Dirección','554':'Dirección','555':'Suspensión',
-  '565':'Suspensión trasera','568':'Amortiguador trasero','569':'Suspensión trasera',
+  '546':'SuspensiÃ³n delantera','548':'SuspensiÃ³n delantera','549':'SuspensiÃ³n delantera',
+  '545':'DirecciÃ³n','553':'DirecciÃ³n','554':'DirecciÃ³n','555':'SuspensiÃ³n',
+  '565':'SuspensiÃ³n trasera','568':'Amortiguador trasero','569':'SuspensiÃ³n trasera',
   '577':'Eje trasero','513':'Plataforma','517':'Ejes / Ruedas','527':'Semieje',
   '581':'Frenos delanteros','583':'Frenos','584':'Frenos traseros','585':'Frenos delanteros',
   '586':'Frenos','281':'Filtros','971':'Filtros A/C','263':'Motor','265':'Motor',
   '178':'Filtros','871':'Filtros A/C','165':'Combustible','164':'Combustible',
-  '484':'Suspensión','485':'Amortiguador','486':'Resorte','480':'Bucha/Buje',
+  '484':'SuspensiÃ³n','485':'Amortiguador','486':'Resorte','480':'Bucha/Buje',
   '488':'Barra estabilizadora','435':'Disco freno','424':'Disco trasero','442':'Cubo/Hub',
   '450':'Pastillas','451':'Pastillas','044':'Pastillas',
 };
 
 const FMT_ORIGEN = {
-  hyundai_kia:'🇰🇷 Coreana', honda:'🇯🇵 Honda',
-  toyota_nissan:'🇯🇵 Japonesa', mazda:'🇯🇵 Mazda', mitsubishi:'🇯🇵 Mitsubishi',
-  suzuki:'🇯🇵 Suzuki', isuzu:'🇯🇵 Isuzu', ford:'🇺🇸 Ford',
-  gm:'🇺🇸 GM / Chevrolet', subaru:'🇯🇵 Subaru',
-  gates_medida:'📏 Medida (Correa)', aftermarket:'🔧 Aftermarket',
-  referencia:'📋 Catálogo', landrover:'🇬🇧 Británica',
-  china:'🇨🇳 China',
+  hyundai_kia:'ðŸ‡°ðŸ‡· Coreana', honda:'ðŸ‡¯ðŸ‡µ Honda',
+  toyota_nissan:'ðŸ‡¯ðŸ‡µ Japonesa', mazda:'ðŸ‡¯ðŸ‡µ Mazda', mitsubishi:'ðŸ‡¯ðŸ‡µ Mitsubishi',
+  suzuki:'ðŸ‡¯ðŸ‡µ Suzuki', isuzu:'ðŸ‡¯ðŸ‡µ Isuzu', ford:'ðŸ‡ºðŸ‡¸ Ford',
+  gm:'ðŸ‡ºðŸ‡¸ GM / Chevrolet', subaru:'ðŸ‡¯ðŸ‡µ Subaru',
+  gates_medida:'ðŸ“ Medida (Correa)', aftermarket:'ðŸ”§ Aftermarket',
+  referencia:'ðŸ“‹ CatÃ¡logo', landrover:'ðŸ‡¬ðŸ‡§ BritÃ¡nica',
+  china:'ðŸ‡¨ðŸ‡³ China',
 };
 
 function detectFabFormat(fab) {
@@ -1418,42 +1418,42 @@ function detectFabFormat(fab) {
 
 function getSegMeta(segIdx, totalSegs, familia, sistema, posicion, vehiculo, fab) {
   const fmt = detectFabFormat(fab);
-  const fam = familia && familia !== '—' ? familia : null;
-  const sis = sistema && sistema !== '—' ? sistema : null;
-  const veh = vehiculo && vehiculo !== '—' ? vehiculo : null;
+  const fam = familia && familia !== 'â€”' ? familia : null;
+  const sis = sistema && sistema !== 'â€”' ? sistema : null;
+  const veh = vehiculo && vehiculo !== 'â€”' ? vehiculo : null;
 
   // 2-fragment codes
   if (totalSegs === 2) {
     if (segIdx === 0) return { label: fam || 'Marca / Familia', sub: fab || 'Prefijo' };
-    return { label: 'Número de parte', sub: 'Secuencial' };
+    return { label: 'NÃºmero de parte', sub: 'Secuencial' };
   }
 
   // 3-fragment: Honda / Toyota style
   const maps3 = {
     honda:[
-      { label:'Tipo de pieza', sub: sis || 'Prefijo numérico' },
-      { label:'Plataforma', sub: veh || 'Código de modelo' },
-      { label:'Variante', sub: 'Revisión de diseño' },
+      { label:'Tipo de pieza', sub: sis || 'Prefijo numÃ©rico' },
+      { label:'Plataforma', sub: veh || 'CÃ³digo de modelo' },
+      { label:'Variante', sub: 'RevisiÃ³n de diseÃ±o' },
     ],
     toyota_nissan:[
       { label:'Sistema vehicular', sub: SYSTEM_PREFIX_MAP[segIdx===0?'485':''] || sis || 'Prefijo (3 dig.)' },
-      { label:'Plataforma / Chasis', sub: veh || 'Código modelo' },
-      { label:'Variante', sub: 'Revisión' },
+      { label:'Plataforma / Chasis', sub: veh || 'CÃ³digo modelo' },
+      { label:'Variante', sub: 'RevisiÃ³n' },
     ],
     mazda:[
-      { label:'Marca', sub: 'Código marca Mazda' },
-      { label:'Categoría', sub: fam || sis },
-      { label:'Número/Variante', sub: veh || 'Detalle' },
+      { label:'Marca', sub: 'CÃ³digo marca Mazda' },
+      { label:'CategorÃ­a', sub: fam || sis },
+      { label:'NÃºmero/Variante', sub: veh || 'Detalle' },
     ],
     mitsubishi:[
       { label:'Serie', sub: 'Prefijo Mitsubishi' },
-      { label:'Número de parte', sub: 'Secuencial interno' },
-      { label:'Variante', sub: 'Sufijo revisión' },
+      { label:'NÃºmero de parte', sub: 'Secuencial interno' },
+      { label:'Variante', sub: 'Sufijo revisiÃ³n' },
     ],
     aftermarket:[
       { label: fam || 'Marca/Familia', sub: fab || 'Prefijo marca' },
       { label: 'Tipo de parte', sub: sis || 'Referencia' },
-      { label: 'Número', sub: 'Secuencial' },
+      { label: 'NÃºmero', sub: 'Secuencial' },
     ],
   };
   const L3 = maps3[fmt] || maps3['aftermarket'];
@@ -1463,80 +1463,80 @@ function getSegMeta(segIdx, totalSegs, familia, sistema, posicion, vehiculo, fab
   const maps4 = {
     hyundai_kia:[
       { label:'Sistema vehicular', sub: sis || (SYSTEM_PREFIX_MAP['583'] || 'Prefijo sistema') },
-      { label: fam ? 'Master / Cañerías freno' : 'Parte específica', sub: fam || 'Grupo de parte' },
-      { label:'Plataforma / Chasis', sub: veh || 'Código modelo' },
-      { label:'Versión / año rediseño', sub: 'Revisión de diseño' },
+      { label: fam ? 'Master / CaÃ±erÃ­as freno' : 'Parte especÃ­fica', sub: fam || 'Grupo de parte' },
+      { label:'Plataforma / Chasis', sub: veh || 'CÃ³digo modelo' },
+      { label:'VersiÃ³n / aÃ±o rediseÃ±o', sub: 'RevisiÃ³n de diseÃ±o' },
     ],
     honda:[
-      { label:'Tipo de pieza', sub:'Número identificador' },
-      { label:'Plataforma / Chasis', sub: veh || 'Código modelo' },
-      { label:'Variante / Revisión', sub:'Versión plataforma' },
-      { label:'Versión', sub:'Dígito de revisión' },
+      { label:'Tipo de pieza', sub:'NÃºmero identificador' },
+      { label:'Plataforma / Chasis', sub: veh || 'CÃ³digo modelo' },
+      { label:'Variante / RevisiÃ³n', sub:'VersiÃ³n plataforma' },
+      { label:'VersiÃ³n', sub:'DÃ­gito de revisiÃ³n' },
     ],
     toyota_nissan:[
       { label:'Sistema vehicular', sub: sis || 'Prefijo sistema' },
-      { label:'Parte específica', sub:'Subtipo de pieza' },
-      { label:'Plataforma', sub: veh || 'Código modelo' },
-      { label:'Revisión', sub:'Versión/variante' },
+      { label:'Parte especÃ­fica', sub:'Subtipo de pieza' },
+      { label:'Plataforma', sub: veh || 'CÃ³digo modelo' },
+      { label:'RevisiÃ³n', sub:'VersiÃ³n/variante' },
     ],
     mazda:[
       { label:'Marca', sub:'Prefijo Mazda' },
-      { label:'Categoría', sub: fam || sis },
-      { label:'Número de parte', sub:'Secuencial' },
-      { label:'Revisión', sub:'Sufijo' },
+      { label:'CategorÃ­a', sub: fam || sis },
+      { label:'NÃºmero de parte', sub:'Secuencial' },
+      { label:'RevisiÃ³n', sub:'Sufijo' },
     ],
     mitsubishi:[
-      { label:'Prefijo', sub:'Código Mitsubishi' },
-      { label:'Número de parte', sub:'Secuencial' },
+      { label:'Prefijo', sub:'CÃ³digo Mitsubishi' },
+      { label:'NÃºmero de parte', sub:'Secuencial' },
       { label:'Variante', sub:'Detalle' },
-      { label:'Revisión', sub:'Sufijo' },
+      { label:'RevisiÃ³n', sub:'Sufijo' },
     ],
     suzuki:[
       { label:'Sistema vehicular', sub: sis || 'Prefijo sistema' },
-      { label:'Parte específica', sub:'Código función' },
-      { label:'Modelo aplicación', sub: veh || 'Código vehículo' },
-      { label:'Versión', sub:'Revisión/variante' },
+      { label:'Parte especÃ­fica', sub:'CÃ³digo funciÃ³n' },
+      { label:'Modelo aplicaciÃ³n', sub: veh || 'CÃ³digo vehÃ­culo' },
+      { label:'VersiÃ³n', sub:'RevisiÃ³n/variante' },
     ],
     isuzu:[
-      { label:'Prefijo marca', sub:'Código Isuzu' },
-      { label:'Número parte', sub:'Secuencial' },
-      { label:'Variante', sub:'Especificación' },
-      { label:'Revisión', sub:'Sufijo' },
+      { label:'Prefijo marca', sub:'CÃ³digo Isuzu' },
+      { label:'NÃºmero parte', sub:'Secuencial' },
+      { label:'Variante', sub:'EspecificaciÃ³n' },
+      { label:'RevisiÃ³n', sub:'Sufijo' },
     ],
     gm:[
       { label:'Sistema vehicular', sub: sis || 'Prefijo GM' },
-      { label:'Número base', sub:'Secuencial' },
-      { label:'Variante', sub:'Código aplicación' },
-      { label:'Revisión', sub:'Sufijo' },
+      { label:'NÃºmero base', sub:'Secuencial' },
+      { label:'Variante', sub:'CÃ³digo aplicaciÃ³n' },
+      { label:'RevisiÃ³n', sub:'Sufijo' },
     ],
     gates_medida:[
       { label: fam || 'Tipo / Canales', sub:'Prefijo correa' },
       { label:'Longitud (mm)', sub:'Medida exterior' },
       { label:'Variante', sub:'Sufijo especial' },
-      { label:'Revisión', sub:'Dígito de revisión' },
+      { label:'RevisiÃ³n', sub:'DÃ­gito de revisiÃ³n' },
     ],
     ford:[
-      { label:'Plataforma Ford', sub:'Prefijo año/serie' },
-      { label:'Sistema', sub: sis || 'Código sistema' },
-      { label:'Número de parte', sub:'Secuencial' },
-      { label:'Revisión', sub:'Dígito de revisión' },
+      { label:'Plataforma Ford', sub:'Prefijo aÃ±o/serie' },
+      { label:'Sistema', sub: sis || 'CÃ³digo sistema' },
+      { label:'NÃºmero de parte', sub:'Secuencial' },
+      { label:'RevisiÃ³n', sub:'DÃ­gito de revisiÃ³n' },
     ],
     landrover:[
       { label:'Prefijo marca', sub:'LR = Land Rover / JLR' },
-      { label:'Categoría', sub: fam || sis },
-      { label:'Número de parte', sub:'Secuencial interno' },
-      { label:'Revisión', sub:'Sufijo de versión' },
+      { label:'CategorÃ­a', sub: fam || sis },
+      { label:'NÃºmero de parte', sub:'Secuencial interno' },
+      { label:'RevisiÃ³n', sub:'Sufijo de versiÃ³n' },
     ],
     china:[
-      { label:'Sistema', sub: sis || 'Prefijo sistema (4 díg.)' },
+      { label:'Sistema', sub: sis || 'Prefijo sistema (4 dÃ­g.)' },
       { label:'Subsistema', sub: fam || 'Grupo funcional' },
-      { label:'Número de parte', sub:'Secuencial (4-6 dígitos)' },
-      { label:'Variante', sub: veh || 'Versión/aplicación' },
+      { label:'NÃºmero de parte', sub:'Secuencial (4-6 dÃ­gitos)' },
+      { label:'Variante', sub: veh || 'VersiÃ³n/aplicaciÃ³n' },
     ],
     aftermarket:[
       { label: fam || 'Marca / Familia', sub: fab || 'Prefijo marca' },
-      { label: sis || 'Sistema', sub:'Clasificación' },
-      { label:'Número de parte', sub:'Secuencial' },
+      { label: sis || 'Sistema', sub:'ClasificaciÃ³n' },
+      { label:'NÃºmero de parte', sub:'Secuencial' },
       { label:'Variante', sub:'Sufijo' },
     ],
   };
@@ -1552,7 +1552,7 @@ const DEC_TYPE_LABELS = {
   'Desconocido': ['DESCONOCIDO', 'badge-unknown'],
 };
 
-// ── Context para decodificador automático ──
+// â”€â”€ Context para decodificador automÃ¡tico â”€â”€
 const DecodificadorCtx = createContext(null);
 const useDecodificador = () => useContext(DecodificadorCtx);
 
@@ -1575,11 +1575,11 @@ function DecodificadorTab({ selectedCode = null }) {
   const [compB,       setCompB]       = useState('');
   const [compResult,  setCompResult]  = useState(null);
 
-  // ── Load BD from Supabase ──────────────────────────────────
+  // â”€â”€ Load BD from Supabase â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     (async () => {
       setDbLoading(true);
-      setDbStatus('Cargando base de códigos…');
+      setDbStatus('Cargando base de cÃ³digosâ€¦');
       try {
         const PAGE = 1000; let all = []; let from = 0;
         while (true) {
@@ -1600,23 +1600,23 @@ function DecodificadorTab({ selectedCode = null }) {
           if (!c) return;
           db[c] = [
             row.tipo       || 'Desconocido',
-            row.fabricante || '—',
-            row.vehiculo   || '—',
-            row.familia    || '—',
-            row.sistema    || '—',
-            row.posicion   || '—',
-            String(row.frag_1 || '—'),
-            String(row.frag_2 || '—'),
-            String(row.frag_3 || '—'),
-            String(row.frag_4 || '—'),
+            row.fabricante || 'â€”',
+            row.vehiculo   || 'â€”',
+            row.familia    || 'â€”',
+            row.sistema    || 'â€”',
+            row.posicion   || 'â€”',
+            String(row.frag_1 || 'â€”'),
+            String(row.frag_2 || 'â€”'),
+            String(row.frag_3 || 'â€”'),
+            String(row.frag_4 || 'â€”'),
           ];
         });
         setDecDB(db);
         setDbCount(Object.keys(db).length);
-        setDbStatus(`✓ ${Object.keys(db).length.toLocaleString()} códigos activos`);
+        setDbStatus(`âœ“ ${Object.keys(db).length.toLocaleString()} cÃ³digos activos`);
         setDbStatusCls('ok');
       } catch (e) {
-        setDbStatus('✗ Error: ' + e.message);
+        setDbStatus('âœ— Error: ' + e.message);
         setDbStatusCls('err');
         toast('Error cargando BD del Decodificador: ' + e.message, 'error');
       } finally {
@@ -1625,7 +1625,7 @@ function DecodificadorTab({ selectedCode = null }) {
     })();
   }, []); // eslint-disable-line
 
-  // ── Auto-decode cuando se selecciona un código desde la tabla ──
+  // â”€â”€ Auto-decode cuando se selecciona un cÃ³digo desde la tabla â”€â”€
   useEffect(() => {
     if (selectedCode && decDB && Object.keys(decDB).length > 0) {
       setQuery(selectedCode);
@@ -1633,10 +1633,10 @@ function DecodificadorTab({ selectedCode = null }) {
     }
   }, [selectedCode, decDB]); // eslint-disable-line
 
-  // ── Upload XLSX to Supabase ─────────────────────────────────
+  // â”€â”€ Upload XLSX to Supabase â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleUploadBD = async (file) => {
     if (!file) return;
-    setDbStatus('Leyendo archivo…'); setDbStatusCls('');
+    setDbStatus('Leyendo archivoâ€¦'); setDbStatusCls('');
     try {
       const xlsxLib = await loadXLSX();
       const buf  = await file.arrayBuffer();
@@ -1657,15 +1657,15 @@ function DecodificadorTab({ selectedCode = null }) {
         upsertRows.push({
           codigo:     code,
           tipo:       g(row,'tipo')       || g(row,'TIPO')       || 'Desconocido',
-          fabricante: g(row,'fabricante') || g(row,'FABRICANTE') || '—',
-          vehiculo:   g(row,'vehiculo')   || g(row,'VEHICULO')   || '—',
-          familia:    g(row,'familia')    || g(row,'FAMILIA')    || '—',
-          sistema:    g(row,'sistema')    || g(row,'SISTEMA')    || '—',
-          posicion:   g(row,'posicion')   || g(row,'POSICION')   || '—',
-          frag_1:     String(g(row,'frag_1') || g(row,'FRAG_1') || '') || '—',
-          frag_2:     String(g(row,'frag_2') || g(row,'FRAG_2') || '') || '—',
-          frag_3:     String(g(row,'frag_3') || g(row,'FRAG_3') || '') || '—',
-          frag_4:     String(g(row,'frag_4') || g(row,'FRAG_4') || '') || '—',
+          fabricante: g(row,'fabricante') || g(row,'FABRICANTE') || 'â€”',
+          vehiculo:   g(row,'vehiculo')   || g(row,'VEHICULO')   || 'â€”',
+          familia:    g(row,'familia')    || g(row,'FAMILIA')    || 'â€”',
+          sistema:    g(row,'sistema')    || g(row,'SISTEMA')    || 'â€”',
+          posicion:   g(row,'posicion')   || g(row,'POSICION')   || 'â€”',
+          frag_1:     String(g(row,'frag_1') || g(row,'FRAG_1') || '') || 'â€”',
+          frag_2:     String(g(row,'frag_2') || g(row,'FRAG_2') || '') || 'â€”',
+          frag_3:     String(g(row,'frag_3') || g(row,'FRAG_3') || '') || 'â€”',
+          frag_4:     String(g(row,'frag_4') || g(row,'FRAG_4') || '') || 'â€”',
         });
         ok++;
       }
@@ -1676,23 +1676,23 @@ function DecodificadorTab({ selectedCode = null }) {
           .from(COL_BASE_CODIGOS)
           .upsert(upsertRows.slice(i, i + BATCH), { onConflict:'codigo' });
         if (error) throw new Error(error.message);
-        setDbStatus(`Subiendo… ${Math.min(i+BATCH, ok)}/${ok}`);
+        setDbStatus(`Subiendoâ€¦ ${Math.min(i+BATCH, ok)}/${ok}`);
       }
       // Reload local DB
       const db = {};
       upsertRows.forEach(r => { db[r.codigo] = [r.tipo,r.fabricante,r.vehiculo,r.familia,r.sistema,r.posicion,r.frag_1,r.frag_2,r.frag_3,r.frag_4]; });
       setDecDB(db);
       setDbCount(ok);
-      setDbStatus(`✓ BD cargada — ${ok} códigos desde "${file.name}"${skip?`, ${skip} omitidas`:''}`);
+      setDbStatus(`âœ“ BD cargada â€” ${ok} cÃ³digos desde "${file.name}"${skip?`, ${skip} omitidas`:''}`);
       setDbStatusCls('ok');
-      toast(`✅ ${ok} códigos del Decodificador cargados en Supabase.`, 'success');
+      toast(`âœ… ${ok} cÃ³digos del Decodificador cargados en Supabase.`, 'success');
     } catch (e) {
-      setDbStatus('✗ Error: ' + e.message); setDbStatusCls('err');
+      setDbStatus('âœ— Error: ' + e.message); setDbStatusCls('err');
       toast('Error cargando BD Decodificador: ' + e.message, 'error');
     }
   };
 
-  // ── Download BD as XLSX — headers en minúsculas para compatibilidad con Supabase ──
+  // â”€â”€ Download BD as XLSX â€” headers en minÃºsculas para compatibilidad con Supabase â”€â”€
   const handleDownloadBD = async () => {
     try {
       const xlsxLib = await loadXLSX();
@@ -1701,22 +1701,22 @@ function DecodificadorTab({ selectedCode = null }) {
       const data = [COLS];
       for (const [code, r] of Object.entries(decDB)) {
         data.push([code, r[0],r[1],r[2],r[3],r[4],r[5],
-          r[6]==='—'?'':r[6], r[7]==='—'?'':r[7], r[8]==='—'?'':r[8], r[9]==='—'?'':r[9]]);
+          r[6]==='â€”'?'':r[6], r[7]==='â€”'?'':r[7], r[8]==='â€”'?'':r[8], r[9]==='â€”'?'':r[9]]);
       }
       const ws = xlsxLib.utils.aoa_to_sheet(data);
       ws['!cols'] = [26,12,34,38,38,26,22,10,10,10,10].map(w=>({wch:w}));
       const wb = xlsxLib.utils.book_new();
       xlsxLib.utils.book_append_sheet(wb, ws, 'BASE_CODIGOS');
       xlsxLib.writeFile(wb, 'base_codigos_decodificador.xlsx');
-      toast(`📥 ${data.length-1} códigos exportados.`, 'success');
+      toast(`ðŸ“¥ ${data.length-1} cÃ³digos exportados.`, 'success');
     } catch (e) {
       toast('Error al exportar: ' + e.message, 'error');
     }
   };
 
-  // ── Build anatomy parts ─────────────────────────────────────
+  // â”€â”€ Build anatomy parts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const buildAnatomyParts = (code, frags, familia, sistema, posicion, vehiculo, fab) => {
-    const realFrags = frags.filter(f => f && f !== '—');
+    const realFrags = frags.filter(f => f && f !== 'â€”');
     const useFrags = realFrags.length > 0 ? realFrags : [code];
     const parts = [];
     let remaining = code, fragIdx = 0, segColorIdx = 0;
@@ -1744,7 +1744,7 @@ function DecodificadorTab({ selectedCode = null }) {
     });
   };
 
-  // ── Decode ──────────────────────────────────────────────────
+  // â”€â”€ Decode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const decode = (rawCode) => {
     const raw = (rawCode || query).trim().toUpperCase().replace(/\s/g,'');
     setResult(null); setNotFound(''); setSuggests([]); setCompOpen(false); setCompResult(null);
@@ -1757,13 +1757,13 @@ function DecodificadorTab({ selectedCode = null }) {
     const keys = Object.keys(decDB);
     const matches = keys.filter(k => k.startsWith(raw) || k.includes(raw)).slice(0, 12);
     if (matches.length === 1) { showResultData(matches[0], decDB[matches[0]]); setQuery(matches[0]); return; }
-    if (matches.length > 1) { setNotFound('Código exacto no encontrado. Resultados similares:'); setSuggests(matches); }
-    else setNotFound(`No se encontró el código "${raw}" en la base de datos.`);
+    if (matches.length > 1) { setNotFound('CÃ³digo exacto no encontrado. Resultados similares:'); setSuggests(matches); }
+    else setNotFound(`No se encontrÃ³ el cÃ³digo "${raw}" en la base de datos.`);
   };
 
   const showResultData = (code, r) => {
     const [tipo, fab, vehiculo, familia, sistema, posicion, f1, f2, f3, f4] = r;
-    setResult({ code, tipo, fab, vehiculo, familia, sistema, posicion, frags:[f1,f2,f3,f4].filter(f=>f&&f!=='—') });
+    setResult({ code, tipo, fab, vehiculo, familia, sistema, posicion, frags:[f1,f2,f3,f4].filter(f=>f&&f!=='â€”') });
     const origCode = detectFabFormat(fab);
     const origen   = FMT_ORIGEN[origCode] || '';
     const parts = buildAnatomyParts(code, [f1,f2,f3,f4], familia, sistema, posicion, vehiculo, fab);
@@ -1771,18 +1771,18 @@ function DecodificadorTab({ selectedCode = null }) {
     setCompB('');
   };
 
-  // ── Compare ─────────────────────────────────────────────────
+  // â”€â”€ Compare â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const compare = () => {
     const cA = result?.code;
     const cB = compB.trim().toUpperCase().replace(/\s/g,'');
-    if (!cA || !cB) { setCompResult({ error: 'Ingresa ambos códigos' }); return; }
+    if (!cA || !cB) { setCompResult({ error: 'Ingresa ambos cÃ³digos' }); return; }
     const rA = decDB[cA];
     const rB = decDB[cB];
-    if (!rA && !rB) { setCompResult({ error: 'Ninguno de los dos códigos está en la BD' }); return; }
+    if (!rA && !rB) { setCompResult({ error: 'Ninguno de los dos cÃ³digos estÃ¡ en la BD' }); return; }
 
-    const CAMPOS = [['TIPO',0],['FABRICANTE',1],['FAMILIA',3],['SISTEMA',4],['VEHÍCULO',2],['POSICIÓN',5]];
-    const posA = rA ? rA[5] : '—';
-    const posB = rB ? rB[5] : '—';
+    const CAMPOS = [['TIPO',0],['FABRICANTE',1],['FAMILIA',3],['SISTEMA',4],['VEHÃCULO',2],['POSICIÃ“N',5]];
+    const posA = rA ? rA[5] : 'â€”';
+    const posB = rB ? rB[5] : 'â€”';
     const mirrorPairs = [
       ['Izquierdo','Derecho'],['Derecho','Izquierdo'],
       ['Izquierdo','Derecho (algunos sistemas)'],['Derecho (algunos sistemas)','Izquierdo'],
@@ -1795,16 +1795,16 @@ function DecodificadorTab({ selectedCode = null }) {
     }
     const score = rA && rB ? matches/total : 0;
     let vrdCls, vrdTxt;
-    if (!rA || !rB)       { vrdCls='vrd-diff'; vrdTxt='⚠ UN CÓDIGO NO ESTÁ EN LA BASE'; }
-    else if (cA===cB)     { vrdCls='vrd-ok';   vrdTxt='✓ MISMO CÓDIGO'; }
-    else if (isMirror && score>=0.8) { vrdCls='vrd-mir'; vrdTxt='⇄ ESPEJO — Lado contrario del mismo conjunto'; }
-    else if (score===1)   { vrdCls='vrd-ok';   vrdTxt='✓ INTERCAMBIABLES — Misma familia y sistema'; }
-    else if (score>=0.6)  { vrdCls='vrd-sim';  vrdTxt='~ SIMILARES — Verificar aplicación'; }
-    else                  { vrdCls='vrd-diff'; vrdTxt='✗ DIFERENTE — Familia o sistema distinto'; }
+    if (!rA || !rB)       { vrdCls='vrd-diff'; vrdTxt='âš  UN CÃ“DIGO NO ESTÃ EN LA BASE'; }
+    else if (cA===cB)     { vrdCls='vrd-ok';   vrdTxt='âœ“ MISMO CÃ“DIGO'; }
+    else if (isMirror && score>=0.8) { vrdCls='vrd-mir'; vrdTxt='â‡„ ESPEJO â€” Lado contrario del mismo conjunto'; }
+    else if (score===1)   { vrdCls='vrd-ok';   vrdTxt='âœ“ INTERCAMBIABLES â€” Misma familia y sistema'; }
+    else if (score>=0.6)  { vrdCls='vrd-sim';  vrdTxt='~ SIMILARES â€” Verificar aplicaciÃ³n'; }
+    else                  { vrdCls='vrd-diff'; vrdTxt='âœ— DIFERENTE â€” Familia o sistema distinto'; }
 
     const rows = CAMPOS.map(([label, idx]) => {
-      const vA = rA ? (rA[idx]||'—') : '—';
-      const vB = rB ? (rB[idx]||'—') : '—';
+      const vA = rA ? (rA[idx]||'â€”') : 'â€”';
+      const vB = rB ? (rB[idx]||'â€”') : 'â€”';
       const match = vA===vB;
       const isPos = idx===5;
       let clsA = match ? 'ccell-match' : (isPos&&isMirror ? 'ccell-mir' : 'ccell-diff');
@@ -1816,31 +1816,31 @@ function DecodificadorTab({ selectedCode = null }) {
   };
 
   const fileRef = useRef(null);
-  const posColor = p => p==='Izquierdo'?'hl-green': p.includes('Derecho')?'hl-amber':p==='—'?'':'hl-blue';
+  const posColor = p => p==='Izquierdo'?'hl-green': p.includes('Derecho')?'hl-amber':p==='â€”'?'':'hl-blue';
 
   return (
     <div className="dec-wrap" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:1000,maxHeight:'50vh',overflowY:'auto',background:'var(--dark)'}}>
       {/* Section header */}
       <div className="dec-section-title">
-        <span style={{fontSize:'1.1rem'}}>🔍</span>
+        <span style={{fontSize:'1.1rem'}}>ðŸ”</span>
         <div>
-          <div className="dec-section-label">Decodificador de Códigos</div>
-          <div className="dec-section-sub">Selecciona un código de la tabla para decodificar automáticamente</div>
+          <div className="dec-section-label">Decodificador de CÃ³digos</div>
+          <div className="dec-section-sub">Selecciona un cÃ³digo de la tabla para decodificar automÃ¡ticamente</div>
         </div>
         <span style={{marginLeft:'auto',fontFamily:'Courier New,monospace',fontSize:'.65rem',
           color:'rgba(255,255,255,.5)',background:'rgba(255,255,255,.08)',padding:'2px 8px',
           borderRadius:4,border:'1px solid rgba(255,255,255,.15)'}}>
-          BASE v2025 · {dbCount.toLocaleString()} códigos
+          BASE v2025 Â· {dbCount.toLocaleString()} cÃ³digos
         </span>
       </div>
 
       <div className="dec-inner">
       <div className="dec-card">
-        {/* ── Display código seleccionado (read-only) ── */}
+        {/* â”€â”€ Display cÃ³digo seleccionado (read-only) â”€â”€ */}
         {selectedCode && (
           <div className="dec-top">
             <div className="dec-label">
-              <span className="dec-tag">CÓDIGO SELECCIONADO</span>
+              <span className="dec-tag">CÃ“DIGO SELECCIONADO</span>
               <span className="dec-title"><span>{query}</span></span>
             </div>
           </div>
@@ -1848,25 +1848,25 @@ function DecodificadorTab({ selectedCode = null }) {
 
         {!selectedCode && (
           <div style={{padding:'16px 14px',color:'#90CAF9',fontSize:'.85rem',fontStyle:'italic',textAlign:'center'}}>
-            Selecciona un código de la tabla para decodificarlo aquí…
+            Selecciona un cÃ³digo de la tabla para decodificarlo aquÃ­â€¦
           </div>
         )}
 
-        {/* ── Loading state ── */}
+        {/* â”€â”€ Loading state â”€â”€ */}
         {dbLoading && (
           <div className="loading" style={{padding:'20px',background:'var(--bl)',borderRadius:0}}>
-            <span className="spin"/>Cargando base de códigos desde Supabase…
+            <span className="spin"/>Cargando base de cÃ³digos desde Supabaseâ€¦
           </div>
         )}
 
-        {/* ── Not found ── */}
+        {/* â”€â”€ Not found â”€â”€ */}
         {notFound && (
           <div className="dec-notfound visible" style={{margin:'8px 14px 0'}}>
             {notFound}
           </div>
         )}
 
-        {/* ── Suggestions ── */}
+        {/* â”€â”€ Suggestions â”€â”€ */}
         {suggests.length > 0 && (
           <div className="dec-suggest" style={{display:'block', margin:'6px 14px 0'}}>
             <div className="dec-suggest-title">SIMILARES ENCONTRADOS</div>
@@ -1880,7 +1880,7 @@ function DecodificadorTab({ selectedCode = null }) {
           </div>
         )}
 
-        {/* ── Result ── */}
+        {/* â”€â”€ Result â”€â”€ */}
         {result && (
           <div className="dec-result visible">
             <div className="dec-result-hdr">
@@ -1892,7 +1892,7 @@ function DecodificadorTab({ selectedCode = null }) {
                 {anatomy && anatomy.parts.length > 0 && (
                   <div className="dec-anatomy">
                     <div className="dec-anat-title">
-                      ANATOMÍA DEL CÓDIGO &nbsp;—&nbsp; <span>{anatomy.code}</span>
+                      ANATOMÃA DEL CÃ“DIGO &nbsp;â€”&nbsp; <span>{anatomy.code}</span>
                       {anatomy.origen && <span style={{fontSize:'.62rem',opacity:.6,marginLeft:8,fontFamily:'inherit'}}>{anatomy.origen}</span>}
                     </div>
                     <div className="dec-seg-row">
@@ -1921,11 +1921,11 @@ function DecodificadorTab({ selectedCode = null }) {
                     ['FABRICANTE', result.fab],
                     ['FAMILIA',   <span className="hl-blue">{result.familia}</span>],
                     ['SISTEMA',   result.sistema],
-                    ['VEHÍCULO',  result.vehiculo==='—'
+                    ['VEHÃCULO',  result.vehiculo==='â€”'
                       ? <span style={{color:'var(--g5)',fontStyle:'italic'}}>Universal / Verificar</span>
                       : result.vehiculo],
-                    ['POSICIÓN',  result.posicion==='—'
-                      ? <span style={{color:'var(--g5)'}}>—</span>
+                    ['POSICIÃ“N',  result.posicion==='â€”'
+                      ? <span style={{color:'var(--g5)'}}>â€”</span>
                       : <span className={posColor(result.posicion)}>{result.posicion}</span>],
                     ...(result.frags.length>0 ? [['FRAGMENTOS',
                       <span>{result.frags.map(f=>(
@@ -1948,7 +1948,7 @@ function DecodificadorTab({ selectedCode = null }) {
                   className={`dec-comp-toggle${compOpen?' open':''}`}
                   onClick={() => { setCompOpen(o=>!o); if (!compOpen) setTimeout(()=>document.getElementById('dec-comp-b')?.focus(),50); }}
                 >
-                  <span className="arr">▶</span> COMPARAR CON OTRO CÓDIGO
+                  <span className="arr">â–¶</span> COMPARAR CON OTRO CÃ“DIGO
                 </button>
 
                 {compOpen && (
@@ -1957,12 +1957,12 @@ function DecodificadorTab({ selectedCode = null }) {
                       <input className="dec-comp-input" value={result.code} readOnly style={{color:'var(--bm)',fontWeight:700}}/>
                       <div className="dec-comp-vs">VS</div>
                       <input id="dec-comp-b" className="dec-comp-input" type="text"
-                        value={compB} placeholder="Código B…" maxLength={30}
+                        value={compB} placeholder="CÃ³digo Bâ€¦" maxLength={30}
                         onChange={e => setCompB(e.target.value.toUpperCase())}
                         onKeyDown={e => e.key==='Enter' && compare()}
                       />
                     </div>
-                    <button className="dec-comp-btn" onClick={compare}>⇄ COMPARAR</button>
+                    <button className="dec-comp-btn" onClick={compare}>â‡„ COMPARAR</button>
 
                     {compResult && (
                       <div className="dec-comp-table visible">
@@ -1993,22 +1993,22 @@ function DecodificadorTab({ selectedCode = null }) {
           </div>
         )}
 
-        {/* ── DB toolbar ── */}
+        {/* â”€â”€ DB toolbar â”€â”€ */}
         <div className="dec-db-bar">
           <div className="dec-db-label">
-            BASE: <span id="dec-db-count">{dbCount.toLocaleString()}</span> códigos activos
+            BASE: <span id="dec-db-count">{dbCount.toLocaleString()}</span> cÃ³digos activos
           </div>
           {isAdmin && (
             <>
               <button className="dec-db-btn" onClick={() => fileRef.current?.click()}>
-                ⬆ CARGAR BD (.xlsx)
+                â¬† CARGAR BD (.xlsx)
               </button>
               <input ref={fileRef} type="file" accept=".xlsx,.xls" style={{display:'none'}}
                 onChange={e => { if(e.target.files[0]) handleUploadBD(e.target.files[0]); e.target.value=''; }}
               />
             </>
           )}
-          <button className="dec-db-btn" onClick={handleDownloadBD}>⬇ DESCARGAR BD (.xlsx)</button>
+          <button className="dec-db-btn" onClick={handleDownloadBD}>â¬‡ DESCARGAR BD (.xlsx)</button>
         </div>
         <div className={`dec-db-status${dbStatusCls?' '+dbStatusCls:''}`}>{dbStatus}</div>
       </div>
@@ -2018,7 +2018,7 @@ function DecodificadorTab({ selectedCode = null }) {
 }
 
 // ============================================================
-//  APP PRINCIPAL  (interna — sin exports)
+//  APP PRINCIPAL  (interna â€” sin exports)
 // ============================================================
 function CatalogoApp() {
   const toast = useToast();
@@ -2051,17 +2051,17 @@ function CatalogoApp() {
   const [showImport,  setShowImport]  = useState(false);
   const [showCols,    setShowCols]    = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [selectedCode, setSelectedCode] = useState(null); // Para decodificador automático
+  const [selectedCode, setSelectedCode] = useState(null); // Para decodificador automÃ¡tico
 
   const debRef = useRef(null);
 
-  // ── Listas dinámicas (marcas, clasificaciones, subclasificaciones, desc estándar) ──
+  // â”€â”€ Listas dinÃ¡micas (marcas, clasificaciones, subclasificaciones, desc estÃ¡ndar) â”€â”€
   const [extraMarcas,  setExtraMarcas]  = useState([]);
   const [extraClasif,  setExtraClasif]  = useState([]);
   const [extraSubs,    setExtraSubs]    = useState([]);
   const [extraDescStd, setExtraDescStd] = useState([]);
 
-  // Derivar listas únicas: base + extras + lo que ya existe en records
+  // Derivar listas Ãºnicas: base + extras + lo que ya existe en records
   const allMarcas = useMemo(()=>{
     const fromRecs = records.map(r=>r.fields[0]).filter(Boolean);
     return [...new Set([...MARCAS_DEFAULT, ...extraMarcas, ...fromRecs])].sort();
@@ -2093,37 +2093,37 @@ function CatalogoApp() {
     addDescStd: v => setExtraDescStd(p=>[...new Set([...p, v])]),
   }),[allMarcas, allClasif, allSubs, allDescStd]);
 
-  // ── Carga inicial — SOLO registros, changelog lazy ──
+  // â”€â”€ Carga inicial â€” SOLO registros, changelog lazy â”€â”€
   useEffect(()=>{
     (async()=>{
       try {
         setLoading(true);
-        setLoadProgress({ active:true, pct:0, msg:'Conectando a Supabase…', indeterminate:true });
+        setLoadProgress({ active:true, pct:0, msg:'Conectando a Supabaseâ€¦', indeterminate:true });
         // Cargamos SOLO repuestos al inicio para mayor velocidad
         // El changelog se carga cuando el usuario abre el historial
         const rawRecs = await fsGetAll(COL_RECORDS, (n) => {
-          // Supabase entrega todos los docs juntos — actualizamos badge temprano
+          // Supabase entrega todos los docs juntos â€” actualizamos badge temprano
           console.log('[Supabase] docs recibidos:', n);
-          setLoadProgress({ active:true, pct:80, msg:`Procesando ${n.toLocaleString()} registros…`, indeterminate:false });
+          setLoadProgress({ active:true, pct:80, msg:`Procesando ${n.toLocaleString()} registrosâ€¦`, indeterminate:false });
         });
-        setLoadProgress({ active:true, pct:95, msg:'Normalizando datos…', indeterminate:false });
+        setLoadProgress({ active:true, pct:95, msg:'Normalizando datosâ€¦', indeterminate:false });
         const normalized = rawRecs.map(normalizeDoc).filter(Boolean);
         setRecords(normalized);
         setFbStatus('ok');
-        setLoadProgress({ active:true, pct:100, msg:`✅ ${normalized.length.toLocaleString()} registros cargados`, indeterminate:false });
+        setLoadProgress({ active:true, pct:100, msg:`âœ… ${normalized.length.toLocaleString()} registros cargados`, indeterminate:false });
         setTimeout(()=>setLoadProgress(p=>({...p,active:false})), 1800);
       } catch(e) {
         console.error('[Supabase]', e);
         setFbStatus('error');
         setLoadProgress({ active:false, pct:0, msg:'', indeterminate:true });
-        toast('❌ Error Supabase: ' + e.message, 'error');
+        toast('âŒ Error Supabase: ' + e.message, 'error');
       } finally {
         setLoading(false);
       }
     })();
   },[]); // eslint-disable-line
 
-  // ── Carga de historial (lazy: solo cuando se abre el modal) ──
+  // â”€â”€ Carga de historial (lazy: solo cuando se abre el modal) â”€â”€
   const [changelogLoaded, setChangelogLoaded] = useState(false);
   const loadChangelog = async () => {
     if (changelogLoaded) return;
@@ -2197,23 +2197,23 @@ function CatalogoApp() {
     setPage(1);
   };
 
-  // ── Log ──
+  // â”€â”€ Log â”€â”€
   const logEntry = async (op, resumen, cambios=[])=>{
     const {fecha,hora}=nowDT();
     const entry={op,resumen,cambios,fecha,hora,id:Date.now()};
     try{ await fsAddLog(entry); } catch(e){ console.warn(e); }
-    // Agregar al estado local aunque el changelog no haya sido cargado aún
+    // Agregar al estado local aunque el changelog no haya sido cargado aÃºn
     setChangelogLoaded(true); // marcar como "hay datos"
     setChangelog(prev=>[{...entry,_id:'local_'+Date.now()},...prev]);
   };
 
-  // ── CRUD ──
+  // â”€â”€ CRUD â”€â”€
   const handleSaveNew = async ({fields})=>{
     const id = await fsAdd(COL_RECORDS,{fields});
     setRecords(prev=>[{_id:id,fields},...prev]);
     await logEntry('AGREGAR',`${fields[0]} ${fields[1]} ${fields[3]}`,
-      [{campo:'Descripción',antes:'',despues:fields[4]}]);
-    toast('✅ Registro guardado en Supabase.','success');
+      [{campo:'DescripciÃ³n',antes:'',despues:fields[4]}]);
+    toast('âœ… Registro guardado en Supabase.','success');
   };
 
   const handleSaveEdit = async (original,{fields})=>{
@@ -2222,7 +2222,7 @@ function CatalogoApp() {
     const cambios=fields.map((f,i)=>f!==original.fields[i]
       ?{campo:COL_DEFS[i].label,antes:original.fields[i],despues:f}:null).filter(Boolean);
     await logEntry('EDITAR',`${fields[0]} ${fields[1]}`,cambios);
-    toast('✏️ Registro actualizado.','success');
+    toast('âœï¸ Registro actualizado.','success');
   };
 
   const handleDelete = async ()=>{
@@ -2231,11 +2231,11 @@ function CatalogoApp() {
       await fsDelete(rec._id);
       setRecords(prev=>prev.filter(r=>r._id!==rec._id));
       await logEntry('ELIMINAR',`${rec.fields[0]} ${rec.fields[1]} ${rec.fields[3]}`);
-      toast('🗑 Registro eliminado.','warning');
+      toast('ðŸ—‘ Registro eliminado.','warning');
     }catch(e){toast('Error: '+e.message,'error');}
   };
 
-  // ── Reemplazo masivo ──
+  // â”€â”€ Reemplazo masivo â”€â”€
   const handleBulkReplace = async (fieldIdx, searchVal, replaceVal, matchExact) => {
     const search = searchVal.trim();
     const replace = replaceVal.trim();
@@ -2263,22 +2263,22 @@ function CatalogoApp() {
         const u = updated.find(x => x.rec._id === r._id);
         return u ? { ...r, fields: u.newFields } : r;
       }));
-      await logEntry('EDITAR', `Reemplazo masivo: campo ${COL_DEFS.find(c=>c.key===fieldIdx)?.label} — "${search}" → "${replace}" (${count} registros)`);
-      toast(`✅ ${count} registros actualizados.`, 'success');
+      await logEntry('EDITAR', `Reemplazo masivo: campo ${COL_DEFS.find(c=>c.key===fieldIdx)?.label} â€” "${search}" â†’ "${replace}" (${count} registros)`);
+      toast(`âœ… ${count} registros actualizados.`, 'success');
     } else {
       toast('No se encontraron coincidencias.', 'info');
     }
     return count;
   };
 
-  // ── Importar ──
+  // â”€â”€ Importar â”€â”€
   const handleImport = async (rows, mode)=>{
     setLoading(true);
     const total = rows.length;
-    setLoadProgress({ active:true, pct:0, msg:`Preparando ${total.toLocaleString()} registros…`, indeterminate:false });
+    setLoadProgress({ active:true, pct:0, msg:`Preparando ${total.toLocaleString()} registrosâ€¦`, indeterminate:false });
     try{
       if(mode==='replace'){
-        setLoadProgress({ active:true, pct:5, msg:'Eliminando registros anteriores…', indeterminate:true });
+        setLoadProgress({ active:true, pct:5, msg:'Eliminando registros anterioresâ€¦', indeterminate:true });
         await fsDeleteAll();
       }
       // Escritura en batches con progreso visual
@@ -2289,25 +2289,25 @@ function CatalogoApp() {
         if (error) throw new Error(error.message);
         const pct = Math.round(Math.min(((i+CHUNK)/total)*85, 85)) + 5;
         const done = Math.min(i+CHUNK, total);
-        setLoadProgress({ active:true, pct, msg:`Subiendo… ${done.toLocaleString()} / ${total.toLocaleString()} registros`, indeterminate:false });
-        toast(`⏳ Guardando… ${pct}% (${done}/${total})`, 'info');
+        setLoadProgress({ active:true, pct, msg:`Subiendoâ€¦ ${done.toLocaleString()} / ${total.toLocaleString()} registros`, indeterminate:false });
+        toast(`â³ Guardandoâ€¦ ${pct}% (${done}/${total})`, 'info');
       }
-      setLoadProgress({ active:true, pct:93, msg:'Recargando datos desde Supabase…', indeterminate:true });
+      setLoadProgress({ active:true, pct:93, msg:'Recargando datos desde Supabaseâ€¦', indeterminate:true });
       // Recargar desde Supabase
       const fresh = await fsGetAll(COL_RECORDS);
       setRecords(fresh.map(normalizeDoc).filter(Boolean));
-      await logEntry('IMPORTAR',`${mode==='replace'?'Reemplazo':'Adición'} de ${total} registros`);
-      setLoadProgress({ active:true, pct:100, msg:`✅ ${total.toLocaleString()} registros importados`, indeterminate:false });
+      await logEntry('IMPORTAR',`${mode==='replace'?'Reemplazo':'AdiciÃ³n'} de ${total} registros`);
+      setLoadProgress({ active:true, pct:100, msg:`âœ… ${total.toLocaleString()} registros importados`, indeterminate:false });
       setTimeout(()=>setLoadProgress(p=>({...p,active:false})), 2500);
-      toast(`✅ ${total} registros importados correctamente.`,'success');
+      toast(`âœ… ${total} registros importados correctamente.`,'success');
       clearAll();
     }catch(e){
       setLoadProgress({ active:false, pct:0, msg:'', indeterminate:true });
-      toast('Error importación: '+e.message,'error');
+      toast('Error importaciÃ³n: '+e.message,'error');
     }finally{setLoading(false);}
   };
 
-  // ── Exportar XLS ──
+  // â”€â”€ Exportar XLS â”€â”€
   const exportCSV = async ()=>{
     if(!filtered.length){toast('No hay datos para exportar.','error');return;}
     try{
@@ -2315,9 +2315,9 @@ function CatalogoApp() {
       const rows = [COL_DEFS.map(c=>c.label), ...filtered.map(r=>r.fields)];
       const ws = xlsxLib.utils.aoa_to_sheet(rows);
       const wb = xlsxLib.utils.book_new();
-      xlsxLib.utils.book_append_sheet(wb, ws, 'Catálogo');
+      xlsxLib.utils.book_append_sheet(wb, ws, 'CatÃ¡logo');
       xlsxLib.writeFile(wb, `catalogo_${new Date().toISOString().slice(0,10)}.xlsx`);
-      toast(`📥 ${filtered.length} registros exportados como Excel.`,'success');
+      toast(`ðŸ“¥ ${filtered.length} registros exportados como Excel.`,'success');
     }catch(e){toast('Error al exportar: '+e.message,'error');}
   };
 
@@ -2340,8 +2340,8 @@ function CatalogoApp() {
           <img src={LOGO_SRC} alt='Auto Centro' style={{height:42,objectFit:'contain',flexShrink:0}}/>
           <div className="ac-hdiv"/>
           <div className="ac-htitle">
-            <span className="s1">Sistema de Gestión</span>
-            <span className="s2">Catálogo de Repuestos</span>
+            <span className="s1">Sistema de GestiÃ³n</span>
+            <span className="s2">CatÃ¡logo de Repuestos</span>
           </div>
           <span className="ac-badge">{records.length.toLocaleString()} registros</span>
           <span className="fb-badge">
@@ -2349,18 +2349,18 @@ function CatalogoApp() {
               background:fbDotColor,
               ...(fbStatus==='connecting'?{animation:'spin .8s linear infinite'}:{})
             }}/>
-            Supabase {fbStatus==='ok'?'conectado':fbStatus==='connecting'?'conectando…':'error'}
+            Supabase {fbStatus==='ok'?'conectado':fbStatus==='connecting'?'conectandoâ€¦':'error'}
           </span>
         </div>
         <div className="ac-hact">
           {isAdmin && <button className="btn btn-g"
-            onClick={()=>setModalEdit({_id:null,fields:Array(9).fill('')})}>➕ Nuevo</button>}
-          {isAdmin && <button className="btn btn-c" onClick={()=>setShowImport(true)}>📂 Cargar base</button>}
-          <button className="btn btn-c" onClick={exportCSV}>📥 Excel</button>
-          <button className="btn btn-c" onClick={()=>setShowCols(true)}>👁 Columnas</button>
-          {isAdmin && <button className="btn btn-c" onClick={()=>setShowReplace(true)}>🔄 Reemplazar</button>}
+            onClick={()=>setModalEdit({_id:null,fields:Array(9).fill('')})}>âž• Nuevo</button>}
+          {isAdmin && <button className="btn btn-c" onClick={()=>setShowImport(true)}>ðŸ“‚ Cargar base</button>}
+          <button className="btn btn-c" onClick={exportCSV}>ðŸ“¥ Excel</button>
+          <button className="btn btn-c" onClick={()=>setShowCols(true)}>ðŸ‘ Columnas</button>
+          {isAdmin && <button className="btn btn-c" onClick={()=>setShowReplace(true)}>ðŸ”„ Reemplazar</button>}
           {isAdmin && <button className="btn btn-c" onClick={()=>{ loadChangelog(); setShowHistory(true); }}>
-            📋 Historial
+            ðŸ“‹ Historial
             {changelog.length>0&&<span style={{background:'var(--gold)',color:'var(--bd)',
               borderRadius:10,padding:'1px 7px',fontSize:'.7rem',marginLeft:4}}>
               {changelog.length}</span>}
@@ -2373,8 +2373,8 @@ function CatalogoApp() {
               fontSize:'.6rem',fontWeight:700,padding:'1px 7px',borderRadius:10,textTransform:'uppercase',letterSpacing:.5}}>
               {role}
             </span>
-            <button className="btn btn-c btn-sm" onClick={signOut} title="Cerrar sesión"
-              style={{padding:'3px 9px',fontSize:'.68rem'}}>⏏ Salir</button>
+            <button className="btn btn-c btn-sm" onClick={signOut} title="Cerrar sesiÃ³n"
+              style={{padding:'3px 9px',fontSize:'.68rem'}}>â Salir</button>
           </div>
         </div>
       </div>
@@ -2397,11 +2397,11 @@ function CatalogoApp() {
       <div className="ac-sp">
         <div className="ac-fg">
           {[
-            {label:'🅱 Marca', val:fMarca, set:onMarcaChange, opts:allMarcas},
-            {label:'🚗 Modelo', val:fModelo, set:onModeloChange, opts:availableModels, placeholder:'Todos los modelos'},
-            {label:'📅 Período',   val:fPeriodo,   set:v=>{setFPeriodo(v);setPage(1);}, opts:availablePeriodos, placeholder:'Todos los períodos'},
-            {label:'🔎 Clasificación', val:fClasi, set:onClasiChange, opts:allClasif, placeholder:'Todas'},
-            {label:'📂 Subclasificación', val:fSub, set:v=>{setFSub(v);setPage(1);}, opts:availableSubs, placeholder:'Todas'},
+            {label:'ðŸ…± Marca', val:fMarca, set:onMarcaChange, opts:allMarcas},
+            {label:'ðŸš— Modelo', val:fModelo, set:onModeloChange, opts:availableModels, placeholder:'Todos los modelos'},
+            {label:'ðŸ“… PerÃ­odo',   val:fPeriodo,   set:v=>{setFPeriodo(v);setPage(1);}, opts:availablePeriodos, placeholder:'Todos los perÃ­odos'},
+            {label:'ðŸ”Ž ClasificaciÃ³n', val:fClasi, set:onClasiChange, opts:allClasif, placeholder:'Todas'},
+            {label:'ðŸ“‚ SubclasificaciÃ³n', val:fSub, set:v=>{setFSub(v);setPage(1);}, opts:availableSubs, placeholder:'Todas'},
           ].map(({label,val,set,opts,placeholder='Todas las marcas'})=>(
             <div key={label} className="ac-fl">
               <label>{label}</label>
@@ -2414,13 +2414,13 @@ function CatalogoApp() {
         </div>
         <div className="ac-sr">
           <div className="ac-fl">
-            <label>🔍 Búsqueda libre — descripción, código, modelo…</label>
+            <label>ðŸ” BÃºsqueda libre â€” descripciÃ³n, cÃ³digo, modeloâ€¦</label>
             <input type="text" value={fText}
-              placeholder="Ej: filtro aceite, TSL420, amortiguador…"
+              placeholder="Ej: filtro aceite, TSL420, amortiguadorâ€¦"
               onChange={e=>onTextInput(e.target.value)}/>
           </div>
-          <button className="btn btn-p" onClick={()=>setPage(1)}>🔍 Buscar</button>
-          <button className="btn btn-o" onClick={clearAll}>✕ Limpiar</button>
+          <button className="btn btn-p" onClick={()=>setPage(1)}>ðŸ” Buscar</button>
+          <button className="btn btn-o" onClick={clearAll}>âœ• Limpiar</button>
         </div>
       </div>
 
@@ -2428,14 +2428,14 @@ function CatalogoApp() {
       <div className="ac-sb">
         <span>Resultados: <strong>{filtered.length.toLocaleString()}</strong></span>
         <span className="ac-sep">|</span>
-        <span>Página <strong>{page}</strong> de <strong>{totalPages}</strong></span>
+        <span>PÃ¡gina <strong>{page}</strong> de <strong>{totalPages}</strong></span>
         <span style={{marginLeft:'auto',display:'flex',gap:5,flexWrap:'wrap'}}>
-          {fMarca &&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>🅱 {fMarca}</span>}
-          {fModelo&&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>🚗 {fModelo}</span>}
-          {fPeriodo  &&<span className="ac-tag" style={{background:'rgba(212,168,0,.8)'}}>📅 {fPeriodo}</span>}
-          {fClasi &&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>🔎 {fClasi.substring(0,22)}</span>}
-          {fSub   &&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>📂 {fSub}</span>}
-          {debText&&<span className="ac-tag" style={{background:'rgba(212,168,0,.8)'}}>🔍 "{debText}"</span>}
+          {fMarca &&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>ðŸ…± {fMarca}</span>}
+          {fModelo&&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>ðŸš— {fModelo}</span>}
+          {fPeriodo  &&<span className="ac-tag" style={{background:'rgba(212,168,0,.8)'}}>ðŸ“… {fPeriodo}</span>}
+          {fClasi &&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>ðŸ”Ž {fClasi.substring(0,22)}</span>}
+          {fSub   &&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>ðŸ“‚ {fSub}</span>}
+          {debText&&<span className="ac-tag" style={{background:'rgba(212,168,0,.8)'}}>ðŸ” "{debText}"</span>}
         </span>
       </div>
 
@@ -2445,8 +2445,8 @@ function CatalogoApp() {
           [stats.total.toLocaleString(),'Total'],
           [stats.marcas,'Marcas'],
           [stats.modelos,'Modelos'],
-          [stats.cats,'Categorías'],
-          [stats.conCodigo.toLocaleString(),'Con código'],
+          [stats.cats,'CategorÃ­as'],
+          [stats.conCodigo.toLocaleString(),'Con cÃ³digo'],
         ].map(([n,l],i,arr)=>(
           <React.Fragment key={i}>
             <div className="ac-qi"><div className="n">{n}</div><div className="l">{l}</div></div>
@@ -2460,16 +2460,16 @@ function CatalogoApp() {
         {loading ? (
           <div className="loading">
             <span className="spin"/>
-            {fbStatus==='connecting'?'Conectando a Supabase…':'Procesando…'}
+            {fbStatus==='connecting'?'Conectando a Supabaseâ€¦':'Procesandoâ€¦'}
           </div>
         ) : records.length===0 ? (
           <div className="empty">
-            <div className="icon">📂</div>
-            <p style={{fontWeight:700,marginBottom:8}}>La base de datos está vacía</p>
+            <div className="icon">ðŸ“‚</div>
+            <p style={{fontWeight:700,marginBottom:8}}>La base de datos estÃ¡ vacÃ­a</p>
             <p style={{fontSize:'.85rem'}}>Usa <strong>"Cargar base"</strong> para importar un archivo CSV o Excel.</p>
           </div>
         ) : filtered.length===0 ? (
-          <div className="empty"><div className="icon">🔎</div><p>No se encontraron resultados.</p></div>
+          <div className="empty"><div className="icon">ðŸ”Ž</div><p>No se encontraron resultados.</p></div>
         ) : (
           <table>
             <thead><tr>
@@ -2494,7 +2494,7 @@ function CatalogoApp() {
                   }}
                   style={{width:colWidths[col.key]||120,minWidth:60,position:'relative',cursor:'grab'}}
                   onClick={()=>handleSort(col.key)}>
-                  <span style={{pointerEvents:'none'}}>{col.label}<span className="si">{sortCol===col.key?(sortAsc?'↑':'↓'):'↕'}</span></span>
+                  <span style={{pointerEvents:'none'}}>{col.label}<span className="si">{sortCol===col.key?(sortAsc?'â†‘':'â†“'):'â†•'}</span></span>
                   <span
                     style={{position:'absolute',right:0,top:0,bottom:0,width:6,cursor:'col-resize',background:'transparent',zIndex:12}}
                     onClick={e=>e.stopPropagation()}
@@ -2519,8 +2519,8 @@ function CatalogoApp() {
                   3:()=><span className="ca">{highlightText(f[3],debText)}</span>,
                   4:()=><span className="cds">{highlightText(f[4],debText)}{f[6]&&<><br/><span className="cs">{f[6]}</span></>}</span>,
                   5:()=>f[5]?<span className="cc" style={{cursor:'pointer'}} onClick={()=>setSelectedCode(f[5])}>{highlightText(f[5],debText)}
-                    <button className="btn-copy" onClick={e=>{e.stopPropagation();navigator.clipboard?.writeText(f[5]);toast('📋 Código copiado','info');}}>⧉</button>
-                  </span>:<span className="cs">—</span>,
+                    <button className="btn-copy" onClick={e=>{e.stopPropagation();navigator.clipboard?.writeText(f[5]);toast('ðŸ“‹ CÃ³digo copiado','info');}}>â§‰</button>
+                  </span>:<span className="cs">â€”</span>,
                   6:()=><span className="cs">{f[6]}</span>,
                   7:()=>f[7]?<span className="ct" style={{background:clasiBgColor(f[7])}}>{f[7]}</span>:null,
                   8:()=><span className="cs">{f[8]}</span>,
@@ -2529,9 +2529,9 @@ function CatalogoApp() {
                   <tr key={rec._id||ri}>
                     <td className="cac" onClick={e=>e.stopPropagation()} style={{width:80,minWidth:70}}>
                       {isAdmin ? <>
-                        <button className="btn-edit" onClick={()=>setModalEdit(rec)}>✏</button>
-                        <button className="btn-del"  onClick={()=>setModalDel(rec)}>🗑</button>
-                      </> : <button className="btn-edit" onClick={()=>setModalDetail(rec)}>👁</button>}
+                        <button className="btn-edit" onClick={()=>setModalEdit(rec)}>âœ</button>
+                        <button className="btn-del"  onClick={()=>setModalDel(rec)}>ðŸ—‘</button>
+                      </> : <button className="btn-edit" onClick={()=>setModalDetail(rec)}>ðŸ‘</button>}
                     </td>
                     {activeCols.map(col=>(
                       <td key={col.key} onClick={()=>setModalDetail(rec)} style={{cursor:'pointer',width:colWidths[col.key]||120,maxWidth:colWidths[col.key]||120,overflow:'hidden',textOverflow:'ellipsis'}}>
@@ -2546,25 +2546,25 @@ function CatalogoApp() {
         )}
       </div>
 
-      {/* PAGINACIÓN */}
+      {/* PAGINACIÃ“N */}
       {!loading && filtered.length>0 && (
         <div className="ac-pg">
-          <button className="pb" disabled={page<=1} onClick={()=>setPage(p=>p-1)}>‹ Anterior</button>
+          <button className="pb" disabled={page<=1} onClick={()=>setPage(p=>p-1)}>â€¹ Anterior</button>
           {(()=>{
             const pages=[1];
             for(let i=Math.max(2,page-3);i<=Math.min(totalPages-1,page+3);i++) pages.push(i);
             if(!pages.includes(totalPages)&&totalPages>1) pages.push(totalPages);
             const els=[];let prev=0;
             pages.forEach(p=>{
-              if(prev&&p-prev>1) els.push(<span key={`e${p}`} style={{color:'#B0BEC5',padding:'0 4px'}}>…</span>);
+              if(prev&&p-prev>1) els.push(<span key={`e${p}`} style={{color:'#B0BEC5',padding:'0 4px'}}>â€¦</span>);
               els.push(<button key={p} className={`pb${p===page?' active':''}`} onClick={()=>setPage(p)}>{p}</button>);
               prev=p;
             });
             return els;
           })()}
-          <button className="pb" disabled={page>=totalPages} onClick={()=>setPage(p=>p+1)}>Siguiente ›</button>
+          <button className="pb" disabled={page>=totalPages} onClick={()=>setPage(p=>p+1)}>Siguiente â€º</button>
           <span className="pi">
-            {((page-1)*PAGE_SIZE+1).toLocaleString()}–{Math.min(page*PAGE_SIZE,filtered.length).toLocaleString()} de {filtered.length.toLocaleString()}
+            {((page-1)*PAGE_SIZE+1).toLocaleString()}â€“{Math.min(page*PAGE_SIZE,filtered.length).toLocaleString()} de {filtered.length.toLocaleString()}
           </span>
         </div>
       )}
@@ -2587,7 +2587,7 @@ function CatalogoApp() {
       {showHistory && <ModalHistory changelog={changelog} onClose={()=>setShowHistory(false)}/>}
       {showReplace && <ModalReplace cols={COL_DEFS} onReplace={handleBulkReplace} onClose={()=>setShowReplace(false)}/>}
 
-      {/* ── DECODIFICADOR — al final de la página principal ── */}
+      {/* â”€â”€ DECODIFICADOR â€” al final de la pÃ¡gina principal â”€â”€ */}
       <DecodificadorTab selectedCode={selectedCode} />
     </>
     </ListasCtx.Provider>
@@ -2595,7 +2595,7 @@ function CatalogoApp() {
 }
 
 // ============================================================
-//  GATE — Muestra login si no hay sesión
+//  GATE â€” Muestra login si no hay sesiÃ³n
 // ============================================================
 function AuthGate() {
   const { user, loading } = useAuth();
@@ -2606,7 +2606,7 @@ function AuthGate() {
       <div style={{textAlign:'center',color:'#fff'}}>
         <div style={{width:36,height:36,border:'3px solid rgba(255,255,255,.2)',borderTopColor:'#D4A800',
           borderRadius:'50%',animation:'spin .75s linear infinite',margin:'0 auto 14px'}}/>
-        <div style={{fontSize:'.85rem',opacity:.7}}>Cargando…</div>
+        <div style={{fontSize:'.85rem',opacity:.7}}>Cargandoâ€¦</div>
       </div>
     </div>
   );

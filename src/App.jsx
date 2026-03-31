@@ -1552,7 +1552,11 @@ const DEC_TYPE_LABELS = {
   'Desconocido': ['DESCONOCIDO', 'badge-unknown'],
 };
 
-function DecodificadorTab({ selectedCode }) {
+// ── Context para decodificador automático ──
+const DecodificadorCtx = createContext(null);
+const useDecodificador = () => useContext(DecodificadorCtx);
+
+function DecodificadorTab({ selectedCode = null }) {
   const toast = useToast();
   const { isAdmin } = useAuth();
   const [decDB,     setDecDB]     = useState({});
@@ -1561,8 +1565,10 @@ function DecodificadorTab({ selectedCode }) {
   const [dbStatusCls, setDbStatusCls] = useState('');
   const [dbLoading, setDbLoading] = useState(true);
 
+  const [query,       setQuery]       = useState('');
   const [result,      setResult]      = useState(null);   // { code, data: [...] }
   const [notFound,    setNotFound]    = useState('');
+  const [suggests,    setSuggests]    = useState([]);
   const [anatomy,     setAnatomy]     = useState(null);   // { code, parts[] }
 
   const [compOpen,    setCompOpen]    = useState(false);
@@ -1619,19 +1625,13 @@ function DecodificadorTab({ selectedCode }) {
     })();
   }, []); // eslint-disable-line
 
-  // ── Auto-decode cuando hay código seleccionado ──────────────────
+  // ── Auto-decode cuando se selecciona un código desde la tabla ──
   useEffect(() => {
-    if (!selectedCode || Object.keys(decDB).length === 0) return;
-    const raw = String(selectedCode).trim().toUpperCase().replace(/\s/g,'');
-    if (!raw) { setResult(null); setNotFound(''); return; }
-    
-    if (decDB[raw]) {
-      showResultData(raw, decDB[raw]);
-    } else {
-      setResult(null);
-      setNotFound(`Código "${raw}" no encontrado en la base de datos.`);
+    if (selectedCode && decDB && Object.keys(decDB).length > 0) {
+      setQuery(selectedCode);
+      decode(selectedCode);
     }
-  }, [selectedCode, decDB]);
+  }, [selectedCode, decDB]); // eslint-disable-line
 
   // ── Upload XLSX to Supabase ─────────────────────────────────
   const handleUploadBD = async (file) => {
@@ -1746,15 +1746,19 @@ function DecodificadorTab({ selectedCode }) {
 
   // ── Decode ──────────────────────────────────────────────────
   const decode = (rawCode) => {
-    const raw = String(rawCode || '').trim().toUpperCase().replace(/\s/g,'');
-    setResult(null); setNotFound(''); setCompOpen(false); setCompResult(null);
+    const raw = (rawCode || query).trim().toUpperCase().replace(/\s/g,'');
+    setResult(null); setNotFound(''); setSuggests([]); setCompOpen(false); setCompResult(null);
     if (!raw) return;
 
     if (decDB[raw]) {
       showResultData(raw, decDB[raw]);
       return;
     }
-    setNotFound(`Código "${raw}" no encontrado en la base de datos.`);
+    const keys = Object.keys(decDB);
+    const matches = keys.filter(k => k.startsWith(raw) || k.includes(raw)).slice(0, 12);
+    if (matches.length === 1) { showResultData(matches[0], decDB[matches[0]]); setQuery(matches[0]); return; }
+    if (matches.length > 1) { setNotFound('Código exacto no encontrado. Resultados similares:'); setSuggests(matches); }
+    else setNotFound(`No se encontró el código "${raw}" en la base de datos.`);
   };
 
   const showResultData = (code, r) => {
@@ -1815,13 +1819,13 @@ function DecodificadorTab({ selectedCode }) {
   const posColor = p => p==='Izquierdo'?'hl-green': p.includes('Derecho')?'hl-amber':p==='—'?'':'hl-blue';
 
   return (
-    <div className="dec-wrap">
+    <div className="dec-wrap" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:1000,maxHeight:'50vh',overflowY:'auto',background:'var(--dark)'}}>
       {/* Section header */}
       <div className="dec-section-title">
         <span style={{fontSize:'1.1rem'}}>🔍</span>
         <div>
           <div className="dec-section-label">Decodificador de Códigos</div>
-          <div className="dec-section-sub">Identifica fabricante, sistema, vehículo y posición por código de parte</div>
+          <div className="dec-section-sub">Selecciona un código de la tabla para decodificar automáticamente</div>
         </div>
         <span style={{marginLeft:'auto',fontFamily:'Courier New,monospace',fontSize:'.65rem',
           color:'rgba(255,255,255,.5)',background:'rgba(255,255,255,.08)',padding:'2px 8px',
@@ -1832,18 +1836,21 @@ function DecodificadorTab({ selectedCode }) {
 
       <div className="dec-inner">
       <div className="dec-card">
-        {/* ── Título (sin búsqueda manual) ── */}
-        <div className="dec-top">
-          <div className="dec-label">
-            <span className="dec-tag">DECODIFICADOR</span>
-            <span className="dec-title">Código Seleccionado</span>
-          </div>
-          {selectedCode && (
-            <div style={{fontSize:'.9rem', fontFamily:'Courier New,monospace', color:'var(--gold)', fontWeight:600}}>
-              {selectedCode}
+        {/* ── Display código seleccionado (read-only) ── */}
+        {selectedCode && (
+          <div className="dec-top">
+            <div className="dec-label">
+              <span className="dec-tag">CÓDIGO SELECCIONADO</span>
+              <span className="dec-title"><span>{query}</span></span>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {!selectedCode && (
+          <div style={{padding:'16px 14px',color:'#90CAF9',fontSize:'.85rem',fontStyle:'italic',textAlign:'center'}}>
+            Selecciona un código de la tabla para decodificarlo aquí…
+          </div>
+        )}
 
         {/* ── Loading state ── */}
         {dbLoading && (
@@ -2044,8 +2051,7 @@ function CatalogoApp() {
   const [showImport,  setShowImport]  = useState(false);
   const [showCols,    setShowCols]    = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [showReplace, setShowReplace] = useState(false);
-  const [selectedDecoderCode, setSelectedDecoderCode] = useState(null); // Código para decodificador
+  const [selectedCode, setSelectedCode] = useState(null); // Para decodificador automático
 
   const debRef = useRef(null);
 
@@ -2318,6 +2324,7 @@ function CatalogoApp() {
   const activeCols = colOrder
     .map(k => visibleCols.find(c => c.key === k))
     .filter(c => c && c.show);
+  const [showReplace, setShowReplace] = useState(false);
   const [dragCol, setDragCol] = useState(null);
   const fbDotColor = {connecting:'#D4A800',ok:'#4CAF50',error:'#C62828'}[fbStatus]||'#D4A800';
 
@@ -2511,7 +2518,7 @@ function CatalogoApp() {
                   2:()=><span className="cmo">{f[2]}</span>,
                   3:()=><span className="ca">{highlightText(f[3],debText)}</span>,
                   4:()=><span className="cds">{highlightText(f[4],debText)}{f[6]&&<><br/><span className="cs">{f[6]}</span></>}</span>,
-                  5:()=>f[5]?<span className="cc">{highlightText(f[5],debText)}
+                  5:()=>f[5]?<span className="cc" style={{cursor:'pointer'}} onClick={()=>setSelectedCode(f[5])}>{highlightText(f[5],debText)}
                     <button className="btn-copy" onClick={e=>{e.stopPropagation();navigator.clipboard?.writeText(f[5]);toast('📋 Código copiado','info');}}>⧉</button>
                   </span>:<span className="cs">—</span>,
                   6:()=><span className="cs">{f[6]}</span>,
@@ -2524,10 +2531,10 @@ function CatalogoApp() {
                       {isAdmin ? <>
                         <button className="btn-edit" onClick={()=>setModalEdit(rec)}>✏</button>
                         <button className="btn-del"  onClick={()=>setModalDel(rec)}>🗑</button>
-                      </> : <button className="btn-edit" onClick={()=>{setModalDetail(rec); setSelectedDecoderCode(f[5]);}}>👁</button>}
+                      </> : <button className="btn-edit" onClick={()=>setModalDetail(rec)}>👁</button>}
                     </td>
                     {activeCols.map(col=>(
-                      <td key={col.key} onClick={()=>{setModalDetail(rec); setSelectedDecoderCode(f[5]);}} style={{cursor:'pointer',width:colWidths[col.key]||120,maxWidth:colWidths[col.key]||120,overflow:'hidden',textOverflow:'ellipsis'}}>
+                      <td key={col.key} onClick={()=>setModalDetail(rec)} style={{cursor:'pointer',width:colWidths[col.key]||120,maxWidth:colWidths[col.key]||120,overflow:'hidden',textOverflow:'ellipsis'}}>
                         {cell[col.key]?cell[col.key]():f[col.key]}
                       </td>
                     ))}
@@ -2581,7 +2588,7 @@ function CatalogoApp() {
       {showReplace && <ModalReplace cols={COL_DEFS} onReplace={handleBulkReplace} onClose={()=>setShowReplace(false)}/>}
 
       {/* ── DECODIFICADOR — al final de la página principal ── */}
-      <DecodificadorTab selectedCode={selectedDecoderCode}/>
+      <DecodificadorTab selectedCode={selectedCode} />
     </>
     </ListasCtx.Provider>
   );

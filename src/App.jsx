@@ -349,11 +349,11 @@ function normalizeHeader(h) {
 const FIELD_ALIASES = {
   'marca':                  ['marca'],
   'modelo':                 ['modelo'],
-  'modelo_original':        ['modelo_original','modelo_orig','original'],
+  'modelo_original':        ['modelo_original','modelo_orig','original','modelo_original'],
   'periodo': ['periodo','period','per','ano','anio','año','year','a_no','yr','fecha'],
-  'descripcion_original':   ['descripcion_original','descripcion','desc','desc_orig','description','descripcion_orig'],
-  'codigo':                 ['codigo','code','cod','sku','referencia','ref','part_number','part','numero'],
-  'descripcion_estandar':   ['descripcion_estandar','desc_estandar','estandar','desc_std','descripcion_std','descripcion_est'],
+  'descripcion_original':   ['descripcion_original','descripcion','desc','desc_orig','description','descripcion_orig','descripcion'],
+  'codigo':                 ['codigo','code','cod','sku','referencia','ref','part_number','part','numero','codigo_1','codigo1'],
+  'descripcion_estandar':   ['descripcion_estandar','desc_estandar','estandar','desc_std','descripcion_std','descripcion_est','desc_estandar','desc_estándar'],
   'clasificacion':          ['clasificacion','clasificac','categoria','category','clasi','clasificacion'],
   'subclasificacion':       ['subclasificacion','subclasif','subcategoria','sub','subcat','subclasi'],
 };
@@ -388,7 +388,14 @@ function parseWorkbook(wb, xlsxLib) {
 
   const records = rows.slice(1)
     .filter(r => r.some(c => String(c).trim() !== ''))
-    .map(r => colMap.map(ci => ci >= 0 ? String(r[ci] ?? '').trim() : ''));
+    .map(r => colMap.map((ci, fieldIdx) => {
+      let val = ci >= 0 ? String(r[ci] ?? '').trim() : '';
+      // Si es el campo de código (índice 5), extraer solo la parte antes de "||"
+      if (fieldIdx === 5 && val.includes('||')) {
+        val = val.split('||')[0].trim();
+      }
+      return val;
+    }));
 
   // displayMapping[srcColIdx] = destFieldIdx (-1 = ignorar)
   // La UI itera por columnas fuente, necesita saber a qué campo destino va cada una

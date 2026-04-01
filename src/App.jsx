@@ -287,35 +287,29 @@ const COL_DEFS = [
 const COL_DEFS_ORDER = [0,1,3,6,5,7,8,2,4];
 
 const EXPECTED_FIELDS = ['marca','modelo','modelo_original','periodo',
-  'codigo','aplicable_1','aplicable_2','aplicable_3','aplicable_4','aplicable_5',
-  'descripcion_estandar','descripcion_berrocal','clasificacion','subclasificacion'];
+  'descripcion_original','codigo','descripcion_estandar','clasificacion','subclasificacion'];
 
 // ============================================================
 //  UTILIDADES
 // ============================================================
-/** Normaliza cualquier documento Supabase → { _id, fields:[14] } */
+/** Normaliza cualquier documento Supabase → { _id, fields:[9] } */
 const normalizeDoc = (raw) => {
   if (!raw) return null;
-  if (Array.isArray(raw.fields) && raw.fields.length >= 14)
-    return { _id: raw._id, fields: raw.fields.slice(0, 14).map(v => String(v ?? '')) };
+  if (Array.isArray(raw.fields) && raw.fields.length === 9)
+    return { _id: raw._id, fields: raw.fields.map(v => String(v ?? '')) };
   // compatibilidad con campos planos
   return {
     _id: raw._id,
     fields: [
       String(raw.marca       ?? raw.f0 ?? ''),
       String(raw.modelo      ?? raw.f1 ?? ''),
-      String(raw.modelo_original ?? raw.f2 ?? ''),
+      String(raw.modelo_orig ?? raw.f2 ?? ''),
       String(raw.periodo        ?? raw.f3 ?? ''),
-      String(raw.codigo      ?? raw.f4 ?? ''),
-      String(raw.aplicable_1 ?? raw.f5 ?? ''),
-      String(raw.aplicable_2 ?? raw.f6 ?? ''),
-      String(raw.aplicable_3 ?? raw.f7 ?? ''),
-      String(raw.aplicable_4 ?? raw.f8 ?? ''),
-      String(raw.aplicable_5 ?? raw.f9 ?? ''),
-      String(raw.descripcion_estandar ?? raw.f10 ?? ''),
-      String(raw.descripcion_berrocal ?? raw.f11 ?? ''),
-      String(raw.clasificacion       ?? raw.f12 ?? ''),
-      String(raw.subclasificacion ?? raw.f13 ?? ''),
+      String(raw.desc_orig   ?? raw.f4 ?? ''),
+      String(raw.codigo      ?? raw.f5 ?? ''),
+      String(raw.desc_std    ?? raw.f6 ?? ''),
+      String(raw.clasi       ?? raw.f7 ?? ''),
+      String(raw.sub         ?? raw.f8 ?? ''),
     ]
   };
 };
@@ -355,16 +349,11 @@ function normalizeHeader(h) {
 const FIELD_ALIASES = {
   'marca':                  ['marca'],
   'modelo':                 ['modelo'],
-  'modelo_original':        ['modelo_original','modelo_orig','original','modelo_original'],
+  'modelo_original':        ['modelo_original','modelo_orig','original'],
   'periodo': ['periodo','period','per','ano','anio','año','year','a_no','yr','fecha'],
-  'codigo':                 ['codigo','code','cod','sku','referencia','ref','part_number','part','numero','codigo_1','codigo1','codigo_repuesto','código_repuesto','código'],
-  'aplicable_1':            ['aplicable_1','aplicable1','aplicable','aplica_1','aplica1'],
-  'aplicable_2':            ['aplicable_2','aplicable2'],
-  'aplicable_3':            ['aplicable_3','aplicable3'],
-  'aplicable_4':            ['aplicable_4','aplicable4'],
-  'aplicable_5':            ['aplicable_5','aplicable5'],
-  'descripcion_estandar':   ['descripcion_estandar','desc_estandar','estandar','desc_std','descripcion_std','descripcion_est','desc_estandar','desc_estándar'],
-  'descripcion_berrocal':   ['descripcion_berrocal','desc_berrocal','berrocal','descripcion_original','descripcion','desc','desc_orig','description','descripcion_orig'],
+  'descripcion_original':   ['descripcion_original','descripcion','desc','desc_orig','description','descripcion_orig'],
+  'codigo':                 ['codigo','code','cod','sku','referencia','ref','part_number','part','numero'],
+  'descripcion_estandar':   ['descripcion_estandar','desc_estandar','estandar','desc_std','descripcion_std','descripcion_est'],
   'clasificacion':          ['clasificacion','clasificac','categoria','category','clasi','clasificacion'],
   'subclasificacion':       ['subclasificacion','subclasif','subcategoria','sub','subcat','subclasi'],
 };
@@ -1092,9 +1081,9 @@ const ModalImport = ({ onClose, onImport }) => {
   const doImport = async (mode) => {
     if (!parsed) return;
     const records = parsed.records.map(row => {
-      const mapped = Array(14).fill('');
+      const mapped = Array(9).fill('');
       mapping.forEach((destIdx, srcIdx) => {
-        if (destIdx >= 0 && destIdx < 14) mapped[destIdx] = row[srcIdx] ?? '';
+        if (destIdx >= 0 && destIdx < 9) mapped[destIdx] = row[srcIdx] ?? '';
       });
       return mapped;
     });
@@ -1841,12 +1830,45 @@ function DecodificadorTab({ selectedCode = null }) {
   return (
     <div className="dec-wrap" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:1000,maxHeight:expanded?'60vh':'40px',overflow:'hidden',background:'var(--dark)',transition:'maxHeight 0.3s ease'}}>
       {/* Section header */}
-      <div className="dec-section-title" style={{display:'none'}}>
+      <div className="dec-section-title">
+        <div style={{display:'flex',alignItems:'center',gap:6}}>
+          <span style={{fontSize:'1rem'}}>🔍</span>
+          <div>
+            <div className="dec-section-label">Decodificador de Códigos</div>
+            <div className="dec-section-sub">{dbCount.toLocaleString()} códigos</div>
+          </div>
+        </div>
+        
+        {/* DB Toolbar compacto en header */}
+        <div style={{display:'flex',alignItems:'center',gap:6,marginRight:8}}>
+          {isAdmin && (
+            <button className="dec-db-btn" style={{padding:'2px 6px',fontSize:'.58rem'}} onClick={() => fileRef.current?.click()}>
+              ⬆ Cargar
+            </button>
+          )}
+          <button className="dec-db-btn" style={{padding:'2px 6px',fontSize:'.58rem'}} onClick={handleDownloadBD}>⬇ Descargar</button>
+          <input ref={fileRef} type="file" accept=".xlsx,.xls" style={{display:'none'}}
+            onChange={e => { if(e.target.files[0]) handleUploadBD(e.target.files[0]); e.target.value=''; }}
+          />
+        </div>
+        
+        {/* Botón expandir/colapsar */}
+        <button onClick={() => setExpanded(!expanded)} style={{background:'none',border:'none',color:'#fff',cursor:'pointer',fontSize:'1rem',padding:'0 4px',display:'flex',alignItems:'center'}}>
+          {expanded ? '▼' : '▶'}
+        </button>
       </div>
 
       <div className="dec-inner">
       <div className="dec-card">
         {/* ── Display código seleccionado (read-only) ── */}
+        {selectedCode && (
+          <div className="dec-top">
+            <div className="dec-label">
+              <span className="dec-tag">CÓDIGO SELECCIONADO</span>
+              <span className="dec-title"><span>{query}</span></span>
+            </div>
+          </div>
+        )}
 
         {!selectedCode && (
           <div style={{padding:'16px 14px',color:'#90CAF9',fontSize:'.85rem',fontStyle:'italic',textAlign:'center'}}>
@@ -2158,13 +2180,13 @@ function CatalogoApp() {
     return r;
   },[records,fMarca,fModelo,fPeriodo,fClasi,fSub,debText,sortCol,sortAsc]);
 
-  // ── Auto-activar decodificador al buscar en la tabla o usar filtros ──
+  // ── Auto-activar decodificador al buscar en la tabla ──
   useEffect(() => {
-    if (filtered.length > 0) {
+    if (filtered.length > 0 && debText) {
       const firstCode = filtered[0].fields[5];
       if (firstCode) setSelectedCode(firstCode);
     }
-  }, [debText, filtered, fMarca, fModelo, fPeriodo, fClasi, fSub]);
+  }, [debText, filtered]);
 
   const totalPages = Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
   const paginated  = filtered.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
@@ -2331,6 +2353,10 @@ function CatalogoApp() {
           {/* LOGO */}
           <img src={LOGO_SRC} alt='Auto Centro' style={{height:42,objectFit:'contain',flexShrink:0}}/>
           <div className="ac-hdiv"/>
+          <div className="ac-htitle">
+            <span className="s1">Sistema de Gestión</span>
+            <span className="s2">Catálogo de Repuestos</span>
+          </div>
           <span className="ac-badge">{records.length.toLocaleString()} registros</span>
           <span className="fb-badge">
             <span className="fb-dot" style={{
@@ -2442,9 +2468,6 @@ function CatalogoApp() {
           </React.Fragment>
         ))}
       </div>
-
-      {/* ── DECODIFICADOR — Debajo de valores de resultado ── */}
-      <DecodificadorTab selectedCode={selectedCode} />
 
       {/* TABLE */}
       <div className="ac-tw">
@@ -2578,6 +2601,8 @@ function CatalogoApp() {
       {showHistory && <ModalHistory changelog={changelog} onClose={()=>setShowHistory(false)}/>}
       {showReplace && <ModalReplace cols={COL_DEFS} onReplace={handleBulkReplace} onClose={()=>setShowReplace(false)}/>}
 
+      {/* ── DECODIFICADOR — al final de la página principal ── */}
+      <DecodificadorTab selectedCode={selectedCode} />
     </>
     </ListasCtx.Provider>
   );

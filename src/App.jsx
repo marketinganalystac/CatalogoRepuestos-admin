@@ -388,14 +388,7 @@ function parseWorkbook(wb, xlsxLib) {
 
   const records = rows.slice(1)
     .filter(r => r.some(c => String(c).trim() !== ''))
-    .map(r => colMap.map((ci, fieldIdx) => {
-      let val = ci >= 0 ? String(r[ci] ?? '').trim() : '';
-      // Si es el campo de código (índice 5), extraer solo la parte antes de "||"
-      if (fieldIdx === 5 && val.includes('||')) {
-        val = val.split('||')[0].trim();
-      }
-      return val;
-    }));
+    .map(r => colMap.map(ci => ci >= 0 ? String(r[ci] ?? '').trim() : ''));
 
   // displayMapping[srcColIdx] = destFieldIdx (-1 = ignorar)
   // La UI itera por columnas fuente, necesita saber a qué campo destino va cada una

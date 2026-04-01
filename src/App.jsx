@@ -1836,14 +1836,6 @@ function DecodificadorTab({ selectedCode = null }) {
       <div className="dec-inner">
       <div className="dec-card">
         {/* ── Display código seleccionado (read-only) ── */}
-        {selectedCode && (
-          <div className="dec-top">
-            <div className="dec-label">
-              <span className="dec-tag">CÓDIGO SELECCIONADO</span>
-              <span className="dec-title"><span>{query}</span></span>
-            </div>
-          </div>
-        )}
 
         {!selectedCode && (
           <div style={{padding:'16px 14px',color:'#90CAF9',fontSize:'.85rem',fontStyle:'italic',textAlign:'center'}}>

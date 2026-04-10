@@ -589,9 +589,9 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .ca{font-weight:800;color:var(--bd);background:var(--gl);border-radius:4px;font-size:.8rem;padding:2px 6px;white-space:nowrap;display:inline-block}
 .cc{font-family:'Courier New',monospace;color:var(--grn);font-size:.77rem;font-weight:700;background:#F1F8E9;padding:2px 7px;border-radius:4px;display:inline-block;white-space:nowrap}
 .cc-repuesto{font-family:'Courier New',monospace;color:var(--bd);font-size:.82rem;font-weight:800;
-  background:linear-gradient(135deg,#FFF8DC,#FFE57F);
+  background:linear-gradient(135deg,#D6E8FA,#B3D4F5);
   padding:3px 9px;border-radius:6px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
-  border:1.5px solid var(--gold);box-shadow:0 1px 4px rgba(212,168,0,.35),inset 0 1px 0 rgba(255,255,255,.6)}
+  border:1.5px solid var(--bm);box-shadow:0 1px 4px rgba(0,96,160,.2),inset 0 1px 0 rgba(255,255,255,.7)}
 .cds{color:var(--g9);font-weight:600}
 .ct{display:inline-block;padding:2px 9px;border-radius:9px;font-size:.67rem;font-weight:700;color:#fff;white-space:nowrap}
 .cs{color:var(--g5);font-size:.75rem;font-style:italic}
@@ -612,21 +612,21 @@ tbody td{padding:7px 13px;vertical-align:middle}
   box-shadow:0 24px 60px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.3);animation:pop .2s ease}
 .md.sm{max-width:440px}
 @keyframes pop{from{transform:scale(.93);opacity:0}to{transform:scale(1);opacity:1}}
-.mh{padding:16px 22px 12px;border-bottom:1px solid rgba(144,202,249,0.4);display:flex;align-items:center;
+.mh{padding:16px 22px 12px;border-bottom:1px solid rgba(144,202,249,0.3);display:flex;align-items:center;
   justify-content:space-between;
-  background:linear-gradient(135deg,rgba(13,42,74,0.55) 0%,rgba(0,96,160,0.38) 50%,rgba(26,63,111,0.48) 100%);
+  background:linear-gradient(135deg,rgba(13,42,74,0.35) 0%,rgba(0,96,160,0.22) 50%,rgba(26,63,111,0.30) 100%);
   border-radius:14px 14px 0 0;
-  backdrop-filter:blur(20px) saturate(160%) brightness(1.1);
-  -webkit-backdrop-filter:blur(20px) saturate(160%) brightness(1.1);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.18),inset 0 -1px 0 rgba(212,168,0,0.25),0 2px 12px rgba(0,60,120,.2);
-  border-top:1px solid rgba(255,255,255,0.15);
-  border-left:1px solid rgba(255,255,255,0.1);
+  backdrop-filter:blur(20px) saturate(160%) brightness(1.05);
+  -webkit-backdrop-filter:blur(20px) saturate(160%) brightness(1.05);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.2),inset 0 -1px 0 rgba(212,168,0,0.18),0 2px 8px rgba(0,60,120,.12);
+  border-top:1px solid rgba(255,255,255,0.18);
+  border-left:1px solid rgba(255,255,255,0.12);
   border-right:1px solid rgba(255,255,255,0.08)}
 .mh.danger{
-  background:linear-gradient(135deg,rgba(123,24,24,0.55),rgba(198,40,40,0.4));
-  border-bottom:1px solid rgba(255,120,120,0.35);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.12),0 2px 12px rgba(120,0,0,.2)}
-.mh h2{font-size:.95rem;color:rgba(255,255,255,0.95);font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.4),0 0 20px rgba(144,202,249,0.2)}
+  background:linear-gradient(135deg,rgba(123,24,24,0.35),rgba(198,40,40,0.22));
+  border-bottom:1px solid rgba(255,120,120,0.25);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.15),0 2px 8px rgba(120,0,0,.12)}
+.mh h2{font-size:.95rem;color:rgba(255,255,255,0.95);font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.5)}
 .mx{background:rgba(255,255,255,.15);border:none;font-size:1.1rem;cursor:pointer;color:#fff;
   border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center}
 .mx:hover{background:var(--red)}
@@ -1053,16 +1053,44 @@ const ModalDetail = ({ record, onClose, onEdit }) => {
   const labels = ['Marca','Modelo','Modelo Original','Período',
     'Código Repuesto','Código 1','Código 2','Código 3','Código 4','Código 5',
     'Desc. Estándar','Clasificación','Subclasificación'];
+  // Campos de código: siempre mostrar aunque estén vacíos
+  const codeFields = [4,5,6,7,8,9];
   return (
     <div className="mo show">
       <div className="md sm">
         <div className="mh"><h2>📋 Detalle del Registro</h2><button className="mx" onClick={onClose}>×</button></div>
         <div className="mb">
-          {labels.map((lbl,i) => record.fields[i] ? (
-            <div key={i} className="dr">
-              <span className="lb">{lbl}</span><span className="vl">{record.fields[i]}</span>
-            </div>
-          ) : null)}
+          {labels.map((lbl,i) => {
+            const val = record.fields[i];
+            const isCode = codeFields.includes(i);
+            // Mostrar siempre campos de código; ocultar otros si están vacíos
+            if (!val && !isCode) return null;
+            return (
+              <div key={i} className="dr">
+                <span className="lb">{lbl}</span>
+                <span className="vl">
+                  {isCode && i === 4 && val ? (
+                    // Código Repuesto: mostrar cada parte separada por ||
+                    <span style={{display:'flex',flexWrap:'wrap',gap:4}}>
+                      {val.split('||').map((c,ci) => c.trim() ? (
+                        <span key={ci} style={{
+                          fontFamily:'Courier New,monospace',fontWeight:800,fontSize:'.82rem',
+                          background:'linear-gradient(135deg,#D6E8FA,#B3D4F5)',
+                          color:'var(--bd)',padding:'2px 8px',borderRadius:5,
+                          border:'1.5px solid var(--bm)',display:'inline-block'
+                        }}>{c.trim()}</span>
+                      ) : null)}
+                    </span>
+                  ) : isCode && val ? (
+                    <span style={{fontFamily:'Courier New,monospace',color:'var(--grn)',fontWeight:700,
+                      background:'#F1F8E9',padding:'2px 7px',borderRadius:4,fontSize:'.77rem'}}>{val}</span>
+                  ) : isCode && !val ? (
+                    <span style={{color:'var(--g5)',fontStyle:'italic',fontSize:'.75rem'}}>—</span>
+                  ) : val}
+                </span>
+              </div>
+            );
+          })}
         </div>
         <div className="mf">
           <button className="btn btn-o" onClick={onClose}>Cerrar</button>
@@ -1660,7 +1688,13 @@ function DecodificadorTab({ selectedCode = null, actionsRef = null }) {
 
   // ── Auto-decode cuando se selecciona un código desde la tabla ──
   useEffect(() => {
-    if (selectedCode && decDB && Object.keys(decDB).length > 0) {
+    if (!selectedCode) {
+      // Limpiar resultado cuando no hay código seleccionado
+      setResult(null); setNotFound(''); setSuggests([]); setQuery('');
+      setCompOpen(false); setCompResult(null); setAnatomy(null);
+      return;
+    }
+    if (decDB && Object.keys(decDB).length > 0) {
       setQuery(selectedCode);
       decode(selectedCode);
     }
@@ -2194,9 +2228,20 @@ function CatalogoApp() {
   // ── Auto-activar decodificador al buscar en la tabla ──
   useEffect(() => {
     const hasFilter = debText || fMarca || fModelo || fPeriodo || fClasi || fSub;
-    if (filtered.length > 0 && hasFilter) {
-      const firstCode = filtered[0].fields[4]; // Código Repuesto es el campo principal
+    if (!hasFilter) {
+      // Sin filtros activos → limpiar decodificación para evitar confusión
+      setSelectedCode(null);
+      return;
+    }
+    if (filtered.length > 0) {
+      const rawCode = filtered[0].fields[4];
+      // Tomar el primer código del separador ||
+      const firstCode = rawCode ? rawCode.split('||')[0].trim() : '';
       if (firstCode) setSelectedCode(firstCode);
+      else setSelectedCode(null);
+    } else {
+      // Sin resultados → limpiar código decodificado
+      setSelectedCode(null);
     }
   }, [debText, fMarca, fModelo, fPeriodo, fClasi, fSub, filtered]);
 
@@ -2591,9 +2636,17 @@ function CatalogoApp() {
                   1:()=><span className="cm">{highlightText(f[1],debText)}{f[2]&&<><br/><span className="cmo">{f[2]}</span></>}</span>,
                   2:()=><span className="cmo">{f[2]}</span>,
                   3:()=><span className="ca">{highlightText(f[3],debText)}</span>,
-                  4:()=>f[4]?<span className="cc-repuesto" style={{cursor:'pointer'}} onClick={()=>setSelectedCode(f[4])}>{highlightText(f[4],debText)}
-                    <button className="btn-copy" onClick={e=>{e.stopPropagation();navigator.clipboard?.writeText(f[4]);toast('📋 Código copiado','info');}}>⧉</button>
-                  </span>:<span className="cs">—</span>,
+                  4:()=>f[4]?(()=>{
+                    const parts=f[4].split('||').map(p=>p.trim()).filter(Boolean);
+                    return <span style={{display:'inline-flex',flexWrap:'wrap',gap:3}}>
+                      {parts.map((p,pi)=>(
+                        <span key={pi} className="cc-repuesto" style={{cursor:'pointer'}} onClick={()=>setSelectedCode(p)}>
+                          {highlightText(p,debText)}
+                          <button className="btn-copy" onClick={e=>{e.stopPropagation();navigator.clipboard?.writeText(p);toast('📋 Código copiado','info');}}>⧉</button>
+                        </span>
+                      ))}
+                    </span>;
+                  })():<span className="cs">—</span>,
                   5:()=>f[5]?<span className="cc">{highlightText(f[5],debText)}</span>:<span className="cs">—</span>,
                   6:()=>f[6]?<span className="cc">{highlightText(f[6],debText)}</span>:<span className="cs">—</span>,
                   7:()=>f[7]?<span className="cc">{highlightText(f[7],debText)}</span>:<span className="cs">—</span>,

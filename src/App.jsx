@@ -865,7 +865,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
   const toast  = useToast();
   const listas = useContext(ListasCtx);
   const isNew  = !record?._id;
-  const [form,   setForm]   = useState(() => record ? [...record.fields] : Array(9).fill(''));
+  const [form,   setForm]   = useState(() => record ? [...record.fields] : Array(13).fill(''));
   const [errors, setErrors] = useState([]);
   const [saving, setSaving] = useState(false);
   const [addingNew, setAddingNew] = useState(null); // {field: i, val: ''}
@@ -876,7 +876,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
   };
 
   const handleSave = async () => {
-    const errs = [0,1,3,4].filter(i => !form[i].trim());
+    const errs = [0,1,3,10,11,12].filter(i => !form[i].trim());
     if (errs.length) { setErrors(errs); return; }
     setSaving(true);
     try { await onSave({ fields: form }); onClose(); }
@@ -888,15 +888,16 @@ const ModalEdit = ({ record, onSave, onClose }) => {
     const val = addingNew.val.trim();
     const fi = addingNew.field;
     if (fi === 0) listas.addMarca(val.toUpperCase());
-    if (fi === 6) listas.addDescStd(val.toUpperCase());
-    if (fi === 7) listas.addClasi(val.toUpperCase());
-    if (fi === 8) listas.addSub(val);
-    setField(fi, fi === 8 ? val : val.toUpperCase());
+    if (fi === 10) listas.addDescStd(val.toUpperCase());
+    if (fi === 11) listas.addClasi(val.toUpperCase());
+    if (fi === 12) listas.addSub(val);
+    setField(fi, fi === 12 ? val : val.toUpperCase());
     setAddingNew(null);
   };
 
   const labels = ['Marca *','Modelo *','Modelo Original','Período *',
-    'Descripción Original *','Código','Descripción Estándar','Clasificación','Subclasificación'];
+    'Código Repuesto','Código 1','Código 2','Código 3','Código 4','Código 5',
+    'Descripción Estándar','Clasificación','Subclasificación'];
 
   const addNewBtn = (i) => (
     <button type="button" onClick={()=>setAddingNew({field:i,val:''})}
@@ -937,7 +938,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
         {addNewBtn(i)}
       </div>
     );
-    if (i===6) return (
+    if (i===10) return (
       <div style={{display:'flex',alignItems:'center',gap:4}}>
         <select value={form[i]} onChange={e=>setField(i,e.target.value)} style={{...inputStyle(i),flex:1}}>
           <option value="">— Seleccionar —</option>
@@ -946,7 +947,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
         {addNewBtn(i)}
       </div>
     );
-    if (i===7) return (
+    if (i===11) return (
       <div style={{display:'flex',alignItems:'center',gap:4}}>
         <select value={form[i]} onChange={e=>setField(i,e.target.value)} style={{...inputStyle(i),flex:1}}>
           <option value="">— Seleccionar —</option>
@@ -955,7 +956,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
         {addNewBtn(i)}
       </div>
     );
-    if (i===8) return (
+    if (i===12) return (
       <div style={{display:'flex',alignItems:'center',gap:4}}>
         <select value={form[i]} onChange={e=>setField(i,e.target.value)} style={{...inputStyle(i),flex:1}}>
           <option value="">— Seleccionar —</option>
@@ -964,7 +965,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
         {addNewBtn(i)}
       </div>
     );
-    const upper = [1,2].includes(i);
+    const upper = [0,1,2,4,5,6,7,8,9].includes(i);
     return (
       <input type="text" style={inputStyle(i)} value={form[i]}
         onChange={e => setField(i, upper ? e.target.value.toUpperCase() : e.target.value)}/>
@@ -981,7 +982,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
         <div className="mb">
           <div className="fgrid">
             {labels.map((lbl,i) => (
-              <div key={i} className={`fg2${(i===4||i===6)?' full':''}`}>
+              <div key={i} className={`fg2${(i===4||i===10)?' full':''}`}>
                 <label>{lbl}</label>
                 {renderField(i)}
                 {errors.includes(i) && <span className="em">Campo requerido</span>}
@@ -2376,7 +2377,7 @@ function CatalogoApp() {
         </div>
         <div className="ac-hact">
           {isAdmin && <button className="btn btn-g"
-            onClick={()=>setModalEdit({_id:null,fields:Array(9).fill('')})}>➕ Nuevo</button>}
+            onClick={()=>setModalEdit({_id:null,fields:Array(13).fill('')})}>➕ Nuevo</button>}
           {isAdmin && <button className="btn btn-c" onClick={()=>setShowImport(true)}>📂 Cargar base</button>}
           <button className="btn btn-c" onClick={exportCSV}>📥 Excel</button>
           <button className="btn btn-c" onClick={()=>setShowCols(true)}>👁 Columnas</button>

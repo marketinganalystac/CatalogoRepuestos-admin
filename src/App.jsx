@@ -604,12 +604,12 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .mo{display:none;position:fixed;inset:0;background:rgba(10,25,45,.6);z-index:1000;
   align-items:center;justify-content:center;backdrop-filter:blur(2px)}
 .mo.show{display:flex}
-.md{background:#fff;border-radius:12px;width:min(680px,95vw);max-height:90vh;overflow-y:auto;
-  box-shadow:0 24px 60px rgba(0,0,0,.3);animation:pop .2s ease}
+.md{background:#F8FBFF;border-radius:14px;width:min(680px,95vw);max-height:90vh;overflow-y:auto;
+  box-shadow:0 24px 60px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.3);animation:pop .2s ease}
 .md.sm{max-width:440px}
 @keyframes pop{from{transform:scale(.93);opacity:0}to{transform:scale(1);opacity:1}}
-.mh{padding:16px 22px 12px;border-bottom:2px solid var(--bl);display:flex;align-items:center;
-  justify-content:space-between;background:var(--bd);border-radius:12px 12px 0 0}
+.mh{padding:16px 22px 12px;border-bottom:2px solid var(--gold);display:flex;align-items:center;
+  justify-content:space-between;background:linear-gradient(135deg,var(--bd),var(--bm));border-radius:14px 14px 0 0}
 .mh.danger{background:#7B1818}
 .mh h2{font-size:.95rem;color:#fff;font-weight:700}
 .mx{background:rgba(255,255,255,.15);border:none;font-size:1.1rem;cursor:pointer;color:#fff;
@@ -617,7 +617,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .mx:hover{background:var(--red)}
 .mb{padding:20px 22px}
 .mf{padding:14px 22px;border-top:1px solid var(--g2);display:flex;justify-content:flex-end;gap:8px;
-  background:var(--g1);border-radius:0 0 12px 12px}
+  background:var(--g1);border-radius:0 0 14px 14px}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .fg2{display:flex;flex-direction:column;gap:4px}
 .fg2.full{grid-column:1/-1}
@@ -723,7 +723,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
 }
 
 /* ── DECODIFICADOR ── */
-.dec-wrap{background:var(--g1);padding:0 0 24px}
+.dec-wrap{background:var(--g1);padding:0 0 24px;border-top:2px solid var(--g2)}
 .dec-section-title{background:linear-gradient(135deg,var(--bd),var(--bm));
   padding:8px 12px;border:none;
   display:flex;align-items:center;gap:8px;justify-content:space-between}
@@ -1574,7 +1574,7 @@ const DEC_TYPE_LABELS = {
 const DecodificadorCtx = createContext(null);
 const useDecodificador = () => useContext(DecodificadorCtx);
 
-function DecodificadorTab({ selectedCode = null }) {
+function DecodificadorTab({ selectedCode = null, actionsRef = null }) {
   const toast = useToast();
   const { isAdmin } = useAuth();
   const [decDB,     setDecDB]     = useState({});
@@ -1584,16 +1584,14 @@ function DecodificadorTab({ selectedCode = null }) {
   const [dbLoading, setDbLoading] = useState(true);
 
   const [query,       setQuery]       = useState('');
-  const [result,      setResult]      = useState(null);   // { code, data: [...] }
+  const [result,      setResult]      = useState(null);
   const [notFound,    setNotFound]    = useState('');
   const [suggests,    setSuggests]    = useState([]);
-  const [anatomy,     setAnatomy]     = useState(null);   // { code, parts[] }
+  const [anatomy,     setAnatomy]     = useState(null);
 
   const [compOpen,    setCompOpen]    = useState(false);
   const [compB,       setCompB]       = useState('');
   const [compResult,  setCompResult]  = useState(null);
-
-  const [expanded,    setExpanded]    = useState(true);    // Expandir/Colapsar
 
   // ── Load BD from Supabase ──────────────────────────────────
   useEffect(() => {
@@ -1843,38 +1841,25 @@ function DecodificadorTab({ selectedCode = null }) {
   };
 
   const fileRef = useRef(null);
+
+  // Exponer acciones al componente padre
+  useEffect(() => {
+    if (actionsRef) {
+      actionsRef.current = {
+        triggerUpload: () => fileRef.current?.click(),
+        handleDownloadBD,
+      };
+    }
+  }); // eslint-disable-line
+
   const posColor = p => p==='Izquierdo'?'hl-green': p.includes('Derecho')?'hl-amber':p==='—'?'':'hl-blue';
 
   return (
-    <div className="dec-wrap" style={{position:'fixed',bottom:0,left:0,right:0,zIndex:1000,maxHeight:expanded?'60vh':'40px',overflow:'hidden',background:'var(--dark)',transition:'maxHeight 0.3s ease'}}>
-      {/* Section header */}
-      <div className="dec-section-title">
-        <div style={{display:'flex',alignItems:'center',gap:6}}>
-          <span style={{fontSize:'1rem'}}>🔍</span>
-          <div>
-            <div className="dec-section-label">Decodificador de Códigos</div>
-            <div className="dec-section-sub">{dbCount.toLocaleString()} códigos</div>
-          </div>
-        </div>
-        
-        {/* DB Toolbar compacto en header */}
-        <div style={{display:'flex',alignItems:'center',gap:6,marginRight:8}}>
-          {isAdmin && (
-            <button className="dec-db-btn" style={{padding:'2px 6px',fontSize:'.58rem'}} onClick={() => fileRef.current?.click()}>
-              ⬆ Cargar
-            </button>
-          )}
-          <button className="dec-db-btn" style={{padding:'2px 6px',fontSize:'.58rem'}} onClick={handleDownloadBD}>⬇ Descargar</button>
-          <input ref={fileRef} type="file" accept=".xlsx,.xls" style={{display:'none'}}
-            onChange={e => { if(e.target.files[0]) handleUploadBD(e.target.files[0]); e.target.value=''; }}
-          />
-        </div>
-        
-        {/* Botón expandir/colapsar */}
-        <button onClick={() => setExpanded(!expanded)} style={{background:'none',border:'none',color:'#fff',cursor:'pointer',fontSize:'1rem',padding:'0 4px',display:'flex',alignItems:'center'}}>
-          {expanded ? '▼' : '▶'}
-        </button>
-      </div>
+    <div className="dec-wrap">
+      {/* Hidden file input for BD upload */}
+      <input ref={fileRef} type="file" accept=".xlsx,.xls" style={{display:'none'}}
+        onChange={e => { if(e.target.files[0]) handleUploadBD(e.target.files[0]); e.target.value=''; }}
+      />
 
       <div className="dec-inner">
       <div className="dec-card">
@@ -2078,6 +2063,7 @@ function CatalogoApp() {
   const [selectedCode, setSelectedCode] = useState(null); // Para decodificador automático
 
   const debRef = useRef(null);
+  const decActionsRef = useRef(null);
 
   // ── Listas dinámicas (marcas, clasificaciones, subclasificaciones, desc estándar) ──
   const [extraMarcas,  setExtraMarcas]  = useState([]);
@@ -2388,6 +2374,8 @@ function CatalogoApp() {
           {isAdmin && <button className="btn btn-g"
             onClick={()=>setModalEdit({_id:null,fields:Array(13).fill('')})}>➕ Nuevo</button>}
           {isAdmin && <button className="btn btn-c" onClick={()=>setShowImport(true)}>📂 Cargar base</button>}
+          {isAdmin && <button className="btn btn-c" onClick={()=>decActionsRef.current?.triggerUpload()} title="Cargar base del Decodificador">⬆ BD Decoder</button>}
+          <button className="btn btn-c" onClick={()=>decActionsRef.current?.handleDownloadBD()} title="Descargar base del Decodificador">⬇ BD Decoder</button>
           <button className="btn btn-c" onClick={exportCSV}>📥 Excel</button>
           <button className="btn btn-c" onClick={()=>setShowCols(true)}>👁 Columnas</button>
           {isAdmin && <button className="btn btn-c" onClick={()=>setShowReplace(true)}>🔄 Reemplazar</button>}
@@ -2605,6 +2593,9 @@ function CatalogoApp() {
         </div>
       )}
 
+      {/* ── DECODIFICADOR — debajo de los resultados ── */}
+      <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />
+
       {/* MODALS */}
       {modalEdit && isAdmin && (
         <ModalEdit
@@ -2622,9 +2613,6 @@ function CatalogoApp() {
       {showCols    && <ModalCols    visibleCols={visibleCols} colOrder={colOrder} onChange={(i,s)=>setVisibleCols(v=>v.map((c,ci)=>ci===i?{...c,show:s}:c))} onReorder={setColOrder} onClose={()=>setShowCols(false)}/>}
       {showHistory && <ModalHistory changelog={changelog} onClose={()=>setShowHistory(false)}/>}
       {showReplace && <ModalReplace cols={COL_DEFS} onReplace={handleBulkReplace} onClose={()=>setShowReplace(false)}/>}
-
-      {/* ── DECODIFICADOR — al final de la página principal ── */}
-      <DecodificadorTab selectedCode={selectedCode} />
     </>
     </ListasCtx.Provider>
   );

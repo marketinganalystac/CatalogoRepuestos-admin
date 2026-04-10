@@ -755,7 +755,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .dec-code{font-family:'Courier New',monospace;font-size:.9rem;font-weight:800;color:var(--bm)}
 .dec-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;margin-top:8px;padding:0 4px}
 @media(max-width:580px){.dec-two{grid-template-columns:1fr}}
-.dec-grid{display:grid;grid-template-columns:1fr;gap:1px}
+.dec-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px}
 .dec-row{display:flex;gap:4px;padding:1px 4px;background:var(--g1);border-radius:3px;align-items:flex-start;border:1px solid var(--g2);font-size:.7rem}
 .dec-key{font-family:'Courier New',monospace;font-size:.55rem;color:var(--g5);
   letter-spacing:.06em;white-space:nowrap;min-width:48px;padding-top:0px}
@@ -1909,9 +1909,6 @@ function DecodificadorTab({ selectedCode = null, actionsRef = null }) {
         {/* ── Result ── */}
         {result && (
           <div className="dec-result visible">
-            <div className="dec-result-hdr">
-              <span className="dec-code">{result.code}</span>
-            </div>
             <div className="dec-two">
               {/* Left: anatomy */}
               <div>

@@ -17,8 +17,8 @@ const LOGO_SRC = "/logo.png";
 //  SUPABASE CONFIG — Auto Centro Repuestos Aplicables
 // ============================================================
 const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
+  "https://vzjhzuvahejosdojllcm.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6amh6dXZhaGVqb3Nkb2psbGNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTI3NTAsImV4cCI6MjA4Nzc4ODc1MH0.8PNlIh3HQDIq1u6IiRQeKx3o9gZyNWU3SeZ4qJ_F7Ew"
 );
 
 // ============================================================
@@ -33,8 +33,8 @@ const useAuth = () => useContext(AuthCtx);
 // Supabase configurado con persistSession:false + storage sessionStorage
 // para que la sesión NO sobreviva al cerrar la pestaña
 const supabaseSession = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
+  "https://vzjhzuvahejosdojllcm.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6amh6dXZhaGVqb3Nkb2psbGNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTI3NTAsImV4cCI6MjA4Nzc4ODc1MH0.8PNlIh3HQDIq1u6IiRQeKx3o9gZyNWU3SeZ4qJ_F7Ew",
   { auth: { storage: window.sessionStorage, persistSession: true, detectSessionInUrl: false } }
 );
 

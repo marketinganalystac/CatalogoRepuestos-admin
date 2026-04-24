@@ -1024,7 +1024,72 @@ tbody td{padding:7px 13px;vertical-align:middle}
 /* ══════════════════════════════════
    DECODIFICADOR
 ══════════════════════════════════ */
-.dec-wrap{background:var(--g1);padding:0 0 24px;border-top:2px solid var(--g2)}
+/* ═══════════════════════════════════
+   LEFT PANEL — Decodificador
+═══════════════════════════════════ */
+.dec-left-panel{
+  position:fixed;left:0;top:58px;bottom:0;width:390px;
+  background:var(--g1);z-index:400;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:4px 0 32px rgba(0,0,0,.28),1px 0 0 rgba(0,0,0,.08);
+  transform:translateX(-100%);
+  transition:transform .32s cubic-bezier(.4,0,.2,1);
+  border-right:3px solid var(--gold);
+}
+.dec-left-panel.open{transform:translateX(0)}
+.dec-panel-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.38);
+  z-index:399;opacity:0;pointer-events:none;
+  transition:opacity .32s;
+  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+}
+.dec-panel-overlay.visible{opacity:1;pointer-events:auto}
+.dec-panel-header{
+  background:linear-gradient(135deg,var(--bd) 0%,#0d52a8 60%,var(--bm) 100%);
+  padding:10px 14px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:3px solid var(--gold);flex-shrink:0;
+  box-shadow:0 2px 10px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.08);
+}
+.dec-panel-close{
+  background:rgba(255,255,255,.14);color:#fff;
+  border:1px solid rgba(255,255,255,.28);border-radius:7px;
+  padding:4px 11px;font-size:.75rem;font-weight:700;
+  cursor:pointer;transition:all .15s;
+  box-shadow:0 2px 6px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.15);
+  backdrop-filter:blur(4px);
+}
+.dec-panel-close:hover{background:rgba(255,255,255,.24);box-shadow:0 4px 10px rgba(0,0,0,.2);transform:translateY(-1px)}
+.dec-panel-close:active{transform:translateY(1px)}
+.dec-panel-tab{
+  position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:398;
+  writing-mode:vertical-rl;text-orientation:mixed;
+  background:linear-gradient(180deg,var(--bd) 0%,var(--bm) 100%);
+  color:#fff;border:none;border-radius:0 8px 8px 0;
+  padding:16px 7px;font-size:.63rem;font-weight:700;cursor:pointer;
+  letter-spacing:.13em;white-space:nowrap;
+  box-shadow:3px 0 14px rgba(0,0,0,.28),inset -1px 0 0 rgba(255,255,255,.08);
+  border-right:1px solid rgba(255,255,255,.12);
+  transition:all .2s ease;
+}
+.dec-panel-tab:hover{
+  background:linear-gradient(180deg,#1a7bc8 0%,var(--bm) 100%);
+  box-shadow:4px 0 18px rgba(0,0,0,.35);
+  padding-right:11px;
+}
+.dec-panel-tab .tab-dot{
+  display:block;width:7px;height:7px;border-radius:50%;
+  background:var(--gold);margin:6px auto 0;
+  box-shadow:0 0 6px rgba(212,168,0,.7);
+  animation:pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+@media(max-width:640px){
+  .dec-left-panel{width:100vw;top:0}
+  .dec-panel-header{top:0}
+}
+.dec-wrap{flex:1;overflow-y:auto;padding:0 0 20px;-webkit-overflow-scrolling:touch}
+.dec-left-panel .dec-two{grid-template-columns:1fr;gap:10px}
+.dec-left-panel .dec-grid{grid-template-columns:1fr}
 .dec-section-title{
   background:linear-gradient(135deg,var(--bd) 0%,#0d52a8 60%,var(--bm) 100%);
   padding:8px 14px;border:none;
@@ -2249,10 +2314,10 @@ function DecodificadorTab({ selectedCode = null, actionsRef = null }) {
       />
 
       <div className="dec-inner">
-      <div className="dec-card">
+      <div className="dec-card" style={{marginTop:8}}>
         {!selectedCode && (
-          <div style={{padding:'16px 14px',color:'#90CAF9',fontSize:'.85rem',fontStyle:'italic',textAlign:'center'}}>
-            Selecciona un código de la tabla para decodificarlo aquí…
+          <div style={{padding:'20px 14px',color:'#90CAF9',fontSize:'.85rem',fontStyle:'italic',textAlign:'center',lineHeight:1.5}}>
+            Selecciona o haz click en un código de la tabla para decodificarlo aquí…
           </div>
         )}
 
@@ -2435,6 +2500,7 @@ function CatalogoApp() {
   const [showCols,    setShowCols]    = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedCode, setSelectedCode] = useState(null); // Para decodificador automático
+  const [decPanelOpen, setDecPanelOpen] = useState(false); // Panel izquierdo decodificador
   const [showBaseMenu, setShowBaseMenu] = useState(false); // Menú desplegable de Cargar base
 
   const debRef = useRef(null);
@@ -2563,7 +2629,7 @@ function CatalogoApp() {
   useEffect(() => {
     if (filtered.length > 0 && debText) {
       const firstCode = filtered[0].fields[5];
-      if (firstCode) setSelectedCode(firstCode);
+      if (firstCode) { setSelectedCode(firstCode); setDecPanelOpen(true); }
     }
   }, [debText, filtered]);
 
@@ -2781,6 +2847,9 @@ function CatalogoApp() {
             )}
           </div>}
           <button className="btn btn-c" onClick={()=>setShowCols(true)}>👁 Columnas</button>
+          <button className="btn btn-g btn-sm" onClick={()=>setDecPanelOpen(o=>!o)} title="Abrir Decodificador" style={{letterSpacing:.3}}>
+            🔍 Decodificador
+          </button>
           {isAdmin && <button className="btn btn-c" onClick={()=>setShowReplace(true)}>🔄 Reemplazar</button>}
           {isAdmin && <button className="btn btn-c" onClick={()=>{ loadChangelog(); setShowHistory(true); }}>
             📋 Historial
@@ -2878,8 +2947,30 @@ function CatalogoApp() {
         ))}
       </div>
 
-      {/* ── DECODIFICADOR — entre buscador avanzado y resultados ── */}
-      <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />
+      {/* ── DECODIFICADOR — Panel izquierdo deslizable ── */}
+      {/* Tab lateral (siempre visible) */}
+      <button className="dec-panel-tab" onClick={()=>setDecPanelOpen(o=>!o)} title="Abrir Decodificador">
+        🔍 DECODIFICADOR
+        {selectedCode && <span className="tab-dot"/>}
+      </button>
+
+      {/* Overlay */}
+      <div className={`dec-panel-overlay${decPanelOpen?' visible':''}`} onClick={()=>setDecPanelOpen(false)}/>
+
+      {/* Panel */}
+      <div className={`dec-left-panel${decPanelOpen?' open':''}`}>
+        <div className="dec-panel-header">
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <span style={{fontSize:'1rem'}}>🔍</span>
+            <div>
+              <div style={{color:'#fff',fontSize:'.8rem',fontWeight:700,letterSpacing:.3}}>Decodificador</div>
+              <div style={{color:'rgba(255,255,255,.6)',fontSize:'.65rem'}}>Análisis de códigos de repuesto</div>
+            </div>
+          </div>
+          <button className="dec-panel-close" onClick={()=>setDecPanelOpen(false)}>✕ Cerrar</button>
+        </div>
+        <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />
+      </div>
 
       {/* TABLE */}
       <div className="ac-tw">
@@ -2946,7 +3037,7 @@ function CatalogoApp() {
                   4:()=>f[4]?<span className="cc">{highlightText(f[4],debText)}
                     <button className="btn-copy" onClick={e=>{e.stopPropagation();navigator.clipboard?.writeText(f[4]);toast('📋 Código copiado','info');}}>⧉</button>
                   </span>:<span className="cs">—</span>,
-                  5:()=>f[5]?<span className="cc" style={{cursor:'pointer'}} onClick={()=>setSelectedCode(f[5])}>{highlightText(f[5],debText)}</span>:<span className="cs">—</span>,
+                  5:()=>f[5]?<span className="cc" style={{cursor:'pointer'}} onClick={()=>{ setSelectedCode(f[5]); setDecPanelOpen(true); }}>{highlightText(f[5],debText)}</span>:<span className="cs">—</span>,
                   6:()=>f[6]?<span className="cc">{highlightText(f[6],debText)}</span>:<span className="cs">—</span>,
                   7:()=>f[7]?<span className="cc">{highlightText(f[7],debText)}</span>:<span className="cs">—</span>,
                   8:()=>f[8]?<span className="cc">{highlightText(f[8],debText)}</span>:<span className="cs">—</span>,

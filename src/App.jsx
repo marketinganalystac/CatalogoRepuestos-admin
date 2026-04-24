@@ -739,7 +739,7 @@ select:focus,input[type=text]:focus{
 .ac-qsep{width:1px;height:24px;background:var(--g2)}
 
 /* Table wrapper */
-.ac-tw{overflow:auto;max-height:calc(100vh - 310px);background:#fff;-webkit-overflow-scrolling:touch}
+.ac-tw{overflow:auto;flex:1;min-height:200px;max-height:calc(100vh - 310px);background:#fff;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;font-size:.81rem}
 thead th{
   background:linear-gradient(180deg,#244f85 0%,var(--bd) 100%);
@@ -1025,56 +1025,70 @@ tbody td{padding:7px 13px;vertical-align:middle}
    DECODIFICADOR
 ══════════════════════════════════ */
 /* ═══════════════════════════════════
-   LEFT PANEL — Decodificador
+   SPLIT LAYOUT — Panel izquierdo
 ═══════════════════════════════════ */
+.ac-layout{
+  display:flex;
+  min-height:0;
+  flex:1;
+  position:relative;
+}
 .dec-left-panel{
-  position:fixed;left:0;top:58px;bottom:0;width:390px;
-  background:var(--g1);z-index:400;
-  display:flex;flex-direction:column;overflow:hidden;
-  box-shadow:4px 0 32px rgba(0,0,0,.28),1px 0 0 rgba(0,0,0,.08);
-  transform:translateX(-100%);
-  transition:transform .32s cubic-bezier(.4,0,.2,1);
-  border-right:3px solid var(--gold);
+  width:0;
+  flex-shrink:0;
+  overflow:hidden;
+  transition:width .32s cubic-bezier(.4,0,.2,1);
+  background:var(--g1);
+  border-right:0px solid var(--gold);
+  display:flex;
+  flex-direction:column;
+  position:sticky;
+  top:0;
+  height:100vh;
+  z-index:50;
 }
-.dec-left-panel.open{transform:translateX(0)}
-.dec-panel-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.38);
-  z-index:399;opacity:0;pointer-events:none;
-  transition:opacity .32s;
-  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+.dec-left-panel.open{
+  width:370px;
+  border-right-width:3px;
 }
-.dec-panel-overlay.visible{opacity:1;pointer-events:auto}
 .dec-panel-header{
   background:linear-gradient(135deg,var(--bd) 0%,#0d52a8 60%,var(--bm) 100%);
   padding:10px 14px;display:flex;align-items:center;justify-content:space-between;
   border-bottom:3px solid var(--gold);flex-shrink:0;
   box-shadow:0 2px 10px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.08);
+  min-width:364px;
 }
 .dec-panel-close{
   background:rgba(255,255,255,.14);color:#fff;
   border:1px solid rgba(255,255,255,.28);border-radius:7px;
   padding:4px 11px;font-size:.75rem;font-weight:700;
-  cursor:pointer;transition:all .15s;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
   box-shadow:0 2px 6px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.15);
-  backdrop-filter:blur(4px);
 }
-.dec-panel-close:hover{background:rgba(255,255,255,.24);box-shadow:0 4px 10px rgba(0,0,0,.2);transform:translateY(-1px)}
+.dec-panel-close:hover{background:rgba(255,255,255,.24);transform:translateY(-1px)}
 .dec-panel-close:active{transform:translateY(1px)}
+.dec-panel-scroll{
+  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  min-width:364px;
+}
+/* Tab lateral visible cuando el panel está cerrado */
 .dec-panel-tab{
-  position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:398;
+  position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:200;
   writing-mode:vertical-rl;text-orientation:mixed;
   background:linear-gradient(180deg,var(--bd) 0%,var(--bm) 100%);
   color:#fff;border:none;border-radius:0 8px 8px 0;
   padding:16px 7px;font-size:.63rem;font-weight:700;cursor:pointer;
   letter-spacing:.13em;white-space:nowrap;
-  box-shadow:3px 0 14px rgba(0,0,0,.28),inset -1px 0 0 rgba(255,255,255,.08);
-  border-right:1px solid rgba(255,255,255,.12);
-  transition:all .2s ease;
+  box-shadow:3px 0 14px rgba(0,0,0,.28);
+  border-right:2px solid var(--gold);
+  transition:all .2s ease, opacity .32s, left .32s cubic-bezier(.4,0,.2,1);
 }
 .dec-panel-tab:hover{
   background:linear-gradient(180deg,#1a7bc8 0%,var(--bm) 100%);
-  box-shadow:4px 0 18px rgba(0,0,0,.35);
   padding-right:11px;
+}
+.dec-panel-tab.hidden{
+  opacity:0;pointer-events:none;left:-60px;
 }
 .dec-panel-tab .tab-dot{
   display:block;width:7px;height:7px;border-radius:50%;
@@ -1083,13 +1097,11 @@ tbody td{padding:7px 13px;vertical-align:middle}
   animation:pulse-dot 2s ease-in-out infinite;
 }
 @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
-@media(max-width:640px){
-  .dec-left-panel{width:100vw;top:0}
-  .dec-panel-header{top:0}
-}
-.dec-wrap{flex:1;overflow-y:auto;padding:0 0 20px;-webkit-overflow-scrolling:touch}
-.dec-left-panel .dec-two{grid-template-columns:1fr;gap:10px}
-.dec-left-panel .dec-grid{grid-template-columns:1fr}
+/* Área derecha que contiene tabla y todo lo demás */
+.ac-main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.dec-wrap{background:var(--g1);padding:0 0 24px;}
+.dec-left-panel .dec-two{grid-template-columns:1fr!important;gap:10px}
+.dec-left-panel .dec-grid{grid-template-columns:1fr!important}
 .dec-section-title{
   background:linear-gradient(135deg,var(--bd) 0%,#0d52a8 60%,var(--bm) 100%);
   padding:8px 14px;border:none;
@@ -2314,10 +2326,10 @@ function DecodificadorTab({ selectedCode = null, actionsRef = null }) {
       />
 
       <div className="dec-inner">
-      <div className="dec-card" style={{marginTop:8}}>
+      <div className="dec-card">
         {!selectedCode && (
-          <div style={{padding:'20px 14px',color:'#90CAF9',fontSize:'.85rem',fontStyle:'italic',textAlign:'center',lineHeight:1.5}}>
-            Selecciona o haz click en un código de la tabla para decodificarlo aquí…
+          <div style={{padding:'16px 14px',color:'#90CAF9',fontSize:'.85rem',fontStyle:'italic',textAlign:'center'}}>
+            Selecciona un código de la tabla para decodificarlo aquí…
           </div>
         )}
 
@@ -2500,7 +2512,7 @@ function CatalogoApp() {
   const [showCols,    setShowCols]    = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedCode, setSelectedCode] = useState(null); // Para decodificador automático
-  const [decPanelOpen, setDecPanelOpen] = useState(false); // Panel izquierdo decodificador
+  const [decPanelOpen, setDecPanelOpen] = useState(false); // Panel lateral decodificador
   const [showBaseMenu, setShowBaseMenu] = useState(false); // Menú desplegable de Cargar base
 
   const debRef = useRef(null);
@@ -2847,9 +2859,6 @@ function CatalogoApp() {
             )}
           </div>}
           <button className="btn btn-c" onClick={()=>setShowCols(true)}>👁 Columnas</button>
-          <button className="btn btn-g btn-sm" onClick={()=>setDecPanelOpen(o=>!o)} title="Abrir Decodificador" style={{letterSpacing:.3}}>
-            🔍 Decodificador
-          </button>
           {isAdmin && <button className="btn btn-c" onClick={()=>setShowReplace(true)}>🔄 Reemplazar</button>}
           {isAdmin && <button className="btn btn-c" onClick={()=>{ loadChangelog(); setShowHistory(true); }}>
             📋 Historial
@@ -2947,30 +2956,38 @@ function CatalogoApp() {
         ))}
       </div>
 
-      {/* ── DECODIFICADOR — Panel izquierdo deslizable ── */}
-      {/* Tab lateral (siempre visible) */}
-      <button className="dec-panel-tab" onClick={()=>setDecPanelOpen(o=>!o)} title="Abrir Decodificador">
+      {/* ── Tab lateral (visible cuando panel cerrado) ── */}
+      <button
+        className={`dec-panel-tab${decPanelOpen?' hidden':''}`}
+        onClick={()=>setDecPanelOpen(true)}
+        title="Abrir Decodificador"
+      >
         🔍 DECODIFICADOR
         {selectedCode && <span className="tab-dot"/>}
       </button>
 
-      {/* Overlay */}
-      <div className={`dec-panel-overlay${decPanelOpen?' visible':''}`} onClick={()=>setDecPanelOpen(false)}/>
+      {/* ── SPLIT LAYOUT ── */}
+      <div className="ac-layout">
 
-      {/* Panel */}
-      <div className={`dec-left-panel${decPanelOpen?' open':''}`}>
-        <div className="dec-panel-header">
-          <div style={{display:'flex',alignItems:'center',gap:8}}>
-            <span style={{fontSize:'1rem'}}>🔍</span>
-            <div>
-              <div style={{color:'#fff',fontSize:'.8rem',fontWeight:700,letterSpacing:.3}}>Decodificador</div>
-              <div style={{color:'rgba(255,255,255,.6)',fontSize:'.65rem'}}>Análisis de códigos de repuesto</div>
+        {/* Panel izquierdo */}
+        <div className={`dec-left-panel${decPanelOpen?' open':''}`}>
+          <div className="dec-panel-header">
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              <span style={{fontSize:'1rem'}}>🔍</span>
+              <div>
+                <div style={{color:'#fff',fontSize:'.8rem',fontWeight:700,letterSpacing:.3}}>Decodificador</div>
+                <div style={{color:'rgba(255,255,255,.6)',fontSize:'.65rem'}}>Análisis de códigos</div>
+              </div>
             </div>
+            <button className="dec-panel-close" onClick={()=>setDecPanelOpen(false)}>✕ Cerrar</button>
           </div>
-          <button className="dec-panel-close" onClick={()=>setDecPanelOpen(false)}>✕ Cerrar</button>
+          <div className="dec-panel-scroll">
+            <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />
+          </div>
         </div>
-        <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />
-      </div>
+
+        {/* Contenido principal (tabla + paginación + modales) */}
+        <div className="ac-main">
 
       {/* TABLE */}
       <div className="ac-tw">
@@ -3107,6 +3124,8 @@ function CatalogoApp() {
       {showCols    && <ModalCols    visibleCols={visibleCols} colOrder={colOrder} onChange={(i,s)=>setVisibleCols(v=>v.map((c,ci)=>ci===i?{...c,show:s}:c))} onReorder={setColOrder} onClose={()=>setShowCols(false)}/>}
       {showHistory && <ModalHistory changelog={changelog} onClose={()=>setShowHistory(false)}/>}
       {showReplace && <ModalReplace cols={COL_DEFS} onReplace={handleBulkReplace} onClose={()=>setShowReplace(false)}/>}
+      </div>{/* /ac-main */}
+      </div>{/* /ac-layout */}
     </>
     </ListasCtx.Provider>
   );

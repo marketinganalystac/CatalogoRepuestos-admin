@@ -269,10 +269,10 @@ const ListasCtx = createContext(null);
 // [0]marca [1]modelo [2]modelo_orig [3]periodo [4]codigo_repuesto [5-9]codigo_1-5 [10]desc_std [11]clasi [12]sub
 const COL_DEFS = [
   { key:0, label:'Marca',            show:true,  width:110 },
-  { key:1, label:'Modelo',           show:true,  width:130 },
-  { key:2, label:'Modelo Original',  show:false, width:130 },
+  { key:1, label:'Modelo',           show:true,  width:190 },
+  { key:2, label:'Modelo Original',  show:false, width:190 },
   { key:3, label:'Período',          show:true,  width:90  },
-  { key:4, label:'Código Repuesto',  show:true,  width:110 },
+  { key:4, label:'Código Repuesto',  show:true,  width:160 },
   { key:5, label:'Código 1',         show:true,  width:100 },
   { key:6, label:'Código 2',         show:true,  width:100 },
   { key:7, label:'Código 3',         show:true,  width:100 },
@@ -739,7 +739,8 @@ select:focus,input[type=text]:focus{
 .ac-qsep{width:1px;height:24px;background:var(--g2)}
 
 /* Table wrapper */
-.ac-tw{overflow:auto;max-height:calc(100vh - 310px);background:#fff;-webkit-overflow-scrolling:touch;position:relative}
+/* Table wrapper — scroll en ambas direcciones; thead sticky necesita overflow-y:auto aquí */
+.ac-tw{overflow:auto;height:calc(100vh - 280px);background:#fff;-webkit-overflow-scrolling:touch;position:relative}
 table{width:100%;border-collapse:collapse;font-size:0.68rem}
 thead th{
   background:linear-gradient(180deg,#244f85 0%,var(--bd) 100%);
@@ -755,28 +756,27 @@ thead th.sorted .si{opacity:1;color:var(--gold)}
 /* ── Dec toggle tab ── */
 .dec-section{background:var(--g1);border-top:2px solid var(--g2)}
 .dec-toggle-tab{
-  width:100%;display:flex;align-items:center;gap:8px;
-  padding:7px 16px;
-  background:linear-gradient(135deg,var(--bd) 0%,#0d52a8 70%,var(--bm) 100%);
-  color:#fff;border:none;cursor:pointer;
-  font-size:0.57rem;font-weight:700;letter-spacing:.3px;
-  border-bottom:2px solid var(--gold);
-  transition:background .15s;text-align:left;
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 12px;
+  background:linear-gradient(135deg,var(--bd) 0%,#0d52a8 100%);
+  color:#fff;border:none;border-bottom:2px solid var(--gold);
+  cursor:pointer;font-size:0.52rem;font-weight:700;letter-spacing:.3px;
+  border-radius:0 0 6px 0;
+  transition:background .15s;
 }
-.dec-toggle-tab:hover{background:linear-gradient(135deg,#1a6bb5 0%,#1060c0 70%,var(--bm) 100%)}
-.dec-toggle-icon{font-size:0.52rem;opacity:.7}
+.dec-toggle-tab:hover{background:linear-gradient(135deg,#1a6bb5 0%,#1060c0 100%)}
+.dec-toggle-icon{font-size:0.45rem;opacity:.8}
 .dec-toggle-code{
-  background:var(--gold);color:#000;border-radius:4px;
-  padding:1px 7px;font-size:0.52rem;font-weight:700;margin-left:2px;
+  background:var(--gold);color:#000;border-radius:3px;
+  padding:1px 6px;font-size:0.48rem;font-weight:700;
 }
-.dec-toggle-hint{margin-left:auto;opacity:.6;font-size:0.49rem;font-weight:400;letter-spacing:.5px}
 tbody tr{border-bottom:1px solid var(--g2);transition:background .1s;background:#fff}
 tbody tr:hover{background:linear-gradient(90deg,var(--bl) 0%,#f0f7ff 100%)}
 tbody tr:nth-child(even){background:#FAFBFD}
 tbody tr:nth-child(even):hover{background:linear-gradient(90deg,var(--bl) 0%,#f0f7ff 100%)}
 tbody td{padding:7px 13px;vertical-align:middle}
-.cm{font-weight:800;color:var(--bd);white-space:nowrap;font-size:0.71rem}
-.cmo{color:var(--g7);white-space:nowrap;font-weight:500}
+.cm{font-weight:800;color:var(--bd);white-space:normal;font-size:0.71rem;word-break:break-word;line-height:1.3}
+.cmo{color:var(--g7);white-space:normal;font-weight:500;word-break:break-word;line-height:1.3}
 .ca{
   font-family:'Segoe UI',system-ui,sans-serif;color:var(--bd);font-size:0.64rem;font-weight:700;
   background:linear-gradient(135deg,#e8f0fa,#d4e2f8);
@@ -2453,7 +2453,7 @@ function CatalogoApp() {
   const [showCols,    setShowCols]    = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedCode, setSelectedCode] = useState(null); // Para decodificador automático
-  const [showDec, setShowDec] = useState(true); // Mostrar/ocultar decodificador
+  const [showDec, setShowDec] = useState(false); // Mostrar/ocultar decodificador
   const [showBaseMenu, setShowBaseMenu] = useState(false); // Menú desplegable de Cargar base
 
   const debRef = useRef(null);
@@ -2899,14 +2899,36 @@ function CatalogoApp() {
 
       {/* ── DECODIFICADOR — colapsable ── */}
       <div className="dec-section">
-        <button className="dec-toggle-tab" onClick={()=>setShowDec(v=>!v)}>
+        <button className="dec-toggle-tab" onClick={()=>setShowDec(v=>!v)} title={showDec?'Ocultar Decodificador':'Mostrar Decodificador'}>
           <span className="dec-toggle-icon">{showDec ? '▲' : '▼'}</span>
-          🔍 Decodificador de Códigos
+          Código
           {selectedCode && <span className="dec-toggle-code">{selectedCode}</span>}
-          <span className="dec-toggle-hint">{showDec ? 'Ocultar' : 'Mostrar'}</span>
         </button>
         {showDec && <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />}
       </div>
+
+      {/* PAGINACIÓN — encima de la tabla */}
+      {!loading && filtered.length>0 && (
+        <div className="ac-pg">
+          <button className="pb" disabled={page<=1} onClick={()=>setPage(p=>p-1)}>‹ Anterior</button>
+          {(()=>{
+            const pages=[1];
+            for(let i=Math.max(2,page-3);i<=Math.min(totalPages-1,page+3);i++) pages.push(i);
+            if(!pages.includes(totalPages)&&totalPages>1) pages.push(totalPages);
+            const els=[];let prev=0;
+            pages.forEach(p=>{
+              if(prev&&p-prev>1) els.push(<span key={`e${p}`} style={{color:'#B0BEC5',padding:'0 4px'}}>…</span>);
+              els.push(<button key={p} className={`pb${p===page?' active':''}`} onClick={()=>setPage(p)}>{p}</button>);
+              prev=p;
+            });
+            return els;
+          })()}
+          <button className="pb" disabled={page>=totalPages} onClick={()=>setPage(p=>p+1)}>Siguiente ›</button>
+          <span className="pi">
+            {((page-1)*PAGE_SIZE+1).toLocaleString()}–{Math.min(page*PAGE_SIZE,filtered.length).toLocaleString()} de {filtered.length.toLocaleString()}
+          </span>
+        </div>
+      )}
 
       {/* TABLE */}
       <div className="ac-tw">
@@ -3002,29 +3024,6 @@ function CatalogoApp() {
           </table>
         )}
       </div>
-
-      {/* PAGINACIÓN */}
-      {!loading && filtered.length>0 && (
-        <div className="ac-pg">
-          <button className="pb" disabled={page<=1} onClick={()=>setPage(p=>p-1)}>‹ Anterior</button>
-          {(()=>{
-            const pages=[1];
-            for(let i=Math.max(2,page-3);i<=Math.min(totalPages-1,page+3);i++) pages.push(i);
-            if(!pages.includes(totalPages)&&totalPages>1) pages.push(totalPages);
-            const els=[];let prev=0;
-            pages.forEach(p=>{
-              if(prev&&p-prev>1) els.push(<span key={`e${p}`} style={{color:'#B0BEC5',padding:'0 4px'}}>…</span>);
-              els.push(<button key={p} className={`pb${p===page?' active':''}`} onClick={()=>setPage(p)}>{p}</button>);
-              prev=p;
-            });
-            return els;
-          })()}
-          <button className="pb" disabled={page>=totalPages} onClick={()=>setPage(p=>p+1)}>Siguiente ›</button>
-          <span className="pi">
-            {((page-1)*PAGE_SIZE+1).toLocaleString()}–{Math.min(page*PAGE_SIZE,filtered.length).toLocaleString()} de {filtered.length.toLocaleString()}
-          </span>
-        </div>
-      )}
 
       {/* MODALS */}
       {modalEdit && isAdmin && (

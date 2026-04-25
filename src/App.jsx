@@ -536,7 +536,7 @@ const STYLES = `
   --glass-hover:rgba(255,255,255,.22);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--g1);color:var(--g9);min-height:100vh;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--g1);color:var(--g9);min-height:100vh;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overflow:hidden}
 
 /* ══════════════════════════════════
    HEADER — glass depth
@@ -739,8 +739,15 @@ select:focus,input[type=text]:focus{
 .ac-qsep{width:1px;height:24px;background:var(--g2)}
 
 /* Table wrapper */
-/* Table wrapper — scroll en ambas direcciones; thead sticky necesita overflow-y:auto aquí */
-.ac-tw{overflow:auto;height:calc(100vh - 280px);background:#fff;-webkit-overflow-scrolling:touch;position:relative}
+/* Table wrapper — solo scroll horizontal; el vertical lo maneja ac-scroll-body */
+.ac-tw{overflow-x:auto;background:#fff;position:relative}
+/* Scroll container principal — fija la altura para que thead sticky funcione */
+.ac-scroll-body{
+  height:calc(100vh - 61px);
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+}
 table{width:100%;border-collapse:separate;border-spacing:0;font-size:0.68rem}
 thead th{
   background:linear-gradient(180deg,#244f85 0%,var(--bd) 100%);
@@ -2827,13 +2834,16 @@ function CatalogoApp() {
           <span className="ac-progress-label">{loadProgress.msg}</span>
           <div className="ac-progress-bar-bg">
             <div
-              className={`ac-progress-bar-fill${loadProgress.indeterminate?' indeterminate':''}`}
+              className={`ac-progress-bar${loadProgress.indeterminate?' indeterminate':''}`}
               style={!loadProgress.indeterminate?{width:`${loadProgress.pct}%`}:{}}
             />
           </div>
           {!loadProgress.indeterminate && <span className="ac-progress-pct">{loadProgress.pct}%</span>}
         </div>
       </div>
+
+      {/* CONTENIDO PRINCIPAL — scroll container para que thead sticky funcione */}
+      <div className="ac-scroll-body">
 
       {/* FILTROS */}
       <div className="ac-sp">
@@ -3024,6 +3034,8 @@ function CatalogoApp() {
           </table>
         )}
       </div>
+
+      </div>{/* /ac-scroll-body */}
 
       {/* MODALS */}
       {modalEdit && isAdmin && (

@@ -3021,7 +3021,7 @@ function CatalogoApp() {
                   2:()=><span className="cmo">{f[2]}</span>,
                   3:()=><span className="ca">{highlightText(f[3],debText)}</span>,
                   4:()=>f[4]?<span className="cr-pill">{highlightText(f[4],debText)}
-                    <button className="btn-copy" onClick={e=>{e.stopPropagation();navigator.clipboard?.writeText(f[4]);toast('📋 Código copiado','info');}}>⊕</button>
+                    <button className="btn-copy" onClick={e=>{e.stopPropagation();navigator.clipboard?.writeText(f[4]);toast('📋 Código copiado','info');}}>📋</button>
                   </span>:<span className="cs">—</span>,
                   5:()=>f[5]?<span className="cc" style={{cursor:'pointer'}} onClick={()=>setSelectedCode(f[5])}>{highlightText(f[5],debText)}</span>:<span className="cs">—</span>,
                   6:()=>f[6]?<span className="cc">{highlightText(f[6],debText)}</span>:<span className="cs">—</span>,

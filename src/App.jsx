@@ -760,22 +760,17 @@ thead th{
 thead th:hover,thead th.sorted{background:linear-gradient(180deg,#1a7bc8 0%,var(--bm) 100%)}
 thead th .si{margin-left:3px;opacity:.35;font-size:0.49rem}
 thead th.sorted .si{opacity:1;color:var(--gold)}
-/* ── Dec toggle tab ── */
-.dec-section{background:var(--g1);border-top:2px solid var(--g2)}
-.dec-toggle-tab{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:4px 12px;
-  background:linear-gradient(135deg,var(--bd) 0%,#0d52a8 100%);
-  color:#fff;border:none;border-bottom:2px solid var(--gold);
-  cursor:pointer;font-size:0.52rem;font-weight:700;letter-spacing:.3px;
-  border-radius:0 0 6px 0;
-  transition:background .15s;
+/* ── Dec toggle integrado en paginación ── */
+.dec-section{background:var(--g1);border-top:1px solid var(--g2)}
+.dec-pg-toggle{display:inline-flex;align-items:center;gap:6px;font-size:0.59rem!important;}
+.dec-pg-toggle.active{
+  background:linear-gradient(180deg,#1a7bc8 0%,var(--bm) 100%)!important;
+  border-color:var(--bm)!important;color:#fff!important;font-weight:700!important;
 }
-.dec-toggle-tab:hover{background:linear-gradient(135deg,#1a6bb5 0%,#1060c0 100%)}
-.dec-toggle-icon{font-size:0.45rem;opacity:.8}
-.dec-toggle-code{
-  background:var(--gold);color:#000;border-radius:3px;
-  padding:1px 6px;font-size:0.48rem;font-weight:700;
+.dec-pg-code{
+  background:var(--gold);color:#000;border-radius:4px;
+  padding:1px 6px;font-size:0.49rem;font-weight:700;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
 }
 tbody tr{transition:background .1s;background:#fff}
 tbody tr:hover{background:linear-gradient(90deg,var(--bl) 0%,#f0f7ff 100%)}
@@ -2907,19 +2902,19 @@ function CatalogoApp() {
         ))}
       </div>
 
-      {/* ── DECODIFICADOR — colapsable ── */}
-      <div className="dec-section">
-        <button className="dec-toggle-tab" onClick={()=>setShowDec(v=>!v)} title={showDec?'Ocultar Decodificador':'Mostrar Decodificador'}>
-          <span className="dec-toggle-icon">{showDec ? '▲' : '▼'}</span>
-          Código
-          {selectedCode && <span className="dec-toggle-code">{selectedCode}</span>}
-        </button>
-        {showDec && <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />}
-      </div>
-
-      {/* PAGINACIÓN — encima de la tabla */}
+      {/* PAGINACIÓN + toggle decodificador — misma barra */}
       {!loading && filtered.length>0 && (
         <div className="ac-pg">
+          {/* Toggle decodificador integrado */}
+          <button
+            className={`pb dec-pg-toggle${showDec?' active':''}`}
+            onClick={()=>setShowDec(v=>!v)}
+            title={showDec?'Ocultar Decodificador':'Mostrar Decodificador'}
+          >
+            {showDec ? '▲' : '▼'} Código
+            {selectedCode && <span className="dec-pg-code">{selectedCode}</span>}
+          </button>
+          <span style={{width:1,background:'var(--g3)',alignSelf:'stretch',margin:'0 4px'}}/>
           <button className="pb" disabled={page<=1} onClick={()=>setPage(p=>p-1)}>‹ Anterior</button>
           {(()=>{
             const pages=[1];
@@ -2937,6 +2932,13 @@ function CatalogoApp() {
           <span className="pi">
             {((page-1)*PAGE_SIZE+1).toLocaleString()}–{Math.min(page*PAGE_SIZE,filtered.length).toLocaleString()} de {filtered.length.toLocaleString()}
           </span>
+        </div>
+      )}
+
+      {/* DECODIFICADOR — colapsable */}
+      {showDec && (
+        <div className="dec-section">
+          <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />
         </div>
       )}
 

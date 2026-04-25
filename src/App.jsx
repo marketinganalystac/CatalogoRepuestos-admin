@@ -157,57 +157,57 @@ function LoginScreen() {
     style={{ height: 48, objectFit: "contain", marginBottom: 10 }}
   />
 </div>
-          <div style={{color:'rgba(255,255,255,.7)',fontSize:'.72rem',textTransform:'uppercase',letterSpacing:1.5,fontWeight:600}}>
+          <div style={{color:'rgba(255,255,255,.7)',fontSize:'0.59rem',textTransform:'uppercase',letterSpacing:1.5,fontWeight:600}}>
             Sistema de Gestión
           </div>
-          <div style={{color:'#fff',fontSize:'1.05rem',fontWeight:700,marginTop:2}}>
+          <div style={{color:'#fff',fontSize:'0.92rem',fontWeight:700,marginTop:2}}>
             Catálogo de Repuestos
           </div>
         </div>
         {/* Form */}
         <div style={{padding:'28px 32px 32px'}}>
-          <p style={{fontSize:'.82rem',color:'#78909C',marginBottom:20,textAlign:'center'}}>
+          <p style={{fontSize:'0.69rem',color:'#78909C',marginBottom:20,textAlign:'center'}}>
             Ingresa con tu cuenta para continuar
           </p>
           <form onSubmit={handleLogin} style={{display:'flex',flexDirection:'column',gap:14}}>
             <div style={{display:'flex',flexDirection:'column',gap:4}}>
-              <label style={{fontSize:'.68rem',color:'#0060A0',fontWeight:700,textTransform:'uppercase',letterSpacing:.6}}>
+              <label style={{fontSize:'0.55rem',color:'#0060A0',fontWeight:700,textTransform:'uppercase',letterSpacing:.6}}>
                 Correo electrónico
               </label>
               <input type="email" value={email} onChange={e=>setEmail(e.target.value)}
                 placeholder="usuario@empresa.com" required autoFocus
                 style={{background:'#F5F7FA',border:'1.5px solid #CFD8DC',borderRadius:8,
-                  padding:'10px 13px',fontSize:'.88rem',outline:'none',transition:'.18s'}}
+                  padding:'10px 13px',fontSize:'0.75rem',outline:'none',transition:'.18s'}}
                 onFocus={e=>e.target.style.borderColor='#0060A0'}
                 onBlur={e=>e.target.style.borderColor='#CFD8DC'}/>
             </div>
             <div style={{display:'flex',flexDirection:'column',gap:4}}>
-              <label style={{fontSize:'.68rem',color:'#0060A0',fontWeight:700,textTransform:'uppercase',letterSpacing:.6}}>
+              <label style={{fontSize:'0.55rem',color:'#0060A0',fontWeight:700,textTransform:'uppercase',letterSpacing:.6}}>
                 Contraseña
               </label>
               <div style={{position:'relative'}}>
                 <input type={showPw?'text':'password'} value={password} onChange={e=>setPassword(e.target.value)}
                   placeholder="••••••••" required
                   style={{background:'#F5F7FA',border:'1.5px solid #CFD8DC',borderRadius:8,
-                    padding:'10px 40px 10px 13px',fontSize:'.88rem',outline:'none',width:'100%',transition:'.18s'}}
+                    padding:'10px 40px 10px 13px',fontSize:'0.75rem',outline:'none',width:'100%',transition:'.18s'}}
                   onFocus={e=>e.target.style.borderColor='#0060A0'}
                   onBlur={e=>e.target.style.borderColor='#CFD8DC'}/>
                 <button type="button" onClick={()=>setShowPw(p=>!p)}
                   style={{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',
-                    background:'none',border:'none',cursor:'pointer',color:'#78909C',fontSize:'.85rem'}}>
+                    background:'none',border:'none',cursor:'pointer',color:'#78909C',fontSize:'0.72rem'}}>
                   {showPw?'🙈':'👁'}
                 </button>
               </div>
             </div>
             {error && (
               <div style={{background:'#FFEBEE',border:'1px solid #FFCDD2',borderRadius:7,
-                padding:'9px 13px',fontSize:'.79rem',color:'#C62828',display:'flex',gap:7,alignItems:'center'}}>
+                padding:'9px 13px',fontSize:'0.66rem',color:'#C62828',display:'flex',gap:7,alignItems:'center'}}>
                 ⚠ {error === 'Invalid login credentials' ? 'Correo o contraseña incorrectos' : error}
               </div>
             )}
             <button type="submit" disabled={loading}
               style={{marginTop:4,background:'#0060A0',color:'#fff',border:'none',borderRadius:8,
-                padding:'11px',fontSize:'.88rem',fontWeight:700,cursor:loading?'default':'pointer',
+                padding:'11px',fontSize:'0.75rem',fontWeight:700,cursor:loading?'default':'pointer',
                 opacity:loading?.65:1,transition:'.18s',display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
               {loading
                 ? <><span style={{display:'inline-block',width:16,height:16,border:'2px solid rgba(255,255,255,.3)',
@@ -215,7 +215,7 @@ function LoginScreen() {
                 : '🔐 Ingresar'}
             </button>
           </form>
-          <p style={{marginTop:18,fontSize:'.72rem',color:'#90A4AE',textAlign:'center'}}>
+          <p style={{marginTop:18,fontSize:'0.59rem',color:'#90A4AE',textAlign:'center'}}>
             ¿Sin acceso? Contacta al administrador del sistema.
           </p>
         </div>
@@ -546,15 +546,15 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   padding:0 20px;border-bottom:3px solid var(--gold);
   box-shadow:var(--sh-header);
   display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;min-height:58px;
-  position:relative;z-index:100;
+  position:sticky;top:0;z-index:300;
 }
 .ac-header::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.07) 0%,transparent 100%);pointer-events:none}
 .ac-hl{display:flex;align-items:center;gap:14px}
 .ac-hdiv{width:1px;height:28px;background:rgba(255,255,255,.25)}
-.ac-htitle .s1{font-size:.62rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1.2px;font-weight:600;display:block}
-.ac-htitle .s2{font-size:.92rem;color:#fff;font-weight:700;display:block;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+.ac-htitle .s1{font-size:0.49rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1.2px;font-weight:600;display:block}
+.ac-htitle .s2{font-size:0.79rem;color:#fff;font-weight:700;display:block;text-shadow:0 1px 3px rgba(0,0,0,.3)}
 .ac-badge{
-  background:rgba(255,255,255,.14);color:#fff;font-size:.74rem;font-weight:700;
+  background:rgba(255,255,255,.14);color:#fff;font-size:0.61rem;font-weight:700;
   padding:4px 12px;border-radius:20px;
   border:1px solid rgba(255,255,255,.28);
   backdrop-filter:blur(8px);
@@ -566,7 +566,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
    BUTTONS — depth + glass
 ══════════════════════════════════ */
 .btn{
-  padding:8px 16px;border:none;border-radius:8px;font-size:.8rem;font-weight:700;
+  padding:8px 16px;border:none;border-radius:8px;font-size:0.67rem;font-weight:700;
   cursor:pointer;transition:all .15s ease;white-space:nowrap;
   position:relative;letter-spacing:.02em;
   -webkit-tap-highlight-color:transparent;touch-action:manipulation;
@@ -654,14 +654,14 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .btn-slate:hover{background:linear-gradient(180deg,#7590a0 0%,#607d8b 100%);box-shadow:var(--sh-hover);transform:translateY(-1px)}
 .btn-slate:active{transform:translateY(1px);box-shadow:var(--sh-active)}
 
-.btn-sm{padding:4px 10px;font-size:.72rem;border-radius:6px}
+.btn-sm{padding:4px 10px;font-size:0.59rem;border-radius:6px}
 .btn:disabled{opacity:.42;cursor:default;transform:none!important;box-shadow:none!important}
 
 /* Inline edit/del */
 .btn-edit{
   padding:4px 10px;
   background:linear-gradient(180deg,#1a7bc8 0%,var(--bm) 100%);
-  color:#fff;border:none;border-radius:6px;font-size:.7rem;cursor:pointer;font-weight:700;
+  color:#fff;border:none;border-radius:6px;font-size:0.57rem;cursor:pointer;font-weight:700;
   box-shadow:var(--sh-btn-sm);border-top:1px solid rgba(255,255,255,.2);
   transition:all .15s ease;touch-action:manipulation;
 }
@@ -672,7 +672,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   padding:4px 10px;
   background:linear-gradient(180deg,#fff5f5 0%,#ffebee 100%);
   color:var(--red);
-  border:1px solid rgba(198,40,40,.3);border-radius:6px;font-size:.7rem;cursor:pointer;font-weight:700;margin-left:4px;
+  border:1px solid rgba(198,40,40,.3);border-radius:6px;font-size:0.57rem;cursor:pointer;font-weight:700;margin-left:4px;
   box-shadow:0 2px 6px rgba(198,40,40,.12),inset 0 1px 0 rgba(255,255,255,.8);
   transition:all .15s ease;touch-action:manipulation;
 }
@@ -682,7 +682,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .btn-copy{
   padding:2px 8px;
   background:linear-gradient(180deg,var(--bl) 0%,#d4e8f8 100%);
-  border:1px solid rgba(0,96,160,.2);border-radius:4px;font-size:.68rem;cursor:pointer;color:var(--bm);font-weight:700;margin-left:5px;
+  border:1px solid rgba(0,96,160,.2);border-radius:4px;font-size:0.55rem;cursor:pointer;color:var(--bm);font-weight:700;margin-left:5px;
   box-shadow:0 1px 4px rgba(0,96,160,.1),inset 0 1px 0 rgba(255,255,255,.8);
   transition:all .14s ease;
 }
@@ -699,10 +699,10 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 }
 .ac-fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:9px;margin-bottom:10px}
 .ac-fl{display:flex;flex-direction:column;gap:3px}
-.ac-fl label{font-size:.67rem;color:var(--bm);font-weight:700;text-transform:uppercase;letter-spacing:.7px}
+.ac-fl label{font-size:0.54rem;color:var(--bm);font-weight:700;text-transform:uppercase;letter-spacing:.7px}
 select,input[type=text]{
   background:var(--g1);border:1.5px solid var(--g3);color:var(--g9);
-  padding:8px 10px;border-radius:7px;font-size:.82rem;outline:none;transition:all .18s;width:100%;
+  padding:8px 10px;border-radius:7px;font-size:0.69rem;outline:none;transition:all .18s;width:100%;
   box-shadow:inset 0 2px 4px rgba(0,0,0,.04);
 }
 select:focus,input[type=text]:focus{
@@ -715,13 +715,13 @@ select:focus,input[type=text]:focus{
 /* Status bar */
 .ac-sb{
   background:linear-gradient(135deg,var(--bd) 0%,#1d4878 100%);
-  padding:6px 20px;display:flex;align-items:center;gap:14px;font-size:.76rem;
+  padding:6px 20px;display:flex;align-items:center;gap:14px;font-size:0.63rem;
   color:rgba(255,255,255,.75);flex-wrap:wrap;
   box-shadow:inset 0 -1px 0 rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.07);
 }
 .ac-sb strong{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.2)}
 .ac-sep{color:rgba(255,255,255,.3)}
-.ac-tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:10px;font-size:.68rem;font-weight:700;color:#fff}
+.ac-tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:10px;font-size:0.55rem;font-weight:700;color:#fff}
 
 /* Quick stats */
 .ac-qs{
@@ -734,49 +734,49 @@ select:focus,input[type=text]:focus{
   border:1px solid rgba(0,96,160,.2);border-radius:10px;padding:6px 14px;
   box-shadow:0 2px 6px rgba(0,96,160,.1),inset 0 1px 0 rgba(255,255,255,.7);
 }
-.ac-qi .n{font-size:1rem;font-weight:800;color:var(--bd);line-height:1;text-shadow:0 1px 2px rgba(0,0,0,.1)}
-.ac-qi .l{color:var(--bm);font-size:.67rem;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.ac-qi .n{font-size:0.87rem;font-weight:800;color:var(--bd);line-height:1;text-shadow:0 1px 2px rgba(0,0,0,.1)}
+.ac-qi .l{color:var(--bm);font-size:0.54rem;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
 .ac-qsep{width:1px;height:24px;background:var(--g2)}
 
 /* Table wrapper */
-.ac-tw{overflow:auto;flex:1;min-height:200px;max-height:calc(100vh - 310px);background:#fff;-webkit-overflow-scrolling:touch}
-table{width:100%;border-collapse:collapse;font-size:.81rem}
+.ac-tw{overflow-x:auto;overflow-y:visible;background:#fff;flex:1}
+table{width:100%;border-collapse:collapse;font-size:0.68rem}
 thead th{
   background:linear-gradient(180deg,#244f85 0%,var(--bd) 100%);
   color:rgba(255,255,255,.92);padding:9px 13px;text-align:left;
-  font-size:.69rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+  font-size:0.56rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
   position:sticky;top:0;z-index:10;white-space:nowrap;
   border-right:1px solid rgba(255,255,255,.08);cursor:pointer;user-select:none;transition:.15s;
   box-shadow:0 2px 4px rgba(0,0,0,.15);
 }
 thead th:hover,thead th.sorted{background:linear-gradient(180deg,#1a7bc8 0%,var(--bm) 100%)}
-thead th .si{margin-left:3px;opacity:.35;font-size:.62rem}
+thead th .si{margin-left:3px;opacity:.35;font-size:0.49rem}
 thead th.sorted .si{opacity:1;color:var(--gold)}
 tbody tr{border-bottom:1px solid var(--g2);transition:background .1s}
 tbody tr:hover{background:linear-gradient(90deg,var(--bl) 0%,#f0f7ff 100%)}
 tbody tr:nth-child(even){background:#FAFBFD}
 tbody tr:nth-child(even):hover{background:linear-gradient(90deg,var(--bl) 0%,#f0f7ff 100%)}
 tbody td{padding:7px 13px;vertical-align:middle}
-.cm{font-weight:800;color:var(--bd);white-space:nowrap;font-size:.84rem}
+.cm{font-weight:800;color:var(--bd);white-space:nowrap;font-size:0.71rem}
 .cmo{color:var(--g7);white-space:nowrap;font-weight:500}
 .ca{
-  font-family:'Segoe UI',system-ui,sans-serif;color:var(--bd);font-size:.77rem;font-weight:700;
+  font-family:'Segoe UI',system-ui,sans-serif;color:var(--bd);font-size:0.64rem;font-weight:700;
   background:linear-gradient(135deg,#e8f0fa,#d4e2f8);
   padding:2px 8px;border-radius:5px;display:inline-block;white-space:nowrap;
   border:1px solid rgba(26,63,111,.18);
   box-shadow:0 1px 3px rgba(26,63,111,.1),inset 0 1px 0 rgba(255,255,255,.6);
 }
 .cc{
-  font-family:'Courier New',monospace;color:#1a6e1a;font-size:.77rem;font-weight:700;
+  font-family:'Courier New',monospace;color:#1a6e1a;font-size:0.64rem;font-weight:700;
   background:linear-gradient(135deg,#e8f5e9,#d4eecd);
   padding:2px 8px;border-radius:5px;display:inline-block;white-space:nowrap;
   border:1px solid rgba(46,125,50,.2);
   box-shadow:0 1px 3px rgba(46,125,50,.12),inset 0 1px 0 rgba(255,255,255,.5);
 }
 .cds{color:var(--g9);font-weight:600}
-.ct{display:inline-block;padding:2px 9px;border-radius:9px;font-size:.67rem;font-weight:700;color:#fff;white-space:nowrap;
+.ct{display:inline-block;padding:2px 9px;border-radius:9px;font-size:0.54rem;font-weight:700;color:#fff;white-space:nowrap;
   box-shadow:0 2px 4px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.25)}
-.cs{color:var(--g5);font-size:.75rem;font-style:italic}
+.cs{color:var(--g5);font-size:0.62rem;font-style:italic}
 .cac{white-space:nowrap;text-align:center}
 .ac-mark{background:rgba(0,96,160,.15);color:var(--bd);border-radius:2px;padding:0 2px;font-weight:700;outline:1px solid rgba(0,96,160,.25)}
 
@@ -791,7 +791,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
   padding:6px 13px;
   border:1.5px solid var(--g3);
   background:linear-gradient(180deg,#fff 0%,#f2f4f7 100%);
-  color:var(--g7);border-radius:7px;cursor:pointer;font-size:.77rem;font-weight:600;
+  color:var(--g7);border-radius:7px;cursor:pointer;font-size:0.64rem;font-weight:600;
   transition:all .14s ease;
   box-shadow:0 2px 4px rgba(0,0,0,.07),inset 0 1px 0 rgba(255,255,255,.9);
   touch-action:manipulation;
@@ -808,7 +808,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
   box-shadow:var(--sh-btn-sm);
 }
 .pb:disabled{opacity:.3;cursor:default;transform:none!important;box-shadow:none!important}
-.pi{font-size:.76rem;color:var(--g5);margin-left:auto}
+.pi{font-size:0.63rem;color:var(--g5);margin-left:auto}
 
 /* ══════════════════════════════════
    MODALS
@@ -837,10 +837,10 @@ tbody td{padding:7px 13px;vertical-align:middle}
   box-shadow:inset 0 1px 0 rgba(255,255,255,.15);
 }
 .mh.danger{background:linear-gradient(135deg,rgba(123,24,24,.9),rgba(198,40,40,.8))}
-.mh h2{font-size:.95rem;color:#fff;font-weight:700;text-shadow:0 2px 6px rgba(0,0,0,.35)}
+.mh h2{font-size:0.82rem;color:#fff;font-weight:700;text-shadow:0 2px 6px rgba(0,0,0,.35)}
 .mx{
   background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
-  font-size:1.1rem;cursor:pointer;color:#fff;
+  font-size:0.97rem;cursor:pointer;color:#fff;
   border-radius:50%;width:28px;height:28px;
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 2px 6px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.2);
@@ -857,10 +857,10 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .fg2{display:flex;flex-direction:column;gap:4px}
 .fg2.full{grid-column:1/-1}
-.fg2 label{font-size:.68rem;color:var(--bm);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.fg2 label{font-size:0.55rem;color:var(--bm);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
 .fg2 input,.fg2 select{
   background:var(--g1);border:1.5px solid var(--g3);color:var(--g9);
-  padding:8px 11px;border-radius:8px;font-size:.84rem;outline:none;transition:.18s;width:100%;
+  padding:8px 11px;border-radius:8px;font-size:0.71rem;outline:none;transition:.18s;width:100%;
   box-shadow:inset 0 2px 4px rgba(0,0,0,.04);
 }
 .fg2 input:focus,.fg2 select:focus{
@@ -868,31 +868,31 @@ tbody td{padding:7px 13px;vertical-align:middle}
   box-shadow:0 0 0 3px rgba(0,96,160,.1),inset 0 1px 2px rgba(0,0,0,.03);
 }
 .fg2 input.err{border-color:var(--red);background:#FFF5F5;box-shadow:0 0 0 3px rgba(198,40,40,.08)}
-.em{font-size:.68rem;color:var(--red);margin-top:1px}
+.em{font-size:0.55rem;color:var(--red);margin-top:1px}
 .ib{
   border:2px dashed rgba(0,96,160,.35);border-radius:12px;padding:26px;text-align:center;
   background:linear-gradient(135deg,var(--bl),#ddeef8);cursor:pointer;transition:.2s;
   box-shadow:inset 0 2px 8px rgba(0,96,160,.06);
 }
 .ib:hover,.ib.drag{border-color:var(--bm);background:linear-gradient(135deg,#d0e8fa,#b8dcf4);box-shadow:0 4px 16px rgba(0,96,160,.12)}
-.ib .icon{font-size:2.4rem;margin-bottom:8px}
-.ib p{color:var(--g5);font-size:.83rem}
-.ii{margin-top:12px;background:linear-gradient(135deg,#e8f5e9,#d4eecd);border-radius:8px;padding:11px;font-size:.78rem;color:var(--grn);border:1px solid rgba(46,125,50,.15)}
+.ib .icon{font-size:2.27rem;margin-bottom:8px}
+.ib p{color:var(--g5);font-size:0.7rem}
+.ii{margin-top:12px;background:linear-gradient(135deg,#e8f5e9,#d4eecd);border-radius:8px;padding:11px;font-size:0.65rem;color:var(--grn);border:1px solid rgba(46,125,50,.15)}
 .ii ul{margin-top:5px;padding-left:16px}
-.ipv{margin-top:12px;font-size:.76rem;color:var(--g7);background:var(--g1);border-radius:7px;padding:10px;max-height:110px;overflow-y:auto;border:1px solid var(--g2);box-shadow:inset 0 2px 4px rgba(0,0,0,.04)}
-.wb{margin-top:12px;padding:10px 14px;background:linear-gradient(135deg,#FFF8E1,#fff3cc);border-radius:8px;font-size:.76rem;color:#8B6000;border-left:4px solid var(--gold);box-shadow:0 2px 6px rgba(180,140,0,.1)}
+.ipv{margin-top:12px;font-size:0.63rem;color:var(--g7);background:var(--g1);border-radius:7px;padding:10px;max-height:110px;overflow-y:auto;border:1px solid var(--g2);box-shadow:inset 0 2px 4px rgba(0,0,0,.04)}
+.wb{margin-top:12px;padding:10px 14px;background:linear-gradient(135deg,#FFF8E1,#fff3cc);border-radius:8px;font-size:0.63rem;color:#8B6000;border-left:4px solid var(--gold);box-shadow:0 2px 6px rgba(180,140,0,.1)}
 .cmr{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
-.cmrow{display:flex;align-items:center;gap:6px;font-size:.78rem;background:var(--g1);padding:6px 10px;border-radius:7px;border:1px solid var(--g2)}
+.cmrow{display:flex;align-items:center;gap:6px;font-size:0.65rem;background:var(--g1);padding:6px 10px;border-radius:7px;border:1px solid var(--g2)}
 .cmrow.cmrow-ok{background:linear-gradient(135deg,#e8f5e9,#d4eecd);border-color:#C8E6C9}
-.cmrow span{color:var(--g5);min-width:130px;font-size:.74rem}
-.cmrow select{flex:1;padding:3px 7px;font-size:.76rem}
-.dr{display:flex;gap:8px;margin-bottom:8px;font-size:.82rem}
-.dr .lb{font-weight:700;color:var(--bm);min-width:130px;font-size:.74rem;text-transform:uppercase;padding-top:1px}
+.cmrow span{color:var(--g5);min-width:130px;font-size:0.61rem}
+.cmrow select{flex:1;padding:3px 7px;font-size:0.63rem}
+.dr{display:flex;gap:8px;margin-bottom:8px;font-size:0.69rem}
+.dr .lb{font-weight:700;color:var(--bm);min-width:130px;font-size:0.61rem;text-transform:uppercase;padding-top:1px}
 .dr .vl{color:var(--g9);flex:1}
 
 /* Toast */
 .toast{
-  position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:.82rem;
+  position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:10px;font-size:0.69rem;
   font-weight:600;box-shadow:0 8px 28px rgba(0,0,0,.25),0 2px 8px rgba(0,0,0,.15);
   z-index:2000;display:none;color:#fff;max-width:360px;
   animation:su .3s cubic-bezier(.34,1.4,.64,1);
@@ -900,30 +900,30 @@ tbody td{padding:7px 13px;vertical-align:middle}
 }
 .toast.show{display:block}
 @keyframes su{from{transform:translateY(18px) scale(.95);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
-.loading{text-align:center;padding:40px;color:var(--bm);background:#fff;font-size:.88rem}
+.loading{text-align:center;padding:40px;color:var(--bm);background:#fff;font-size:0.75rem}
 .spin{display:inline-block;width:22px;height:22px;border:3px solid var(--bl);
   border-top-color:var(--bm);border-radius:50%;animation:spin .75s linear infinite;margin-right:8px;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;padding:60px 20px;color:var(--g5);background:#fff}
-.empty .icon{font-size:3rem;margin-bottom:10px}
+.empty .icon{font-size:2.87rem;margin-bottom:10px}
 
 /* History */
 .mhist-wrap{overflow-y:auto;max-height:60vh}
-.hlog-item{display:grid;grid-template-columns:180px 110px 1fr;border-bottom:1px solid var(--g2);font-size:.78rem}
+.hlog-item{display:grid;grid-template-columns:180px 110px 1fr;border-bottom:1px solid var(--g2);font-size:0.65rem}
 .hlog-item:hover{background:var(--bl)}
-.hlog-dt{padding:10px 14px;color:var(--g5);white-space:nowrap;font-size:.73rem;border-right:1px solid var(--g2)}
+.hlog-dt{padding:10px 14px;color:var(--g5);white-space:nowrap;font-size:0.6rem;border-right:1px solid var(--g2)}
 .hlog-op{padding:10px 12px;font-weight:700;border-right:1px solid var(--g2);display:flex;align-items:center;gap:5px}
 .hlog-det{padding:10px 14px;color:var(--g7);line-height:1.5}
 .hlog-det strong{color:var(--bd)}
-.field-chg{display:inline-block;background:var(--gl);border:1px solid #e8d870;border-radius:4px;padding:1px 7px;margin:2px 3px 2px 0;font-size:.72rem}
+.field-chg{display:inline-block;background:var(--gl);border:1px solid #e8d870;border-radius:4px;padding:1px 7px;margin:2px 3px 2px 0;font-size:0.59rem}
 .field-chg .old{color:var(--red);text-decoration:line-through;margin-right:4px}
 .field-chg .new{color:var(--grn)}
-.hlog-ip{font-size:.68rem;color:var(--g5);margin-top:3px}
+.hlog-ip{font-size:0.55rem;color:var(--g5);margin-top:3px}
 .hop-add{color:var(--grn)}.hop-edit{color:var(--bm)}.hop-del{color:var(--red)}.hop-imp{color:var(--org)}
-.hist-empty{text-align:center;padding:40px;color:var(--g5);font-size:.85rem}
+.hist-empty{text-align:center;padding:40px;color:var(--g5);font-size:0.72rem}
 .hist-toolbar{display:flex;gap:8px;align-items:center;padding:10px 16px;background:var(--g1);border-bottom:1px solid var(--g2);flex-wrap:wrap}
-.hist-toolbar select{width:auto;padding:5px 8px;font-size:.76rem}
-.col-toggle-label{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.84rem;padding:7px 11px;border-radius:7px;background:var(--g1);border:1px solid var(--g2);box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.hist-toolbar select{width:auto;padding:5px 8px;font-size:0.63rem}
+.col-toggle-label{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.71rem;padding:7px 11px;border-radius:7px;background:var(--g1);border:1px solid var(--g2);box-shadow:0 1px 3px rgba(0,0,0,.05)}
 .col-toggle-label:hover{background:var(--bl)}
 
 /* Firebase badge */
@@ -931,7 +931,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
   display:inline-flex;align-items:center;gap:5px;
   background:rgba(255,167,38,.15);
   border:1px solid rgba(255,167,38,.35);border-radius:12px;padding:2px 10px;
-  font-size:.65rem;font-weight:700;color:#FF8F00;
+  font-size:0.52rem;font-weight:700;color:#FF8F00;
   box-shadow:0 2px 6px rgba(255,143,0,.12),inset 0 1px 0 rgba(255,255,255,.3);
 }
 .fb-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
@@ -940,19 +940,19 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .ac-progress-wrap{background:linear-gradient(135deg,var(--bd),#0d52a8);padding:0;overflow:hidden;height:0;transition:height .25s ease;box-shadow:inset 0 -2px 6px rgba(0,0,0,.2)}
 .ac-progress-wrap.active{height:36px}
 .ac-progress-inner{display:flex;align-items:center;gap:12px;padding:0 20px;height:36px}
-.ac-progress-label{font-size:.72rem;color:rgba(255,255,255,.85);font-weight:600;white-space:nowrap;min-width:220px}
+.ac-progress-label{font-size:0.59rem;color:rgba(255,255,255,.85);font-weight:600;white-space:nowrap;min-width:220px}
 .ac-progress-bar-bg{flex:1;background:rgba(255,255,255,.12);border-radius:20px;height:8px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.2)}
 .ac-progress-bar-fill{height:100%;background:linear-gradient(90deg,#f0c000,var(--gold),#f5ca00);border-radius:20px;transition:width .3s ease;box-shadow:0 0 8px rgba(212,168,0,.5)}
 .ac-progress-bar-fill.indeterminate{width:40%!important;animation:progress-slide 1.2s ease-in-out infinite}
 @keyframes progress-slide{0%{margin-left:-40%}100%{margin-left:100%}}
-.ac-progress-pct{font-size:.72rem;color:var(--gold);font-weight:700;min-width:38px;text-align:right;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+.ac-progress-pct{font-size:0.59rem;color:var(--gold);font-weight:700;min-width:38px;text-align:right;text-shadow:0 1px 3px rgba(0,0,0,.3)}
 
 /* ══════════════════════════════════
    RESPONSIVE — TABLET (≤ 900px)
 ══════════════════════════════════ */
 @media(max-width:900px){
   .ac-header{padding:0 14px;min-height:54px}
-  .ac-htitle .s2{font-size:.86rem}
+  .ac-htitle .s2{font-size:0.73rem}
   .ac-fg{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:7px}
   .dec-two{grid-template-columns:1fr}
   .dec-grid{grid-template-columns:1fr 1fr}
@@ -964,26 +964,26 @@ tbody td{padding:7px 13px;vertical-align:middle}
 @media(max-width:768px){
   .ac-header{padding:7px 12px;min-height:auto;gap:6px}
   .ac-hl{gap:8px;flex-wrap:wrap}
-  .ac-htitle .s2{font-size:.82rem}
+  .ac-htitle .s2{font-size:0.69rem}
   .ac-htitle .s1{display:none}
   .ac-badge{display:none}
-  .fb-badge{font-size:.6rem;padding:2px 7px}
+  .fb-badge{font-size:0.47rem;padding:2px 7px}
   .ac-hact{gap:5px;flex-wrap:wrap}
-  .btn{padding:7px 12px;font-size:.76rem;border-radius:7px;min-height:38px}
+  .btn{padding:7px 12px;font-size:0.63rem;border-radius:7px;min-height:38px}
   .ac-sp{padding:10px 12px}
   .ac-fg{grid-template-columns:1fr 1fr;gap:7px}
   .ac-sr{flex-direction:column;gap:7px}
   .ac-sr .ac-fl{min-width:0}
-  .ac-sb{padding:5px 12px;gap:8px;font-size:.7rem}
+  .ac-sb{padding:5px 12px;gap:8px;font-size:0.57rem}
   .ac-qs{padding:6px 12px;gap:6px}
   .ac-qi{padding:5px 10px;border-radius:8px}
-  .ac-qi .n{font-size:.9rem}
+  .ac-qi .n{font-size:0.77rem}
   .ac-tw{max-height:calc(100vh - 250px);-webkit-overflow-scrolling:touch}
-  table{font-size:.75rem}
-  thead th{padding:8px 8px;font-size:.63rem}
+  table{font-size:0.62rem}
+  thead th{padding:8px 8px;font-size:0.5rem}
   tbody td{padding:6px 8px}
   .ac-pg{padding:8px 12px;gap:4px}
-  .pb{padding:6px 10px;font-size:.72rem;min-height:34px}
+  .pb{padding:6px 10px;font-size:0.59rem;min-height:34px}
   .pi{display:none}
   .md{width:96vw!important;max-width:96vw!important;border-radius:14px;max-height:92vh}
   .fgrid{grid-template-columns:1fr}
@@ -997,7 +997,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
   .dec-two{grid-template-columns:1fr;gap:10px}
   .dec-grid{grid-template-columns:1fr}
   .dec-comp-inputs{grid-template-columns:1fr auto 1fr}
-  .btn-copy{padding:2px 6px;font-size:.65rem}
+  .btn-copy{padding:2px 6px;font-size:0.52rem}
 }
 
 /* ══════════════════════════════════
@@ -1008,15 +1008,15 @@ tbody td{padding:7px 13px;vertical-align:middle}
   .ac-fg{grid-template-columns:1fr}
   .ac-hact .btn-c:not(:first-child):not(:nth-child(2)){display:none}
   .ac-tw{max-height:calc(100vh - 230px)}
-  thead th{padding:7px 6px;font-size:.61rem;letter-spacing:.3px}
-  tbody td{padding:5px 6px;font-size:.73rem}
+  thead th{padding:7px 6px;font-size:0.48rem;letter-spacing:.3px}
+  tbody td{padding:5px 6px;font-size:0.6rem}
   .ac-qi{padding:4px 8px}
-  select,input[type=text]{padding:9px 10px;font-size:.85rem}
-  .btn{padding:9px 12px;font-size:.78rem;min-height:40px}
-  .pb{padding:7px 10px;font-size:.74rem}
+  select,input[type=text]{padding:9px 10px;font-size:0.72rem}
+  .btn{padding:9px 12px;font-size:0.65rem;min-height:40px}
+  .pb{padding:7px 10px;font-size:0.61rem}
   .ac-pg{gap:3px;padding:6px 10px}
   .toast{bottom:12px;right:12px;left:12px;max-width:100%}
-  .dec-seg-box{font-size:.72rem;padding:2px 4px}
+  .dec-seg-box{font-size:0.59rem;padding:2px 4px}
   .dec-seg{min-width:32px}
   .dec-anatomy{padding:6px 8px}
 }
@@ -1025,27 +1025,30 @@ tbody td{padding:7px 13px;vertical-align:middle}
    DECODIFICADOR
 ══════════════════════════════════ */
 /* ═══════════════════════════════════
-   SPLIT LAYOUT — Panel izquierdo
+   FULL-PAGE SPLIT LAYOUT
 ═══════════════════════════════════ */
-.ac-layout{
-  display:flex;
-  min-height:0;
-  flex:1;
-  position:relative;
+/* Header fijo */
+.ac-header{
+  position:sticky;top:0;z-index:300;
 }
+/* Cuerpo debajo del header: ocupa el resto del viewport */
+.ac-body{
+  display:flex;
+  height:calc(100vh - 61px); /* altura real del header con borde-gold */
+  overflow:hidden;
+}
+/* Panel izquierdo — scroll propio */
 .dec-left-panel{
   width:0;
   flex-shrink:0;
-  overflow:hidden;
-  transition:width .32s cubic-bezier(.4,0,.2,1);
+  overflow-y:auto;
+  overflow-x:hidden;
+  transition:width .3s cubic-bezier(.4,0,.2,1);
   background:var(--g1);
   border-right:0px solid var(--gold);
   display:flex;
   flex-direction:column;
-  position:sticky;
-  top:0;
-  height:100vh;
-  z-index:50;
+  height:100%;
 }
 .dec-left-panel.open{
   width:370px;
@@ -1056,60 +1059,58 @@ tbody td{padding:7px 13px;vertical-align:middle}
   padding:10px 14px;display:flex;align-items:center;justify-content:space-between;
   border-bottom:3px solid var(--gold);flex-shrink:0;
   box-shadow:0 2px 10px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.08);
-  min-width:364px;
+  min-width:344px;position:sticky;top:0;z-index:10;
 }
 .dec-panel-close{
   background:rgba(255,255,255,.14);color:#fff;
   border:1px solid rgba(255,255,255,.28);border-radius:7px;
-  padding:4px 11px;font-size:.75rem;font-weight:700;
+  padding:4px 11px;font-size:0.65rem;font-weight:700;
   cursor:pointer;transition:all .15s;white-space:nowrap;
   box-shadow:0 2px 6px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.15);
 }
 .dec-panel-close:hover{background:rgba(255,255,255,.24);transform:translateY(-1px)}
 .dec-panel-close:active{transform:translateY(1px)}
-.dec-panel-scroll{
-  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
-  min-width:364px;
+/* Área principal — scroll vertical propio */
+.ac-main{
+  flex:1;min-width:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  display:flex;flex-direction:column;
+  height:100%;
 }
-/* Tab lateral visible cuando el panel está cerrado */
+/* Tab lateral */
 .dec-panel-tab{
-  position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:200;
+  position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:250;
   writing-mode:vertical-rl;text-orientation:mixed;
   background:linear-gradient(180deg,var(--bd) 0%,var(--bm) 100%);
   color:#fff;border:none;border-radius:0 8px 8px 0;
-  padding:16px 7px;font-size:.63rem;font-weight:700;cursor:pointer;
+  padding:14px 6px;font-size:0.52rem;font-weight:700;cursor:pointer;
   letter-spacing:.13em;white-space:nowrap;
   box-shadow:3px 0 14px rgba(0,0,0,.28);
   border-right:2px solid var(--gold);
-  transition:all .2s ease, opacity .32s, left .32s cubic-bezier(.4,0,.2,1);
+  transition:opacity .3s, left .3s cubic-bezier(.4,0,.2,1);
 }
-.dec-panel-tab:hover{
-  background:linear-gradient(180deg,#1a7bc8 0%,var(--bm) 100%);
-  padding-right:11px;
-}
-.dec-panel-tab.hidden{
-  opacity:0;pointer-events:none;left:-60px;
-}
+.dec-panel-tab:hover{background:linear-gradient(180deg,#1a7bc8 0%,var(--bm) 100%);padding-right:9px;}
+.dec-panel-tab.hidden{opacity:0;pointer-events:none;left:-50px;}
 .dec-panel-tab .tab-dot{
-  display:block;width:7px;height:7px;border-radius:50%;
-  background:var(--gold);margin:6px auto 0;
-  box-shadow:0 0 6px rgba(212,168,0,.7);
+  display:block;width:6px;height:6px;border-radius:50%;
+  background:var(--gold);margin:5px auto 0;
+  box-shadow:0 0 5px rgba(212,168,0,.7);
   animation:pulse-dot 2s ease-in-out infinite;
 }
 @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
-/* Área derecha que contiene tabla y todo lo demás */
-.ac-main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
-.dec-wrap{background:var(--g1);padding:0 0 24px;}
-.dec-left-panel .dec-two{grid-template-columns:1fr!important;gap:10px}
+/* Ajustes internos del panel para columna estrecha */
+.dec-left-panel .dec-two{grid-template-columns:1fr!important;gap:8px}
 .dec-left-panel .dec-grid{grid-template-columns:1fr!important}
+.dec-wrap{background:var(--g1);padding:0 0 20px;min-width:344px;}
 .dec-section-title{
   background:linear-gradient(135deg,var(--bd) 0%,#0d52a8 60%,var(--bm) 100%);
   padding:8px 14px;border:none;
   display:flex;align-items:center;gap:8px;justify-content:space-between;
   box-shadow:inset 0 -2px 6px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.1);
 }
-.dec-section-label{font-size:.8rem;font-weight:700;color:#fff;letter-spacing:.3px;text-shadow:0 1px 3px rgba(0,0,0,.3)}
-.dec-section-sub{font-size:.67rem;color:rgba(255,255,255,.65)}
+.dec-section-label{font-size:0.67rem;font-weight:700;color:#fff;letter-spacing:.3px;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+.dec-section-sub{font-size:0.54rem;color:rgba(255,255,255,.65)}
 .dec-inner{padding:8px 14px 0}
 .dec-card{
   background:#fff;border-radius:12px;border:1px solid var(--g2);
@@ -1122,26 +1123,26 @@ tbody td{padding:7px 13px;vertical-align:middle}
   box-shadow:0 2px 8px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.1)}
 .dec-label{display:flex;align-items:center;gap:4px;flex-shrink:0}
 .dec-tag{
-  font-family:'Courier New',monospace;font-size:.6rem;color:var(--gold);
+  font-family:'Courier New',monospace;font-size:0.47rem;color:var(--gold);
   border:1px solid rgba(212,168,0,.5);padding:1px 5px;border-radius:3px;letter-spacing:.08em;white-space:nowrap;
   background:rgba(212,168,0,.08);box-shadow:0 1px 3px rgba(0,0,0,.15);
 }
-.dec-title{font-size:.75rem;font-weight:700;color:#fff;white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+.dec-title{font-size:0.62rem;font-weight:700;color:#fff;white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.3)}
 .dec-title span{color:var(--gold)}
 .dec-search{display:flex;gap:5px;flex:1;min-width:150px}
 .dec-input{
   flex:1;background:rgba(255,255,255,.12);
   border:1px solid rgba(255,255,255,.28);border-radius:7px;
-  color:#fff;font-family:'Courier New',monospace;font-size:.72rem;
+  color:#fff;font-family:'Courier New',monospace;font-size:0.59rem;
   padding:6px 10px;letter-spacing:.05em;outline:none;transition:all .2s;min-width:0;
   box-shadow:inset 0 2px 4px rgba(0,0,0,.15);
 }
 .dec-input:focus{border-color:var(--gold);background:rgba(255,255,255,.18);box-shadow:0 0 0 2px rgba(212,168,0,.25),inset 0 2px 4px rgba(0,0,0,.1)}
-.dec-input::placeholder{color:rgba(255,255,255,.4);font-size:.65rem}
+.dec-input::placeholder{color:rgba(255,255,255,.4);font-size:0.52rem}
 .dec-btn{
   background:linear-gradient(180deg,#f0c000 0%,var(--gold) 50%,#b89200 100%);
   color:var(--bd);border:none;border-radius:7px;
-  font-family:'Courier New',monospace;font-size:.65rem;font-weight:700;padding:6px 12px;
+  font-family:'Courier New',monospace;font-size:0.52rem;font-weight:700;padding:6px 12px;
   cursor:pointer;letter-spacing:.05em;transition:all .2s;white-space:nowrap;
   box-shadow:var(--sh-btn-sm);border-top:1px solid rgba(255,255,255,.3);
 }
@@ -1151,7 +1152,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .dec-result.visible{display:block}
 .dec-result-hdr{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap}
 .dec-code{
-  font-family:'Courier New',monospace;font-size:.9rem;font-weight:800;color:var(--bm);
+  font-family:'Courier New',monospace;font-size:0.77rem;font-weight:800;color:var(--bm);
   text-shadow:0 1px 2px rgba(0,96,160,.15);
 }
 .dec-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;margin-top:8px;padding:0 2px}
@@ -1161,16 +1162,16 @@ tbody td{padding:7px 13px;vertical-align:middle}
   display:flex;gap:4px;padding:3px 6px;
   background:linear-gradient(135deg,var(--g1),#f0f4f8);
   border-radius:5px;align-items:flex-start;
-  border:1px solid var(--g2);font-size:.7rem;
+  border:1px solid var(--g2);font-size:0.57rem;
   box-shadow:0 1px 2px rgba(0,0,0,.04),inset 0 1px 0 rgba(255,255,255,.8);
   transition:box-shadow .15s,background .15s;
 }
 .dec-row:hover{background:linear-gradient(135deg,var(--bl),#ddeef8);box-shadow:0 2px 6px rgba(0,96,160,.08)}
-.dec-key{font-family:'Courier New',monospace;font-size:.55rem;color:var(--g5);
+.dec-key{font-family:'Courier New',monospace;font-size:0.42rem;color:var(--g5);
   letter-spacing:.06em;white-space:nowrap;min-width:48px;padding-top:1px}
-.dec-val{font-size:.7rem;color:var(--g9);font-weight:600;line-height:1.2}
+.dec-val{font-size:0.57rem;color:var(--g9);font-weight:600;line-height:1.2}
 .dec-badge{
-  display:inline-block;font-family:'Courier New',monospace;font-size:.62rem;
+  display:inline-block;font-family:'Courier New',monospace;font-size:0.49rem;
   padding:1px 6px;border-radius:4px;letter-spacing:.05em;font-weight:700;
   box-shadow:0 1px 3px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.6);
 }
@@ -1189,13 +1190,13 @@ tbody td{padding:7px 13px;vertical-align:middle}
   border:1px solid #B3D4F0;border-radius:8px;padding:6px 10px 8px;
   box-shadow:0 2px 8px rgba(0,96,160,.08),inset 0 1px 0 rgba(255,255,255,.6);
 }
-.dec-anat-title{font-size:.6rem;font-weight:700;color:var(--bd);letter-spacing:.04em;
+.dec-anat-title{font-size:0.47rem;font-weight:700;color:var(--bd);letter-spacing:.04em;
   margin-bottom:3px;text-align:center;text-transform:uppercase}
 .dec-anat-title span{color:var(--bm);font-family:'Courier New',monospace}
 .dec-seg-row{display:flex;align-items:flex-start;justify-content:center;gap:2px;flex-wrap:wrap}
 .dec-seg{display:flex;flex-direction:column;align-items:center;min-width:40px;flex:0 1 auto;max-width:80px}
 .dec-seg-box{
-  font-family:'Courier New',monospace;font-size:.85rem;font-weight:800;
+  font-family:'Courier New',monospace;font-size:0.72rem;font-weight:800;
   padding:2px 5px;border-radius:5px;border:1.5px solid transparent;width:100%;text-align:center;
   box-shadow:0 2px 5px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.5);
 }
@@ -1204,16 +1205,16 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .seg-amber{color:#8B6000;background:linear-gradient(135deg,#FFF8E1,#fff0b3);border-color:#FFE082}
 .seg-purple{color:#6A1B9A;background:linear-gradient(135deg,#F3E5F5,#e8ccf0);border-color:#CE93D8}
 .dec-seg-line{width:1px;height:4px;background:var(--g3)}
-.dec-seg-label{font-size:.55rem;font-weight:700;text-align:center;line-height:1.1;padding:0 1px;margin-top:1px}
+.dec-seg-label{font-size:0.42rem;font-weight:700;text-align:center;line-height:1.1;padding:0 1px;margin-top:1px}
 .lbl-blue{color:var(--bm)}.lbl-green{color:#2E7D32}.lbl-amber{color:#8B6000}.lbl-purple{color:#6A1B9A}
 .dec-seg-sub-line{width:1px;height:3px;background:var(--g2);margin-top:1px}
-.dec-seg-sub{font-size:.5rem;color:var(--g5);text-align:center;line-height:1.1;padding:0 1px}
-.dec-sep{font-family:'Courier New',monospace;font-size:.85rem;color:var(--g3);font-weight:700;
+.dec-seg-sub{font-size:0.42rem;color:var(--g5);text-align:center;line-height:1.1;padding:0 1px}
+.dec-sep{font-family:'Courier New',monospace;font-size:0.72rem;color:var(--g3);font-weight:700;
   padding:0 1px;align-self:center;flex:0;min-width:auto}
 
 /* not found / suggest */
 .dec-notfound{
-  font-size:.72rem;color:var(--red);margin-top:4px;padding:6px 10px;
+  font-size:0.59rem;color:var(--red);margin-top:4px;padding:6px 10px;
   background:linear-gradient(135deg,#FFEBEE,#ffd8dc);border-radius:6px;
   border:1px solid #FFCDD2;display:none;
   box-shadow:0 2px 6px rgba(198,40,40,.1);
@@ -1225,12 +1226,12 @@ tbody td{padding:7px 13px;vertical-align:middle}
   border-radius:6px;border:1px solid var(--g2);display:none;
   box-shadow:0 2px 6px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.8);
 }
-.dec-suggest-title{font-family:'Courier New',monospace;font-size:.6rem;color:var(--g5);letter-spacing:.08em;margin-bottom:3px}
+.dec-suggest-title{font-family:'Courier New',monospace;font-size:0.47rem;color:var(--g5);letter-spacing:.08em;margin-bottom:3px}
 .dec-suggest-list{display:flex;flex-wrap:wrap;gap:4px}
 .dec-chip{
   background:linear-gradient(135deg,#fff,#f2f6fa);
   border:1px solid #90CAF9;border-radius:5px;
-  font-family:'Courier New',monospace;font-size:.65rem;color:var(--bm);padding:3px 8px;
+  font-family:'Courier New',monospace;font-size:0.52rem;color:var(--bm);padding:3px 8px;
   cursor:pointer;transition:all .15s;
   box-shadow:0 1px 4px rgba(0,96,160,.1),inset 0 1px 0 rgba(255,255,255,.9);
   touch-action:manipulation;
@@ -1243,7 +1244,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
   display:flex;align-items:center;gap:3px;margin-top:4px;padding:4px 8px;
   background:linear-gradient(180deg,var(--g1),#edf1f5);
   border:1px solid var(--g3);border-radius:6px;cursor:pointer;
-  font-family:'Courier New',monospace;font-size:.6rem;color:var(--g5);letter-spacing:.07em;
+  font-family:'Courier New',monospace;font-size:0.47rem;color:var(--g5);letter-spacing:.07em;
   transition:all .15s;width:100%;text-align:left;
   box-shadow:0 1px 4px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.8);
   touch-action:manipulation;
@@ -1260,10 +1261,10 @@ tbody td{padding:7px 13px;vertical-align:middle}
 }
 .dec-comparador.visible{display:block}
 .dec-comp-inputs{display:grid;grid-template-columns:1fr auto 1fr;gap:4px;align-items:center;margin-bottom:4px}
-.dec-comp-vs{font-family:'Courier New',monospace;font-size:.65rem;color:var(--g5);text-align:center;font-weight:700}
+.dec-comp-vs{font-family:'Courier New',monospace;font-size:0.52rem;color:var(--g5);text-align:center;font-weight:700}
 .dec-comp-input{
   background:#fff;border:1px solid var(--g3);border-radius:5px;color:var(--g9);
-  font-family:'Courier New',monospace;font-size:.72rem;padding:4px 8px;outline:none;
+  font-family:'Courier New',monospace;font-size:0.59rem;padding:4px 8px;outline:none;
   transition:all .2s;width:100%;box-sizing:border-box;letter-spacing:.04em;
   box-shadow:inset 0 2px 4px rgba(0,0,0,.06);
 }
@@ -1272,7 +1273,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
   width:100%;margin-bottom:4px;
   background:linear-gradient(180deg,#1a7bc8 0%,var(--bm) 50%,#004f8a 100%);
   border:none;border-radius:5px;
-  color:#fff;font-family:'Courier New',monospace;font-size:.62rem;font-weight:700;
+  color:#fff;font-family:'Courier New',monospace;font-size:0.49rem;font-weight:700;
   padding:4px 10px;cursor:pointer;letter-spacing:.05em;transition:all .15s;
   box-shadow:var(--sh-btn-sm);border-top:1px solid rgba(255,255,255,.2);
   touch-action:manipulation;
@@ -1283,7 +1284,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .dec-comp-table.visible{display:block}
 .dec-verdict{
   text-align:center;padding:4px 10px;border-radius:6px;
-  font-family:'Courier New',monospace;font-size:.65rem;font-weight:700;
+  font-family:'Courier New',monospace;font-size:0.52rem;font-weight:700;
   letter-spacing:.05em;margin-bottom:4px;
   box-shadow:0 2px 6px rgba(0,0,0,.1),inset 0 1px 0 rgba(255,255,255,.4);
 }
@@ -1292,8 +1293,8 @@ tbody td{padding:7px 13px;vertical-align:middle}
 .vrd-sim{background:linear-gradient(135deg,#FFF8E1,#ffe57f);color:#6d4c00;border:1px solid #FFE082}
 .vrd-diff{background:linear-gradient(135deg,#FFEBEE,#ffcdd2);color:#b71c1c;border:1px solid #FFCDD2}
 .dec-cmp-row{display:grid;grid-template-columns:50px 1fr 1fr;gap:2px;margin-bottom:2px;align-items:start}
-.dec-cmp-lbl{font-family:'Courier New',monospace;font-size:.58rem;color:var(--g5);letter-spacing:.07em;padding-top:2px}
-.dec-cmp-cell{font-size:.7rem;padding:2px 6px;border-radius:4px;line-height:1.3;border:1px solid transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+.dec-cmp-lbl{font-family:'Courier New',monospace;font-size:0.45rem;color:var(--g5);letter-spacing:.07em;padding-top:2px}
+.dec-cmp-cell{font-size:0.57rem;padding:2px 6px;border-radius:4px;line-height:1.3;border:1px solid transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
 .ccell-match{background:linear-gradient(135deg,#E8F5E9,#d4eecd);color:#1b5e20;border-color:#C8E6C9}
 .ccell-mir{background:linear-gradient(135deg,var(--bl),#c4dff5);color:var(--bd);border-color:#B3D4F0}
 .ccell-diff{background:linear-gradient(135deg,#FFEBEE,#ffcdd2);color:#b71c1c;border-color:#FFCDD2}
@@ -1306,19 +1307,19 @@ tbody td{padding:7px 13px;vertical-align:middle}
   border-top:1px solid var(--g2);flex-wrap:wrap;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
 }
-.dec-db-label{font-family:'Courier New',monospace;font-size:.6rem;color:var(--g5);letter-spacing:.07em;flex:1}
+.dec-db-label{font-family:'Courier New',monospace;font-size:0.47rem;color:var(--g5);letter-spacing:.07em;flex:1}
 .dec-db-label span{color:var(--bm);font-weight:700}
 .dec-db-btn{
   background:linear-gradient(180deg,#fff 0%,#f0f6fc 100%);
   color:var(--bm);border:1px solid rgba(0,96,160,.25);border-radius:5px;
-  font-family:'Courier New',monospace;font-size:.62rem;font-weight:700;padding:3px 9px;
+  font-family:'Courier New',monospace;font-size:0.49rem;font-weight:700;padding:3px 9px;
   cursor:pointer;letter-spacing:.04em;transition:all .15s;white-space:nowrap;
   box-shadow:0 1px 4px rgba(0,96,160,.1),inset 0 1px 0 rgba(255,255,255,.9);
   touch-action:manipulation;
 }
 .dec-db-btn:hover{border-color:var(--bm);background:linear-gradient(180deg,var(--bl),#d4e8f8);box-shadow:0 3px 8px rgba(0,96,160,.15);transform:translateY(-1px)}
 .dec-db-btn:active{transform:translateY(1px);box-shadow:inset 0 2px 3px rgba(0,96,160,.1)}
-.dec-db-status{font-family:'Courier New',monospace;font-size:.6rem;color:var(--g5);padding:0 8px 2px;min-height:12px;transition:color .3s}
+.dec-db-status{font-family:'Courier New',monospace;font-size:0.47rem;color:var(--g5);padding:0 8px 2px;min-height:12px;transition:color .3s}
 .dec-db-status.ok{color:#2E7D32}.dec-db-status.err{color:var(--red)}
 `;
 
@@ -1366,7 +1367,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
   const addNewBtn = (i) => (
     <button type="button" onClick={()=>setAddingNew({field:i,val:''})}
       style={{marginLeft:6,padding:'2px 8px',background:'var(--gold)',color:'var(--bd)',
-        border:'none',borderRadius:5,fontSize:'.68rem',fontWeight:700,cursor:'pointer'}}>
+        border:'none',borderRadius:5,fontSize:'0.55rem',fontWeight:700,cursor:'pointer'}}>
       + Nueva
     </button>
   );
@@ -1375,7 +1376,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
     background:'var(--g1)',
     border:`1.5px solid ${errors.includes(i)?'var(--red)':'var(--g3)'}`,
     color:'var(--g9)',padding:'8px 11px',borderRadius:7,
-    fontSize:'.84rem',width:'100%',outline:'none'
+    fontSize:'0.71rem',width:'100%',outline:'none'
   });
 
   const renderField = (i) => {
@@ -1476,11 +1477,11 @@ const ModalDelete = ({ record, onConfirm, onClose }) => {
       <div className="md sm">
         <div className="mh danger"><h2>🗑 Eliminar Registro</h2><button className="mx" onClick={onClose}>×</button></div>
         <div className="mb">
-          <p style={{fontSize:'.87rem',color:'var(--g7)',lineHeight:1.6}}>
+          <p style={{fontSize:'0.74rem',color:'var(--g7)',lineHeight:1.6}}>
             ¿Confirmas la eliminación? Esta acción <strong>no se puede deshacer</strong>.
           </p>
           <div style={{marginTop:12,background:'#FFF5F5',border:'1px solid #FFCDD2',
-            borderLeft:'3px solid var(--red)',borderRadius:8,padding:11,fontSize:'.79rem',color:'var(--red)'}}>
+            borderLeft:'3px solid var(--red)',borderRadius:8,padding:11,fontSize:'0.66rem',color:'var(--red)'}}>
             <strong>{f[0]}</strong> {f[1]} {f[3]}
             {f[4] && <><br/><span style={{color:'var(--g7)'}}>{f[4]}</span></>}
           </div>
@@ -1591,7 +1592,7 @@ const ModalImport = ({ onClose, onImport }) => {
               ? <><span className="spin"/><p>Procesando archivo…</p></>
               : <><div className="icon">📄</div>
                   <p><strong>Haz clic o arrastra tu archivo aquí</strong></p>
-                  <p style={{marginTop:5,fontSize:'.76rem'}}>Formatos: <strong>.csv · .xls · .xlsx</strong></p>
+                  <p style={{marginTop:5,fontSize:'0.63rem'}}>Formatos: <strong>.csv · .xls · .xlsx</strong></p>
                 </>
             }
           </div>
@@ -1605,8 +1606,8 @@ const ModalImport = ({ onClose, onImport }) => {
               </ul>
             </div>
             <div style={{marginTop:12}}>
-              <p style={{fontSize:'.8rem',fontWeight:700,color:'var(--g7)',marginBottom:6}}>🗂 Mapeo de columnas
-                <span style={{fontWeight:400,color:'var(--grn)',marginLeft:8,fontSize:'.72rem'}}>
+              <p style={{fontSize:'0.67rem',fontWeight:700,color:'var(--g7)',marginBottom:6}}>🗂 Mapeo de columnas
+                <span style={{fontWeight:400,color:'var(--grn)',marginLeft:8,fontSize:'0.59rem'}}>
                   ✅ {mapping.filter(v=>v>=0).length} de {parsed.headers.length} columnas detectadas automáticamente
                 </span>
               </p>
@@ -1627,7 +1628,7 @@ const ModalImport = ({ onClose, onImport }) => {
               <strong>Vista previa:</strong>
               <div style={{marginTop:5}}>
                 {parsed.records.slice(0,5).map((r,i)=>(
-                  <div key={i} style={{fontSize:'.72rem',color:'var(--g7)',padding:'2px 0',borderBottom:'1px solid var(--g2)'}}>
+                  <div key={i} style={{fontSize:'0.59rem',color:'var(--g7)',padding:'2px 0',borderBottom:'1px solid var(--g2)'}}>
                     {r.filter(Boolean).slice(0,6).join(' · ')}
                   </div>
                 ))}
@@ -1665,7 +1666,7 @@ const ModalCols = ({ visibleCols, colOrder, onChange, onReorder, onClose }) => {
       <div className="md sm">
         <div className="mh"><h2>👁 Columnas — Visibilidad y Orden</h2><button className="mx" onClick={onClose}>×</button></div>
         <div className="mb">
-          <p style={{fontSize:'.78rem',color:'var(--g5)',marginBottom:10}}>
+          <p style={{fontSize:'0.65rem',color:'var(--g5)',marginBottom:10}}>
             ☑ Activa/desactiva · <strong>Arrastra</strong> para reordenar
           </p>
           <div style={{display:'flex',flexDirection:'column',gap:6}}>
@@ -1685,11 +1686,11 @@ const ModalCols = ({ visibleCols, colOrder, onChange, onReorder, onClose }) => {
                 style={{display:'flex',alignItems:'center',gap:10,padding:'7px 10px',
                   borderRadius:6,background:dragging===col.key?'var(--bl)':'var(--g1)',
                   border:'1px solid var(--g2)',cursor:'grab'}}>
-                <span style={{color:'var(--g3)',fontSize:'1rem',cursor:'grab'}}>⠿</span>
+                <span style={{color:'var(--g3)',fontSize:'0.87rem',cursor:'grab'}}>⠿</span>
                 <input type="checkbox" checked={col.show}
                   onChange={e=>onChange(getIdx(col.key),e.target.checked)}
                   style={{width:15,height:15,accentColor:'var(--bm)',cursor:'pointer'}}/>
-                <span style={{fontSize:'.84rem',flex:1,color:col.show?'var(--g9)':'var(--g5)'}}>{col.label}</span>
+                <span style={{fontSize:'0.71rem',flex:1,color:col.show?'var(--g9)':'var(--g5)'}}>{col.label}</span>
               </div>
             ))}
           </div>
@@ -1726,13 +1727,13 @@ const ModalReplace = ({ cols, onReplace, onClose }) => {
       <div className="md sm">
         <div className="mh"><h2>🔄 Reemplazo Masivo</h2><button className="mx" onClick={onClose}>×</button></div>
         <div className="mb">
-          <p style={{fontSize:'.8rem',color:'var(--g5)',marginBottom:14,lineHeight:1.5}}>
+          <p style={{fontSize:'0.67rem',color:'var(--g5)',marginBottom:14,lineHeight:1.5}}>
             Busca un valor en un campo y lo reemplaza en <strong>todos los registros que coincidan</strong>.
           </p>
           <div style={{display:'flex',flexDirection:'column',gap:12}}>
             <div className="fg2">
               <label>Campo a modificar</label>
-              <select value={fieldIdx} onChange={e=>setFieldIdx(e.target.value)} style={{background:'var(--g1)',border:'1.5px solid var(--g3)',borderRadius:7,padding:'8px 11px',fontSize:'.84rem',width:'100%'}}>
+              <select value={fieldIdx} onChange={e=>setFieldIdx(e.target.value)} style={{background:'var(--g1)',border:'1.5px solid var(--g3)',borderRadius:7,padding:'8px 11px',fontSize:'0.71rem',width:'100%'}}>
                 {cols.map(c=><option key={c.key} value={c.key}>{c.label}</option>)}
               </select>
             </div>
@@ -1740,27 +1741,27 @@ const ModalReplace = ({ cols, onReplace, onClose }) => {
               <label>Buscar</label>
               <input type="text" value={searchVal} onChange={e=>setSearchVal(e.target.value)}
                 placeholder="Ej: VIGO"
-                style={{background:'var(--g1)',border:'1.5px solid var(--g3)',borderRadius:7,padding:'8px 11px',fontSize:'.84rem',width:'100%',outline:'none'}}/>
+                style={{background:'var(--g1)',border:'1.5px solid var(--g3)',borderRadius:7,padding:'8px 11px',fontSize:'0.71rem',width:'100%',outline:'none'}}/>
             </div>
             <div className="fg2">
               <label>Reemplazar por</label>
               <input type="text" value={replaceVal} onChange={e=>setReplaceVal(e.target.value)}
                 placeholder="Ej: HILUX VIGO"
-                style={{background:'var(--g1)',border:'1.5px solid var(--g3)',borderRadius:7,padding:'8px 11px',fontSize:'.84rem',width:'100%',outline:'none'}}/>
+                style={{background:'var(--g1)',border:'1.5px solid var(--g3)',borderRadius:7,padding:'8px 11px',fontSize:'0.71rem',width:'100%',outline:'none'}}/>
             </div>
-            <label style={{display:'flex',alignItems:'center',gap:8,fontSize:'.82rem',color:'var(--g7)',cursor:'pointer'}}>
+            <label style={{display:'flex',alignItems:'center',gap:8,fontSize:'0.69rem',color:'var(--g7)',cursor:'pointer'}}>
               <input type="checkbox" checked={matchExact} onChange={e=>setMatchExact(e.target.checked)} style={{width:15,height:15,accentColor:'var(--bm)'}}/>
               Solo coincidencia exacta (no parcial)
             </label>
             {result !== null && (
               <div style={{padding:'10px 14px',borderRadius:7,background:result>0?'#E8F5E9':'#FFF8E1',
-                border:`1px solid ${result>0?'#C8E6C9':'#FFE082'}`,fontSize:'.82rem',
+                border:`1px solid ${result>0?'#C8E6C9':'#FFE082'}`,fontSize:'0.69rem',
                 color:result>0?'var(--grn)':'#8B6000',fontWeight:600}}>
                 {result>0 ? `✅ ${result} registro${result>1?'s':''} actualizado${result>1?'s':''}` : '⚠ Sin coincidencias'}
               </div>
             )}
           </div>
-          <div style={{marginTop:12,padding:'9px 13px',background:'#FFF8E1',borderRadius:7,fontSize:'.74rem',color:'#8B6000',borderLeft:'3px solid var(--gold)'}}>
+          <div style={{marginTop:12,padding:'9px 13px',background:'#FFF8E1',borderRadius:7,fontSize:'0.61rem',color:'#8B6000',borderLeft:'3px solid var(--gold)'}}>
             ⚠ Esta acción modifica la base de datos en Supabase. No se puede deshacer automáticamente.
           </div>
         </div>
@@ -1810,7 +1811,7 @@ const ModalHistory = ({ changelog, onClose }) => {
             <option value="ELIMINAR">🗑 Eliminar</option>
             <option value="IMPORTAR">📂 Importar</option>
           </select>
-          <span style={{fontSize:'.76rem',color:'var(--g5)'}}>{list.length} registro(s)</span>
+          <span style={{fontSize:'0.63rem',color:'var(--g5)'}}>{list.length} registro(s)</span>
           <button className="btn btn-dark btn-sm" style={{marginLeft:'auto'}} onClick={exportCSV}>📥 Exportar historial</button>
         </div>
         <div className="mhist-wrap">
@@ -2328,7 +2329,7 @@ function DecodificadorTab({ selectedCode = null, actionsRef = null }) {
       <div className="dec-inner">
       <div className="dec-card">
         {!selectedCode && (
-          <div style={{padding:'16px 14px',color:'#90CAF9',fontSize:'.85rem',fontStyle:'italic',textAlign:'center'}}>
+          <div style={{padding:'16px 14px',color:'#90CAF9',fontSize:'0.72rem',fontStyle:'italic',textAlign:'center'}}>
             Selecciona un código de la tabla para decodificarlo aquí…
           </div>
         )}
@@ -2371,7 +2372,7 @@ function DecodificadorTab({ selectedCode = null, actionsRef = null }) {
                   <div className="dec-anatomy">
                     <div className="dec-anat-title">
                       ANATOMÍA DEL CÓDIGO &nbsp;—&nbsp; <span>{anatomy.code}</span>
-                      {anatomy.origen && <span style={{fontSize:'.62rem',opacity:.6,marginLeft:8,fontFamily:'inherit'}}>{anatomy.origen}</span>}
+                      {anatomy.origen && <span style={{fontSize:'0.49rem',opacity:.6,marginLeft:8,fontFamily:'inherit'}}>{anatomy.origen}</span>}
                     </div>
                     <div className="dec-seg-row">
                       {anatomy.parts.map((p, i) => p.sep ? (
@@ -2408,7 +2409,7 @@ function DecodificadorTab({ selectedCode = null, actionsRef = null }) {
                     ...(result.frags.length>0 ? [['FRAGMENTOS',
                       <span>{result.frags.map(f=>(
                         <span key={f} style={{display:'inline-block',background:'var(--bl)',border:'1px solid #90CAF9',
-                          borderRadius:3,padding:'1px 6px',fontFamily:'Courier New,monospace',fontSize:'.72rem',marginRight:3,color:'var(--bm)'}}>
+                          borderRadius:3,padding:'1px 6px',fontFamily:'Courier New,monospace',fontSize:'0.59rem',marginRight:3,color:'var(--bm)'}}>
                           {f}
                         </span>
                       ))}</span>
@@ -2445,13 +2446,13 @@ function DecodificadorTab({ selectedCode = null, actionsRef = null }) {
                     {compResult && (
                       <div className="dec-comp-table visible">
                         {compResult.error
-                          ? <div style={{fontSize:'.78rem',color:'var(--red)',textAlign:'center'}}>{compResult.error}</div>
+                          ? <div style={{fontSize:'0.65rem',color:'var(--red)',textAlign:'center'}}>{compResult.error}</div>
                           : <>
                             <div className={`dec-verdict ${compResult.vrdCls}`}>{compResult.vrdTxt}</div>
                             <div className="dec-cmp-row" style={{marginBottom:4}}>
                               <div className="dec-cmp-lbl"/>
-                              <div style={{fontFamily:'Courier New,monospace',fontSize:'.65rem',color:'var(--g5)',padding:'0 7px'}}>{compResult.codeA}</div>
-                              <div style={{fontFamily:'Courier New,monospace',fontSize:'.65rem',color:'var(--g5)',padding:'0 7px'}}>{compResult.codeB}</div>
+                              <div style={{fontFamily:'Courier New,monospace',fontSize:'0.52rem',color:'var(--g5)',padding:'0 7px'}}>{compResult.codeA}</div>
+                              <div style={{fontFamily:'Courier New,monospace',fontSize:'0.52rem',color:'var(--g5)',padding:'0 7px'}}>{compResult.codeB}</div>
                             </div>
                             {compResult.rows.map(({label,vA,vB,clsA,clsB}) => (
                               <div key={label} className="dec-cmp-row">
@@ -2511,8 +2512,8 @@ function CatalogoApp() {
   const [showImport,  setShowImport]  = useState(false);
   const [showCols,    setShowCols]    = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [selectedCode, setSelectedCode] = useState(null); // Para decodificador automático
-  const [decPanelOpen, setDecPanelOpen] = useState(false); // Panel lateral decodificador
+  const [selectedCode, setSelectedCode] = useState(null);
+  const [decPanelOpen, setDecPanelOpen] = useState(false);
   const [showBaseMenu, setShowBaseMenu] = useState(false); // Menú desplegable de Cargar base
 
   const debRef = useRef(null);
@@ -2637,7 +2638,6 @@ function CatalogoApp() {
     return r;
   },[records,fMarca,fModelo,fPeriodo,fClasi,fSub,debText,sortCol,sortAsc]);
 
-  // ── Auto-activar decodificador al buscar en la tabla ──
   useEffect(() => {
     if (filtered.length > 0 && debText) {
       const firstCode = filtered[0].fields[5];
@@ -2832,25 +2832,25 @@ function CatalogoApp() {
               <div style={{position:'absolute',top:'100%',left:0,marginTop:4,background:'#fff',border:'1px solid var(--g3)',
                 borderRadius:6,boxShadow:'0 4px 12px rgba(0,0,0,.15)',zIndex:500,minWidth:220}}>
                 <button onClick={()=>{setShowImport(true);setShowBaseMenu(false);}} 
-                  style={{width:'100%',padding:'10px 14px',border:'none',background:'none',textAlign:'left',cursor:'pointer',fontSize:'.85rem',borderBottom:'1px solid var(--g2)',transition:'.15s'}}
+                  style={{width:'100%',padding:'10px 14px',border:'none',background:'none',textAlign:'left',cursor:'pointer',fontSize:'0.72rem',borderBottom:'1px solid var(--g2)',transition:'.15s'}}
                   onMouseEnter={e=>e.target.style.background='var(--bl)'}
                   onMouseLeave={e=>e.target.style.background='none'}>
                   📤 Carga de la base
                 </button>
                 <button onClick={()=>{exportCSV();setShowBaseMenu(false);}}
-                  style={{width:'100%',padding:'10px 14px',border:'none',background:'none',textAlign:'left',cursor:'pointer',fontSize:'.85rem',borderBottom:'1px solid var(--g2)',transition:'.15s'}}
+                  style={{width:'100%',padding:'10px 14px',border:'none',background:'none',textAlign:'left',cursor:'pointer',fontSize:'0.72rem',borderBottom:'1px solid var(--g2)',transition:'.15s'}}
                   onMouseEnter={e=>e.target.style.background='var(--bl)'}
                   onMouseLeave={e=>e.target.style.background='none'}>
                   📥 Descarga de la base
                 </button>
                 <button onClick={()=>{decActionsRef.current?.triggerUpload();setShowBaseMenu(false);}}
-                  style={{width:'100%',padding:'10px 14px',border:'none',background:'none',textAlign:'left',cursor:'pointer',fontSize:'.85rem',borderBottom:'1px solid var(--g2)',transition:'.15s'}}
+                  style={{width:'100%',padding:'10px 14px',border:'none',background:'none',textAlign:'left',cursor:'pointer',fontSize:'0.72rem',borderBottom:'1px solid var(--g2)',transition:'.15s'}}
                   onMouseEnter={e=>e.target.style.background='var(--bl)'}
                   onMouseLeave={e=>e.target.style.background='none'}>
                   📤 Carga de decodificador
                 </button>
                 <button onClick={()=>{decActionsRef.current?.handleDownloadBD();setShowBaseMenu(false);}}
-                  style={{width:'100%',padding:'10px 14px',border:'none',background:'none',textAlign:'left',cursor:'pointer',fontSize:'.85rem',transition:'.15s'}}
+                  style={{width:'100%',padding:'10px 14px',border:'none',background:'none',textAlign:'left',cursor:'pointer',fontSize:'0.72rem',transition:'.15s'}}
                   onMouseEnter={e=>e.target.style.background='var(--bl)'}
                   onMouseLeave={e=>e.target.style.background='none'}>
                   📥 Descarga de decodificador
@@ -2863,24 +2863,53 @@ function CatalogoApp() {
           {isAdmin && <button className="btn btn-c" onClick={()=>{ loadChangelog(); setShowHistory(true); }}>
             📋 Historial
             {changelog.length>0&&<span style={{background:'var(--gold)',color:'var(--bd)',
-              borderRadius:10,padding:'1px 7px',fontSize:'.7rem',marginLeft:4}}>
+              borderRadius:10,padding:'1px 7px',fontSize:'0.57rem',marginLeft:4}}>
               {changelog.length}</span>}
           </button>}
           <div style={{display:'flex',alignItems:'center',gap:6,marginLeft:4,paddingLeft:8,borderLeft:'1px solid rgba(255,255,255,.2)'}}>
-            <span style={{fontSize:'.68rem',color:'rgba(255,255,255,.75)',maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+            <span style={{fontSize:'0.55rem',color:'rgba(255,255,255,.75)',maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
               {user?.email?.split('@')[0]}
             </span>
             <span style={{background:isAdmin?'rgba(212,168,0,.3)':'rgba(255,255,255,.15)',color:isAdmin?'#FFE082':'rgba(255,255,255,.8)',
-              fontSize:'.6rem',fontWeight:700,padding:'1px 7px',borderRadius:10,textTransform:'uppercase',letterSpacing:.5}}>
+              fontSize:'0.47rem',fontWeight:700,padding:'1px 7px',borderRadius:10,textTransform:'uppercase',letterSpacing:.5}}>
               {role}
             </span>
             <button className="btn btn-c btn-sm" onClick={signOut} title="Cerrar sesión"
-              style={{padding:'3px 9px',fontSize:'.68rem'}}>⏏ Salir</button>
+              style={{padding:'3px 9px',fontSize:'0.55rem'}}>⏏ Salir</button>
           </div>
         </div>
-      </div>
+      </div>{/* /ac-header */}
 
-      {/* BARRA DE PROGRESO GLOBAL */}
+      {/* ── SPLIT BODY ── */}
+      <div className="ac-body">
+
+        {/* Tab lateral (visible cuando el panel está cerrado) */}
+        <button
+          className={`dec-panel-tab${decPanelOpen?' hidden':''}`}
+          onClick={()=>setDecPanelOpen(true)}
+          title="Abrir Decodificador"
+        >
+          🔍 DECODIFICADOR
+          {selectedCode && <span className="tab-dot"/>}
+        </button>
+
+        {/* Panel izquierdo */}
+        <div className={`dec-left-panel${decPanelOpen?' open':''}`}>
+          <div className="dec-panel-header">
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              <span style={{fontSize:'0.95rem'}}>🔍</span>
+              <div>
+                <div style={{color:'#fff',fontSize:'0.67rem',fontWeight:700,letterSpacing:.3}}>Decodificador</div>
+                <div style={{color:'rgba(255,255,255,.6)',fontSize:'0.52rem'}}>Análisis de códigos</div>
+              </div>
+            </div>
+            <button className="dec-panel-close" onClick={()=>setDecPanelOpen(false)}>✕ Cerrar</button>
+          </div>
+          <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />
+        </div>
+
+        {/* Contenido principal */}
+        <div className="ac-main">
       <div className={`ac-progress-wrap${loadProgress.active?' active':''}`}>
         <div className="ac-progress-inner">
           <span className="ac-progress-label">{loadProgress.msg}</span>
@@ -2956,38 +2985,8 @@ function CatalogoApp() {
         ))}
       </div>
 
-      {/* ── Tab lateral (visible cuando panel cerrado) ── */}
-      <button
-        className={`dec-panel-tab${decPanelOpen?' hidden':''}`}
-        onClick={()=>setDecPanelOpen(true)}
-        title="Abrir Decodificador"
-      >
-        🔍 DECODIFICADOR
-        {selectedCode && <span className="tab-dot"/>}
-      </button>
-
-      {/* ── SPLIT LAYOUT ── */}
-      <div className="ac-layout">
-
-        {/* Panel izquierdo */}
-        <div className={`dec-left-panel${decPanelOpen?' open':''}`}>
-          <div className="dec-panel-header">
-            <div style={{display:'flex',alignItems:'center',gap:8}}>
-              <span style={{fontSize:'1rem'}}>🔍</span>
-              <div>
-                <div style={{color:'#fff',fontSize:'.8rem',fontWeight:700,letterSpacing:.3}}>Decodificador</div>
-                <div style={{color:'rgba(255,255,255,.6)',fontSize:'.65rem'}}>Análisis de códigos</div>
-              </div>
-            </div>
-            <button className="dec-panel-close" onClick={()=>setDecPanelOpen(false)}>✕ Cerrar</button>
-          </div>
-          <div className="dec-panel-scroll">
-            <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />
-          </div>
-        </div>
-
-        {/* Contenido principal (tabla + paginación + modales) */}
-        <div className="ac-main">
+      {/* ── DECODIFICADOR — entre buscador avanzado y resultados ── */}
+      <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />
 
       {/* TABLE */}
       <div className="ac-tw">
@@ -3000,14 +2999,14 @@ function CatalogoApp() {
           <div className="empty">
             <div className="icon">📂</div>
             <p style={{fontWeight:700,marginBottom:8}}>La base de datos está vacía</p>
-            <p style={{fontSize:'.85rem'}}>Usa <strong>"Cargar base"</strong> para importar un archivo CSV o Excel.</p>
+            <p style={{fontSize:'0.72rem'}}>Usa <strong>"Cargar base"</strong> para importar un archivo CSV o Excel.</p>
           </div>
         ) : filtered.length===0 ? (
           <div className="empty"><div className="icon">🔎</div><p>No se encontraron resultados.</p></div>
         ) : (
           <table>
             <thead><tr>
-              <th style={{width:80,minWidth:70,background:'var(--bd)',position:'sticky',top:0,zIndex:11}}>Acciones</th>
+              <th style={{width:80,minWidth:70,background:'var(--bd)',position:'sticky',left:0,top:0,zIndex:12}}>Acciones</th>
               {activeCols.map((col,ci)=>(
                 <th key={col.key}
                   className={sortCol===col.key?'sorted':''}
@@ -3065,7 +3064,7 @@ function CatalogoApp() {
                 };
                 return (
                   <tr key={rec._id||ri}>
-                    <td className="cac" onClick={e=>e.stopPropagation()} style={{width:80,minWidth:70}}>
+                    <td className="cac" onClick={e=>e.stopPropagation()} style={{width:80,minWidth:70,position:'sticky',left:0,background:'#fff',zIndex:5,boxShadow:'2px 0 4px rgba(0,0,0,.06)'}}>
                       {isAdmin ? <>
                         <button className="btn-edit" onClick={()=>setModalEdit(rec)}>✏</button>
                         <button className="btn-del"  onClick={()=>setModalDel(rec)}>🗑</button>
@@ -3125,7 +3124,7 @@ function CatalogoApp() {
       {showHistory && <ModalHistory changelog={changelog} onClose={()=>setShowHistory(false)}/>}
       {showReplace && <ModalReplace cols={COL_DEFS} onReplace={handleBulkReplace} onClose={()=>setShowReplace(false)}/>}
       </div>{/* /ac-main */}
-      </div>{/* /ac-layout */}
+      </div>{/* /ac-body */}
     </>
     </ListasCtx.Provider>
   );
@@ -3143,7 +3142,7 @@ function AuthGate() {
       <div style={{textAlign:'center',color:'#fff'}}>
         <div style={{width:36,height:36,border:'3px solid rgba(255,255,255,.2)',borderTopColor:'#D4A800',
           borderRadius:'50%',animation:'spin .75s linear infinite',margin:'0 auto 14px'}}/>
-        <div style={{fontSize:'.85rem',opacity:.7}}>Cargando…</div>
+        <div style={{fontSize:'0.72rem',opacity:.7}}>Cargando…</div>
       </div>
     </div>
   );

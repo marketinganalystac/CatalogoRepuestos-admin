@@ -546,7 +546,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
   padding:0 20px;border-bottom:3px solid var(--gold);
   box-shadow:var(--sh-header);
   display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;min-height:58px;
-  position:sticky;top:0;z-index:300;
+  position:relative;z-index:100;
 }
 .ac-header::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.07) 0%,transparent 100%);pointer-events:none}
 .ac-hl{display:flex;align-items:center;gap:14px}
@@ -739,7 +739,7 @@ select:focus,input[type=text]:focus{
 .ac-qsep{width:1px;height:24px;background:var(--g2)}
 
 /* Table wrapper */
-.ac-tw{overflow:auto;flex:1;background:#fff;-webkit-overflow-scrolling:touch}
+.ac-tw{overflow:auto;max-height:calc(100vh - 310px);background:#fff;-webkit-overflow-scrolling:touch;position:relative}
 table{width:100%;border-collapse:collapse;font-size:0.68rem}
 thead th{
   background:linear-gradient(180deg,#244f85 0%,var(--bd) 100%);
@@ -752,7 +752,7 @@ thead th{
 thead th:hover,thead th.sorted{background:linear-gradient(180deg,#1a7bc8 0%,var(--bm) 100%)}
 thead th .si{margin-left:3px;opacity:.35;font-size:0.49rem}
 thead th.sorted .si{opacity:1;color:var(--gold)}
-tbody tr{border-bottom:1px solid var(--g2);transition:background .1s}
+tbody tr{border-bottom:1px solid var(--g2);transition:background .1s;background:#fff}
 tbody tr:hover{background:linear-gradient(90deg,var(--bl) 0%,#f0f7ff 100%)}
 tbody tr:nth-child(even){background:#FAFBFD}
 tbody tr:nth-child(even):hover{background:linear-gradient(90deg,var(--bl) 0%,#f0f7ff 100%)}
@@ -1024,85 +1024,7 @@ tbody td{padding:7px 13px;vertical-align:middle}
 /* ══════════════════════════════════
    DECODIFICADOR
 ══════════════════════════════════ */
-/* ═══════════════════════════════════
-   FULL-PAGE SPLIT LAYOUT
-═══════════════════════════════════ */
-/* Header fijo */
-.ac-header{
-  position:sticky;top:0;z-index:300;
-}
-/* Cuerpo debajo del header: ocupa el resto del viewport */
-.ac-body{
-  display:flex;
-  height:calc(100vh - 61px); /* altura real del header con borde-gold */
-  overflow:hidden;
-}
-/* Panel izquierdo — scroll propio */
-.dec-left-panel{
-  width:0;
-  flex-shrink:0;
-  overflow-y:auto;
-  overflow-x:hidden;
-  transition:width .3s cubic-bezier(.4,0,.2,1);
-  background:var(--g1);
-  border-right:0px solid var(--gold);
-  display:flex;
-  flex-direction:column;
-  height:100%;
-}
-.dec-left-panel.open{
-  width:370px;
-  border-right-width:3px;
-}
-.dec-panel-header{
-  background:linear-gradient(135deg,var(--bd) 0%,#0d52a8 60%,var(--bm) 100%);
-  padding:10px 14px;display:flex;align-items:center;justify-content:space-between;
-  border-bottom:3px solid var(--gold);flex-shrink:0;
-  box-shadow:0 2px 10px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.08);
-  min-width:344px;position:sticky;top:0;z-index:10;
-}
-.dec-panel-close{
-  background:rgba(255,255,255,.14);color:#fff;
-  border:1px solid rgba(255,255,255,.28);border-radius:7px;
-  padding:4px 11px;font-size:0.65rem;font-weight:700;
-  cursor:pointer;transition:all .15s;white-space:nowrap;
-  box-shadow:0 2px 6px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.15);
-}
-.dec-panel-close:hover{background:rgba(255,255,255,.24);transform:translateY(-1px)}
-.dec-panel-close:active{transform:translateY(1px)}
-/* Área principal */
-.ac-main{
-  flex:1;min-width:0;
-  overflow:hidden;
-  display:flex;flex-direction:column;
-  height:100%;
-}
-/* Tab lateral */
-.dec-panel-tab{
-  flex-shrink:0;
-  writing-mode:vertical-rl;text-orientation:mixed;
-  background:linear-gradient(180deg,var(--bd) 0%,var(--bm) 100%);
-  color:#fff;border:none;border-radius:0 8px 8px 0;
-  padding:14px 6px;font-size:0.52rem;font-weight:700;cursor:pointer;
-  letter-spacing:.13em;white-space:nowrap;
-  box-shadow:3px 0 14px rgba(0,0,0,.28);
-  border-right:2px solid var(--gold);
-  transition:opacity .3s, width .3s;
-  align-self:center;
-}
-.dec-panel-tab:hover{background:linear-gradient(180deg,#1a7bc8 0%,var(--bm) 100%);}
-.dec-panel-tab.hidden{opacity:0;pointer-events:none;width:0;padding:0;border:none;overflow:hidden;}
-.dec-panel-tab .tab-dot{
-  display:block;width:6px;height:6px;border-radius:50%;
-  background:var(--gold);margin:5px auto 0;
-  box-shadow:0 0 5px rgba(212,168,0,.7);
-  animation:pulse-dot 2s ease-in-out infinite;
-}
-@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
-/* Ajustes internos del panel para columna estrecha */
-.dec-left-panel .dec-two{grid-template-columns:1fr!important;gap:8px}
-.dec-left-panel .dec-grid{grid-template-columns:1fr!important}
-.dec-wrap{background:var(--g1);padding:0 0 20px;min-width:344px;}
+.dec-wrap{background:var(--g1);padding:0 0 24px;border-top:2px solid var(--g2)}
 .dec-section-title{
   background:linear-gradient(135deg,var(--bd) 0%,#0d52a8 60%,var(--bm) 100%);
   padding:8px 14px;border:none;
@@ -2512,8 +2434,7 @@ function CatalogoApp() {
   const [showImport,  setShowImport]  = useState(false);
   const [showCols,    setShowCols]    = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [selectedCode, setSelectedCode] = useState(null);
-  const [decPanelOpen, setDecPanelOpen] = useState(false);
+  const [selectedCode, setSelectedCode] = useState(null); // Para decodificador automático
   const [showBaseMenu, setShowBaseMenu] = useState(false); // Menú desplegable de Cargar base
 
   const debRef = useRef(null);
@@ -2638,10 +2559,11 @@ function CatalogoApp() {
     return r;
   },[records,fMarca,fModelo,fPeriodo,fClasi,fSub,debText,sortCol,sortAsc]);
 
+  // ── Auto-activar decodificador al buscar en la tabla ──
   useEffect(() => {
     if (filtered.length > 0 && debText) {
       const firstCode = filtered[0].fields[5];
-      if (firstCode) { setSelectedCode(firstCode); setDecPanelOpen(true); }
+      if (firstCode) setSelectedCode(firstCode);
     }
   }, [debText, filtered]);
 
@@ -2878,38 +2800,9 @@ function CatalogoApp() {
               style={{padding:'3px 9px',fontSize:'0.55rem'}}>⏏ Salir</button>
           </div>
         </div>
-      </div>{/* /ac-header */}
+      </div>
 
-      {/* ── SPLIT BODY ── */}
-      <div className="ac-body">
-
-        {/* Panel izquierdo */}
-        <div className={`dec-left-panel${decPanelOpen?' open':''}`}>
-          <div className="dec-panel-header">
-            <div style={{display:'flex',alignItems:'center',gap:8}}>
-              <span style={{fontSize:'0.95rem'}}>🔍</span>
-              <div>
-                <div style={{color:'#fff',fontSize:'0.67rem',fontWeight:700,letterSpacing:.3}}>Decodificador</div>
-                <div style={{color:'rgba(255,255,255,.6)',fontSize:'0.52rem'}}>Análisis de códigos</div>
-              </div>
-            </div>
-            <button className="dec-panel-close" onClick={()=>setDecPanelOpen(false)}>✕ Cerrar</button>
-          </div>
-          <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />
-        </div>
-
-        {/* Tab lateral (visible cuando el panel está cerrado) */}
-        <button
-          className={`dec-panel-tab${decPanelOpen?' hidden':''}`}
-          onClick={()=>setDecPanelOpen(true)}
-          title="Abrir Decodificador"
-        >
-          🔍 DECODIFICADOR
-          {selectedCode && <span className="tab-dot"/>}
-        </button>
-
-        {/* Contenido principal */}
-        <div className="ac-main">
+      {/* BARRA DE PROGRESO GLOBAL */}
       <div className={`ac-progress-wrap${loadProgress.active?' active':''}`}>
         <div className="ac-progress-inner">
           <span className="ac-progress-label">{loadProgress.msg}</span>
@@ -2985,8 +2878,11 @@ function CatalogoApp() {
         ))}
       </div>
 
+      {/* ── DECODIFICADOR — entre buscador avanzado y resultados ── */}
+      <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />
+
       {/* TABLE */}
-      <div className="ac-tw" style={{position:'relative'}}>
+      <div className="ac-tw">
         {loading ? (
           <div className="loading">
             <span className="spin"/>
@@ -3050,7 +2946,7 @@ function CatalogoApp() {
                   4:()=>f[4]?<span className="cc">{highlightText(f[4],debText)}
                     <button className="btn-copy" onClick={e=>{e.stopPropagation();navigator.clipboard?.writeText(f[4]);toast('📋 Código copiado','info');}}>⧉</button>
                   </span>:<span className="cs">—</span>,
-                  5:()=>f[5]?<span className="cc" style={{cursor:'pointer'}} onClick={()=>{ setSelectedCode(f[5]); setDecPanelOpen(true); }}>{highlightText(f[5],debText)}</span>:<span className="cs">—</span>,
+                  5:()=>f[5]?<span className="cc" style={{cursor:'pointer'}} onClick={()=>setSelectedCode(f[5])}>{highlightText(f[5],debText)}</span>:<span className="cs">—</span>,
                   6:()=>f[6]?<span className="cc">{highlightText(f[6],debText)}</span>:<span className="cs">—</span>,
                   7:()=>f[7]?<span className="cc">{highlightText(f[7],debText)}</span>:<span className="cs">—</span>,
                   8:()=>f[8]?<span className="cc">{highlightText(f[8],debText)}</span>:<span className="cs">—</span>,
@@ -3061,7 +2957,7 @@ function CatalogoApp() {
                 };
                 return (
                   <tr key={rec._id||ri}>
-                    <td className="cac" onClick={e=>e.stopPropagation()} style={{width:80,minWidth:70,position:'sticky',left:0,background:'#fff',zIndex:5,boxShadow:'2px 0 4px rgba(0,0,0,.06)'}}>
+                    <td className="cac" onClick={e=>e.stopPropagation()} style={{width:80,minWidth:70,position:'sticky',left:0,zIndex:4,background:'inherit',boxShadow:'2px 0 5px rgba(0,0,0,.08)'}}>
                       {isAdmin ? <>
                         <button className="btn-edit" onClick={()=>setModalEdit(rec)}>✏</button>
                         <button className="btn-del"  onClick={()=>setModalDel(rec)}>🗑</button>
@@ -3120,8 +3016,6 @@ function CatalogoApp() {
       {showCols    && <ModalCols    visibleCols={visibleCols} colOrder={colOrder} onChange={(i,s)=>setVisibleCols(v=>v.map((c,ci)=>ci===i?{...c,show:s}:c))} onReorder={setColOrder} onClose={()=>setShowCols(false)}/>}
       {showHistory && <ModalHistory changelog={changelog} onClose={()=>setShowHistory(false)}/>}
       {showReplace && <ModalReplace cols={COL_DEFS} onReplace={handleBulkReplace} onClose={()=>setShowReplace(false)}/>}
-      </div>{/* /ac-main */}
-      </div>{/* /ac-body */}
     </>
     </ListasCtx.Provider>
   );

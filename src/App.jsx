@@ -752,6 +752,24 @@ thead th{
 thead th:hover,thead th.sorted{background:linear-gradient(180deg,#1a7bc8 0%,var(--bm) 100%)}
 thead th .si{margin-left:3px;opacity:.35;font-size:0.49rem}
 thead th.sorted .si{opacity:1;color:var(--gold)}
+/* ── Dec toggle tab ── */
+.dec-section{background:var(--g1);border-top:2px solid var(--g2)}
+.dec-toggle-tab{
+  width:100%;display:flex;align-items:center;gap:8px;
+  padding:7px 16px;
+  background:linear-gradient(135deg,var(--bd) 0%,#0d52a8 70%,var(--bm) 100%);
+  color:#fff;border:none;cursor:pointer;
+  font-size:0.57rem;font-weight:700;letter-spacing:.3px;
+  border-bottom:2px solid var(--gold);
+  transition:background .15s;text-align:left;
+}
+.dec-toggle-tab:hover{background:linear-gradient(135deg,#1a6bb5 0%,#1060c0 70%,var(--bm) 100%)}
+.dec-toggle-icon{font-size:0.52rem;opacity:.7}
+.dec-toggle-code{
+  background:var(--gold);color:#000;border-radius:4px;
+  padding:1px 7px;font-size:0.52rem;font-weight:700;margin-left:2px;
+}
+.dec-toggle-hint{margin-left:auto;opacity:.6;font-size:0.49rem;font-weight:400;letter-spacing:.5px}
 tbody tr{border-bottom:1px solid var(--g2);transition:background .1s;background:#fff}
 tbody tr:hover{background:linear-gradient(90deg,var(--bl) 0%,#f0f7ff 100%)}
 tbody tr:nth-child(even){background:#FAFBFD}
@@ -2435,6 +2453,7 @@ function CatalogoApp() {
   const [showCols,    setShowCols]    = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedCode, setSelectedCode] = useState(null); // Para decodificador automático
+  const [showDec, setShowDec] = useState(true); // Mostrar/ocultar decodificador
   const [showBaseMenu, setShowBaseMenu] = useState(false); // Menú desplegable de Cargar base
 
   const debRef = useRef(null);
@@ -2878,8 +2897,16 @@ function CatalogoApp() {
         ))}
       </div>
 
-      {/* ── DECODIFICADOR — entre buscador avanzado y resultados ── */}
-      <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />
+      {/* ── DECODIFICADOR — colapsable ── */}
+      <div className="dec-section">
+        <button className="dec-toggle-tab" onClick={()=>setShowDec(v=>!v)}>
+          <span className="dec-toggle-icon">{showDec ? '▲' : '▼'}</span>
+          🔍 Decodificador de Códigos
+          {selectedCode && <span className="dec-toggle-code">{selectedCode}</span>}
+          <span className="dec-toggle-hint">{showDec ? 'Ocultar' : 'Mostrar'}</span>
+        </button>
+        {showDec && <DecodificadorTab selectedCode={selectedCode} actionsRef={decActionsRef} />}
+      </div>
 
       {/* TABLE */}
       <div className="ac-tw">
@@ -2899,7 +2926,7 @@ function CatalogoApp() {
         ) : (
           <table>
             <thead><tr>
-              <th style={{width:80,minWidth:70,background:'var(--bd)',position:'sticky',left:0,top:0,zIndex:12}}>Acciones</th>
+              <th style={{width:80,minWidth:70,background:'var(--bd)'}}>Acciones</th>
               {activeCols.map((col,ci)=>(
                 <th key={col.key}
                   className={sortCol===col.key?'sorted':''}
@@ -2957,7 +2984,7 @@ function CatalogoApp() {
                 };
                 return (
                   <tr key={rec._id||ri}>
-                    <td className="cac" onClick={e=>e.stopPropagation()} style={{width:80,minWidth:70,position:'sticky',left:0,zIndex:4,background:'inherit',boxShadow:'2px 0 5px rgba(0,0,0,.08)'}}>
+                    <td className="cac" onClick={e=>e.stopPropagation()} style={{width:80,minWidth:70}}>
                       {isAdmin ? <>
                         <button className="btn-edit" onClick={()=>setModalEdit(rec)}>✏</button>
                         <button className="btn-del"  onClick={()=>setModalDel(rec)}>🗑</button>

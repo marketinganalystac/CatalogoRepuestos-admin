@@ -741,7 +741,7 @@ select:focus,input[type=text]:focus{
 /* Table wrapper */
 /* Table wrapper — scroll en ambas direcciones; thead sticky necesita overflow-y:auto aquí */
 .ac-tw{overflow:auto;height:calc(100vh - 280px);background:#fff;-webkit-overflow-scrolling:touch;position:relative}
-table{width:100%;border-collapse:collapse;font-size:0.68rem}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:0.68rem}
 thead th{
   background:linear-gradient(180deg,#244f85 0%,var(--bd) 100%);
   color:rgba(255,255,255,.92);padding:9px 13px;text-align:left;
@@ -770,11 +770,11 @@ thead th.sorted .si{opacity:1;color:var(--gold)}
   background:var(--gold);color:#000;border-radius:3px;
   padding:1px 6px;font-size:0.48rem;font-weight:700;
 }
-tbody tr{border-bottom:1px solid var(--g2);transition:background .1s;background:#fff}
+tbody tr{transition:background .1s;background:#fff}
 tbody tr:hover{background:linear-gradient(90deg,var(--bl) 0%,#f0f7ff 100%)}
 tbody tr:nth-child(even){background:#FAFBFD}
 tbody tr:nth-child(even):hover{background:linear-gradient(90deg,var(--bl) 0%,#f0f7ff 100%)}
-tbody td{padding:7px 13px;vertical-align:middle}
+tbody td{padding:7px 13px;vertical-align:middle;border-bottom:1px solid var(--g2);background:inherit}
 .cm{font-weight:800;color:var(--bd);white-space:normal;font-size:0.71rem;word-break:break-word;line-height:1.3}
 .cmo{color:var(--g7);white-space:normal;font-weight:500;word-break:break-word;line-height:1.3}
 .ca{

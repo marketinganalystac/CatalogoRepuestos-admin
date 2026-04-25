@@ -679,14 +679,23 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .btn-del:hover{background:linear-gradient(180deg,#e53935 0%,var(--red) 100%);color:#fff;box-shadow:0 4px 12px rgba(198,40,40,.3);transform:translateY(-1px)}
 .btn-del:active{transform:translateY(1px)}
 
-.btn-copy{
-  padding:2px 8px;
-  background:linear-gradient(180deg,var(--bl) 0%,#d4e8f8 100%);
-  border:1px solid rgba(0,96,160,.2);border-radius:4px;font-size:0.55rem;cursor:pointer;color:var(--bm);font-weight:700;margin-left:5px;
-  box-shadow:0 1px 4px rgba(0,96,160,.1),inset 0 1px 0 rgba(255,255,255,.8);
-  transition:all .14s ease;
+/* Código Repuesto — píldora azul navy con texto blanco */
+.cr-pill{
+  font-family:'SF Mono','Fira Code','Consolas',monospace;
+  color:#fff;font-size:0.62rem;font-weight:700;
+  background:linear-gradient(135deg,#1a3f6f 0%,#0d2d52 100%);
+  padding:2px 10px;border-radius:20px;display:inline-flex;align-items:center;white-space:nowrap;
+  border:1px solid rgba(255,255,255,.12);
+  letter-spacing:.04em;
+  box-shadow:0 2px 6px rgba(13,45,82,.35);
 }
-.btn-copy:hover{background:linear-gradient(180deg,var(--bm) 0%,#004f8a 100%);color:#fff;box-shadow:0 3px 8px rgba(0,96,160,.25);transform:translateY(-1px)}
+.btn-copy{
+  padding:1px 5px;
+  background:rgba(255,255,255,.15);
+  border:1px solid rgba(255,255,255,.25);border-radius:4px;font-size:0.62rem;cursor:pointer;color:#fff;margin-left:6px;
+  transition:all .14s ease;line-height:1;
+}
+.btn-copy:hover{background:rgba(255,255,255,.3);transform:translateY(-1px);box-shadow:0 2px 5px rgba(0,0,0,.2)}
 .btn-copy:active{transform:translateY(1px)}
 
 /* ══════════════════════════════════
@@ -3011,8 +3020,8 @@ function CatalogoApp() {
                   1:()=><span className="cm">{highlightText(f[1],debText)}{f[2]&&<><br/><span className="cmo">{f[2]}</span></>}</span>,
                   2:()=><span className="cmo">{f[2]}</span>,
                   3:()=><span className="ca">{highlightText(f[3],debText)}</span>,
-                  4:()=>f[4]?<span className="cc">{highlightText(f[4],debText)}
-                    <button className="btn-copy" onClick={e=>{e.stopPropagation();navigator.clipboard?.writeText(f[4]);toast('📋 Código copiado','info');}}>⧉</button>
+                  4:()=>f[4]?<span className="cr-pill">{highlightText(f[4],debText)}
+                    <button className="btn-copy" onClick={e=>{e.stopPropagation();navigator.clipboard?.writeText(f[4]);toast('📋 Código copiado','info');}}>⊕</button>
                   </span>:<span className="cs">—</span>,
                   5:()=>f[5]?<span className="cc" style={{cursor:'pointer'}} onClick={()=>setSelectedCode(f[5])}>{highlightText(f[5],debText)}</span>:<span className="cs">—</span>,
                   6:()=>f[6]?<span className="cc">{highlightText(f[6],debText)}</span>:<span className="cs">—</span>,

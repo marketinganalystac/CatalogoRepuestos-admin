@@ -318,6 +318,9 @@ const normalizeDoc = (raw) => {
   };
 };
 
+// Un registro solo se muestra en la app (tabla, filtros, resumen) si tiene Código Repuesto (fields[4])
+const hasCodigo = (rec) => !!(rec && rec.fields && String(rec.fields[4] ?? '').trim());
+
 const nowDT = () => {
   const d = new Date();
   return {
@@ -2529,7 +2532,7 @@ function CatalogoApp() {
           setLoadProgress({ active:true, pct:80, msg:`Procesando ${n.toLocaleString()} registros…`, indeterminate:false });
         });
         setLoadProgress({ active:true, pct:95, msg:'Normalizando datos…', indeterminate:false });
-        const normalized = rawRecs.map(normalizeDoc).filter(Boolean);
+        const normalized = rawRecs.map(normalizeDoc).filter(Boolean).filter(hasCodigo);
         setRecords(normalized);
         setFbStatus('ok');
         setLoadProgress({ active:true, pct:100, msg:`✅ ${normalized.length.toLocaleString()} registros cargados`, indeterminate:false });
@@ -2640,7 +2643,8 @@ function CatalogoApp() {
   // ── CRUD ──
   const handleSaveNew = async ({fields})=>{
     const id = await fsAdd(COL_RECORDS,{fields});
-    setRecords(prev=>[{_id:id,fields},...prev]);
+    const newRec = {_id:id,fields};
+    if (hasCodigo(newRec)) setRecords(prev=>[newRec,...prev]);
     await logEntry('AGREGAR',`${fields[0]} ${fields[1]} ${fields[3]}`,
       [{campo:'Descripción',antes:'',despues:fields[4]}]);
     toast('✅ Registro guardado en Supabase.','success');
@@ -2648,7 +2652,10 @@ function CatalogoApp() {
 
   const handleSaveEdit = async (original,{fields})=>{
     await fsUpdate(original._id,{fields});
-    setRecords(prev=>prev.map(r=>r._id===original._id?{...r,fields}:r));
+    const updatedRec = {...original,fields};
+    setRecords(prev=>hasCodigo(updatedRec)
+      ? prev.map(r=>r._id===original._id?updatedRec:r)
+      : prev.filter(r=>r._id!==original._id));
     const cambios=fields.map((f,i)=>f!==original.fields[i]
       ?{campo:COL_DEFS[i].label,antes:original.fields[i],despues:f}:null).filter(Boolean);
     await logEntry('EDITAR',`${fields[0]} ${fields[1]}`,cambios);
@@ -2689,10 +2696,12 @@ function CatalogoApp() {
       await fsUpdate(rec._id, { fields: newFields });
     }
     if (count > 0) {
-      setRecords(prev => prev.map(r => {
-        const u = updated.find(x => x.rec._id === r._id);
-        return u ? { ...r, fields: u.newFields } : r;
-      }));
+      setRecords(prev => prev
+        .map(r => {
+          const u = updated.find(x => x.rec._id === r._id);
+          return u ? { ...r, fields: u.newFields } : r;
+        })
+        .filter(hasCodigo));
       await logEntry('EDITAR', `Reemplazo masivo: campo ${COL_DEFS.find(c=>c.key===fieldIdx)?.label} — "${search}" → "${replace}" (${count} registros)`);
       toast(`✅ ${count} registros actualizados.`, 'success');
     } else {
@@ -2725,7 +2734,7 @@ function CatalogoApp() {
       setLoadProgress({ active:true, pct:93, msg:'Recargando datos desde Supabase…', indeterminate:true });
       // Recargar desde Supabase
       const fresh = await fsGetAll(COL_RECORDS);
-      setRecords(fresh.map(normalizeDoc).filter(Boolean));
+      setRecords(fresh.map(normalizeDoc).filter(Boolean).filter(hasCodigo));
       await logEntry('IMPORTAR',`${mode==='replace'?'Reemplazo':'Adición'} de ${total} registros`);
       setLoadProgress({ active:true, pct:100, msg:`✅ ${total.toLocaleString()} registros importados`, indeterminate:false });
       setTimeout(()=>setLoadProgress(p=>({...p,active:false})), 2500);

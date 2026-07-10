@@ -278,13 +278,13 @@ const COL_DEFS = [
   { key:7, label:'Código 3',         show:false, width:100 },
   { key:8, label:'Código 4',         show:false, width:100 },
   { key:9, label:'Código 5',         show:false, width:100 },
-  { key:10, label:'Desc. Estándar',  show:true,  width:200 },
+  { key:10, label:'Desc. Estándar',  show:false, width:200 },
   { key:11, label:'Clasificación',   show:true,  width:150 },
   { key:12, label:'Subclasificación',show:true,  width:150 },
   { key:13, label:'Litraje',         show:true,  width:90  },
 ];
-// Ordered display
-const COL_DEFS_ORDER = [0,1,3,13,4,5,6,7,8,9,10,11,12,2];
+// Ordered display: Marca, Modelo, Litraje, Período, Clasificación, Subclasificación, Código, Desc.Estándar (oculto), resto
+const COL_DEFS_ORDER = [0,1,13,3,11,12,4,10,5,6,7,8,9,2];
 
 const EXPECTED_FIELDS = ['marca','modelo','modelo_original','periodo',
   'codigo_repuesto','codigo_1','codigo_2','codigo_3','codigo_4','codigo_5',
@@ -1466,17 +1466,19 @@ const ModalDelete = ({ record, onConfirm, onClose }) => {
 // ============================================================
 const ModalDetail = ({ record, onClose, onEdit }) => {
   if (!record) return null;
-  const labels = ['Marca','Modelo','Modelo Original','Período',
-    'Código Repuesto','Código 1','Código 2','Código 3','Código 4','Código 5',
-    'Desc. Estándar','Clasificación','Subclasificación','Litraje'];
+  const detailLabels = {0:'Marca',1:'Modelo',2:'Modelo Original',3:'Período',
+    4:'Código Repuesto',5:'Código 1',6:'Código 2',7:'Código 3',8:'Código 4',9:'Código 5',
+    10:'Desc. Estándar',11:'Clasificación',12:'Subclasificación',13:'Litraje'};
+  // Mismo orden que la tabla; 10 (Desc. Estándar) oculto hasta segunda orden
+  const detailOrder = [0,1,13,3,11,12,4,5,6,7,8,9,2];
   return (
     <div className="mo show">
       <div className="md sm">
         <div className="mh"><h2>📋 Detalle del Registro</h2><button className="mx" onClick={onClose}>×</button></div>
         <div className="mb">
-          {labels.map((lbl,i) => record.fields[i] ? (
+          {detailOrder.map(i => record.fields[i] ? (
             <div key={i} className="dr">
-              <span className="lb">{lbl}</span><span className="vl">{record.fields[i]}</span>
+              <span className="lb">{detailLabels[i]}</span><span className="vl">{record.fields[i]}</span>
             </div>
           ) : null)}
         </div>
@@ -2462,6 +2464,7 @@ function CatalogoApp() {
   const [fPeriodo, setFPeriodo]   = useState('');
   const [fClasi,  setFClasi]  = useState('');
   const [fSub,    setFSub]    = useState('');
+  const [fLitraje, setFLitraje] = useState('');
   const [fText,   setFText]   = useState('');
   const [debText, setDebText] = useState('');
 
@@ -2507,6 +2510,11 @@ function CatalogoApp() {
     return [...new Set([...SUBCLASIFICACIONES_DEFAULT, ...extraSubs, ...fromRecs])].sort();
   },[records, extraSubs]);
 
+  // Listas SOLO con lo que existe en la data (para filtros avanzados, sin presets)
+  const dataMarcas = useMemo(()=>[...new Set(records.map(r=>r.fields[0]).filter(Boolean))].sort(),[records]);
+  const dataClasif = useMemo(()=>[...new Set(records.map(r=>r.fields[11]).filter(Boolean))].sort(),[records]);
+  const dataSubs   = useMemo(()=>[...new Set(records.map(r=>r.fields[12]).filter(Boolean))].sort(),[records]);
+
   const allDescStd = useMemo(()=>{
     const fromRecs = records.map(r=>r.fields[10]).filter(Boolean);
     return [...new Set([...DESC_STD_DEFAULT, ...extraDescStd, ...fromRecs])].sort();
@@ -2537,10 +2545,13 @@ function CatalogoApp() {
           setLoadProgress({ active:true, pct:80, msg:`Procesando ${n.toLocaleString()} registros…`, indeterminate:false });
         });
         setLoadProgress({ active:true, pct:95, msg:'Normalizando datos…', indeterminate:false });
-        const normalized = rawRecs.map(normalizeDoc).filter(Boolean).filter(hasCodigo);
+        const allNormalized = rawRecs.map(normalizeDoc).filter(Boolean);
+        const normalized = allNormalized.filter(hasCodigo);
+        const omitidos = allNormalized.length - normalized.length;
         setRecords(normalized);
         setFbStatus('ok');
-        setLoadProgress({ active:true, pct:100, msg:`✅ ${normalized.length.toLocaleString()} registros cargados`, indeterminate:false });
+        setLoadProgress({ active:true, pct:100, msg:`✅ ${normalized.length.toLocaleString()} registros cargados${omitidos?` (${omitidos.toLocaleString()} omitidos sin código repuesto)`:''}`, indeterminate:false });
+        if (omitidos>0) toast(`⚠️ ${omitidos.toLocaleString()} registros sin "Código Repuesto" fueron omitidos.`, 'info');
         setTimeout(()=>setLoadProgress(p=>({...p,active:false})), 1800);
       } catch(e) {
         console.error('[Supabase]', e);
@@ -2584,9 +2595,13 @@ function CatalogoApp() {
   },[records,fMarca,fModelo]);
 
   const availableSubs = useMemo(()=>{
-    if(!fClasi) return allSubs;
+    if(!fClasi) return dataSubs;
     return [...new Set(records.filter(r=>r.fields[11]===fClasi).map(r=>r.fields[12]).filter(Boolean))].sort();
-  },[records,fClasi,allSubs]);
+  },[records,fClasi,dataSubs]);
+
+  const availableLitrajes = useMemo(()=>{
+    return [...new Set(records.map(r=>r.fields[13]).filter(Boolean))].sort();
+  },[records]);
 
   const filtered = useMemo(()=>{
     let r = records;
@@ -2595,6 +2610,7 @@ function CatalogoApp() {
     if(fPeriodo)   r=r.filter(x=>x.fields[3]===fPeriodo);
     if(fClasi)  r=r.filter(x=>x.fields[11]===fClasi);
     if(fSub)    r=r.filter(x=>x.fields[12]===fSub);
+    if(fLitraje) r=r.filter(x=>x.fields[13]===fLitraje);
     if(debText){const t=debText.toLowerCase(); r=r.filter(x=>x.fields.some(f=>String(f).toLowerCase().includes(t)));}
     if(sortCol>=0) r=[...r].sort((a,b)=>{
       const av=String(a.fields[sortCol]||'').toLowerCase();
@@ -2602,7 +2618,7 @@ function CatalogoApp() {
       return sortAsc?av.localeCompare(bv):bv.localeCompare(av);
     });
     return r;
-  },[records,fMarca,fModelo,fPeriodo,fClasi,fSub,debText,sortCol,sortAsc]);
+  },[records,fMarca,fModelo,fPeriodo,fClasi,fSub,fLitraje,debText,sortCol,sortAsc]);
 
   // ── Auto-activar decodificador al buscar en la tabla ──
   useEffect(() => {
@@ -2627,7 +2643,7 @@ function CatalogoApp() {
   const onModeloChange = v=>{setFModelo(v);setFPeriodo('');setPage(1);};
   const onClasiChange  = v=>{setFClasi(v);setFSub('');setPage(1);};
   const clearAll = ()=>{
-    setFMarca('');setFModelo('');setFPeriodo('');setFClasi('');setFSub('');
+    setFMarca('');setFModelo('');setFPeriodo('');setFClasi('');setFSub('');setFLitraje('');
     setFText('');setDebText('');setSortCol(-1);setSortAsc(true);setPage(1);
   };
   const handleSort = ci=>{
@@ -2739,11 +2755,14 @@ function CatalogoApp() {
       setLoadProgress({ active:true, pct:93, msg:'Recargando datos desde Supabase…', indeterminate:true });
       // Recargar desde Supabase
       const fresh = await fsGetAll(COL_RECORDS);
-      setRecords(fresh.map(normalizeDoc).filter(Boolean).filter(hasCodigo));
+      const freshAll = fresh.map(normalizeDoc).filter(Boolean);
+      const freshValid = freshAll.filter(hasCodigo);
+      const omitidosImport = freshAll.length - freshValid.length;
+      setRecords(freshValid);
       await logEntry('IMPORTAR',`${mode==='replace'?'Reemplazo':'Adición'} de ${total} registros`);
-      setLoadProgress({ active:true, pct:100, msg:`✅ ${total.toLocaleString()} registros importados`, indeterminate:false });
+      setLoadProgress({ active:true, pct:100, msg:`✅ ${total.toLocaleString()} registros importados a Supabase (${freshValid.length.toLocaleString()} visibles en la app${omitidosImport?`, ${omitidosImport.toLocaleString()} sin código repuesto`:''})`, indeterminate:false });
       setTimeout(()=>setLoadProgress(p=>({...p,active:false})), 2500);
-      toast(`✅ ${total} registros importados correctamente.`,'success');
+      toast(`✅ ${total} registros importados a Supabase.${omitidosImport?` ⚠️ ${omitidosImport.toLocaleString()} quedaron ocultos por no tener "Código Repuesto".`:''}`,'success');
       clearAll();
     }catch(e){
       setLoadProgress({ active:false, pct:0, msg:'', indeterminate:true });
@@ -2874,11 +2893,12 @@ function CatalogoApp() {
       <div className="ac-sp">
         <div className="ac-fg">
           {[
-            {label:'🅱 Marca', val:fMarca, set:onMarcaChange, opts:allMarcas},
+            {label:'🅱 Marca', val:fMarca, set:onMarcaChange, opts:dataMarcas},
             {label:'🚗 Modelo', val:fModelo, set:onModeloChange, opts:availableModels, placeholder:'Todos los modelos'},
             {label:'📅 Período',   val:fPeriodo,   set:v=>{setFPeriodo(v);setPage(1);}, opts:availablePeriodos, placeholder:'Todos los períodos'},
-            {label:'🔎 Clasificación', val:fClasi, set:onClasiChange, opts:allClasif, placeholder:'Todas'},
+            {label:'🔎 Clasificación', val:fClasi, set:onClasiChange, opts:dataClasif, placeholder:'Todas'},
             {label:'📂 Subclasificación', val:fSub, set:v=>{setFSub(v);setPage(1);}, opts:availableSubs, placeholder:'Todas'},
+            {label:'⛽ Litraje', val:fLitraje, set:v=>{setFLitraje(v);setPage(1);}, opts:availableLitrajes, placeholder:'Todos'},
           ].map(({label,val,set,opts,placeholder='Todas las marcas'})=>(
             <div key={label} className="ac-fl">
               <label>{label}</label>
@@ -2912,6 +2932,7 @@ function CatalogoApp() {
           {fPeriodo  &&<span className="ac-tag" style={{background:'rgba(212,168,0,.8)'}}>📅 {fPeriodo}</span>}
           {fClasi &&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>🔎 {fClasi.substring(0,22)}</span>}
           {fSub   &&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>📂 {fSub}</span>}
+          {fLitraje &&<span className="ac-tag" style={{background:'rgba(255,255,255,.25)'}}>⛽ {fLitraje}</span>}
           {debText&&<span className="ac-tag" style={{background:'rgba(212,168,0,.8)'}}>🔍 "{debText}"</span>}
         </span>
       </div>

@@ -2588,20 +2588,23 @@ function CatalogoApp() {
     return [...new Set(records.filter(r=>r.fields[0]===fMarca).map(r=>r.fields[1]).filter(Boolean))].sort();
   },[records,fMarca]);
 
+  const availableLitrajes = useMemo(()=>{
+    let b = fMarca ? records.filter(r=>r.fields[0]===fMarca) : records;
+    if(fModelo) b = b.filter(r=>r.fields[1]===fModelo);
+    return [...new Set(b.map(r=>r.fields[13]).filter(Boolean))].sort();
+  },[records,fMarca,fModelo]);
+
   const availablePeriodos = useMemo(()=>{
     let b = fMarca ? records.filter(r=>r.fields[0]===fMarca) : records;
     if(fModelo) b = b.filter(r=>r.fields[1]===fModelo);
+    if(fLitraje) b = b.filter(r=>r.fields[13]===fLitraje);
     return [...new Set(b.map(r=>r.fields[3]).filter(Boolean))].sort();
-  },[records,fMarca,fModelo]);
+  },[records,fMarca,fModelo,fLitraje]);
 
   const availableSubs = useMemo(()=>{
     if(!fClasi) return dataSubs;
     return [...new Set(records.filter(r=>r.fields[11]===fClasi).map(r=>r.fields[12]).filter(Boolean))].sort();
   },[records,fClasi,dataSubs]);
-
-  const availableLitrajes = useMemo(()=>{
-    return [...new Set(records.map(r=>r.fields[13]).filter(Boolean))].sort();
-  },[records]);
 
   const filtered = useMemo(()=>{
     let r = records;
@@ -2639,8 +2642,9 @@ function CatalogoApp() {
     conCodigo: records.filter(r=>r.fields[5]).length,
   }),[records]);
 
-  const onMarcaChange  = v=>{setFMarca(v);setFModelo('');setFPeriodo('');setPage(1);};
-  const onModeloChange = v=>{setFModelo(v);setFPeriodo('');setPage(1);};
+  const onMarcaChange  = v=>{setFMarca(v);setFModelo('');setFLitraje('');setFPeriodo('');setPage(1);};
+  const onModeloChange = v=>{setFModelo(v);setFLitraje('');setFPeriodo('');setPage(1);};
+  const onLitrajeChange = v=>{setFLitraje(v);setFPeriodo('');setPage(1);};
   const onClasiChange  = v=>{setFClasi(v);setFSub('');setPage(1);};
   const clearAll = ()=>{
     setFMarca('');setFModelo('');setFPeriodo('');setFClasi('');setFSub('');setFLitraje('');
@@ -2895,10 +2899,10 @@ function CatalogoApp() {
           {[
             {label:'🅱 Marca', val:fMarca, set:onMarcaChange, opts:dataMarcas},
             {label:'🚗 Modelo', val:fModelo, set:onModeloChange, opts:availableModels, placeholder:'Todos los modelos'},
+            {label:'⛽ Litraje', val:fLitraje, set:onLitrajeChange, opts:availableLitrajes, placeholder:'Todos'},
             {label:'📅 Período',   val:fPeriodo,   set:v=>{setFPeriodo(v);setPage(1);}, opts:availablePeriodos, placeholder:'Todos los períodos'},
             {label:'🔎 Clasificación', val:fClasi, set:onClasiChange, opts:dataClasif, placeholder:'Todas'},
             {label:'📂 Subclasificación', val:fSub, set:v=>{setFSub(v);setPage(1);}, opts:availableSubs, placeholder:'Todas'},
-            {label:'⛽ Litraje', val:fLitraje, set:v=>{setFLitraje(v);setPage(1);}, opts:availableLitrajes, placeholder:'Todos'},
           ].map(({label,val,set,opts,placeholder='Todas las marcas'})=>(
             <div key={label} className="ac-fl">
               <label>{label}</label>

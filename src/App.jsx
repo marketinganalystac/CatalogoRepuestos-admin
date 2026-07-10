@@ -281,13 +281,14 @@ const COL_DEFS = [
   { key:10, label:'Desc. Estándar',  show:true,  width:200 },
   { key:11, label:'Clasificación',   show:true,  width:150 },
   { key:12, label:'Subclasificación',show:true,  width:150 },
+  { key:13, label:'Litraje',         show:true,  width:90  },
 ];
 // Ordered display
-const COL_DEFS_ORDER = [0,1,3,4,5,6,7,8,9,10,11,12,2];
+const COL_DEFS_ORDER = [0,1,3,13,4,5,6,7,8,9,10,11,12,2];
 
 const EXPECTED_FIELDS = ['marca','modelo','modelo_original','periodo',
   'codigo_repuesto','codigo_1','codigo_2','codigo_3','codigo_4','codigo_5',
-  'descripcion_estandar','clasificacion','subclasificacion'];
+  'descripcion_estandar','clasificacion','subclasificacion','litraje'];
 
 // ============================================================
 //  UTILIDADES
@@ -295,8 +296,10 @@ const EXPECTED_FIELDS = ['marca','modelo','modelo_original','periodo',
 /** Normaliza cualquier documento Supabase → { _id, fields:[13] } */
 const normalizeDoc = (raw) => {
   if (!raw) return null;
-  if (Array.isArray(raw.fields) && raw.fields.length === 13)
+  if (Array.isArray(raw.fields) && raw.fields.length === 14)
     return { _id: raw._id, fields: raw.fields.map(v => String(v ?? '')) };
+  if (Array.isArray(raw.fields) && raw.fields.length === 13)
+    return { _id: raw._id, fields: [...raw.fields.map(v => String(v ?? '')), ''] };
   // compatibilidad con campos planos
   return {
     _id: raw._id,
@@ -314,6 +317,7 @@ const normalizeDoc = (raw) => {
       String(raw.descripcion_estandar ?? raw.f10 ?? ''),
       String(raw.clasificacion       ?? raw.f11 ?? ''),
       String(raw.subclasificacion    ?? raw.f12 ?? ''),
+      String(raw.litraje             ?? raw.f13 ?? ''),
     ]
   };
 };
@@ -367,6 +371,7 @@ const FIELD_ALIASES = {
   'descripcion_estandar': ['descripcion_estandar','descripcion_berrocal','desc_estandar','estandar','desc_std','descripcion_std','descripcion_est','descripcion','desc'],
   'clasificacion':        ['clasificacion','clasificac','categoria','category','clasi'],
   'subclasificacion':     ['subclasificacion','subclasif','subcategoria','sub','subcat','subclasi'],
+  'litraje':              ['litraje','litros','liters','capacidad','capacity','cc','cilindrada','displacement'],
 };
 
 function parseWorkbook(wb, xlsxLib) {
@@ -1291,7 +1296,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
   const toast  = useToast();
   const listas = useContext(ListasCtx);
   const isNew  = !record?._id;
-  const [form,   setForm]   = useState(() => record ? [...record.fields] : Array(13).fill(''));
+  const [form,   setForm]   = useState(() => record ? [...record.fields] : Array(14).fill(''));
   const [errors, setErrors] = useState([]);
   const [saving, setSaving] = useState(false);
   const [addingNew, setAddingNew] = useState(null); // {field: i, val: ''}
@@ -1323,7 +1328,7 @@ const ModalEdit = ({ record, onSave, onClose }) => {
 
   const labels = ['Marca *','Modelo *','Modelo Original','Período *',
     'Código Repuesto','Código 1','Código 2','Código 3','Código 4','Código 5',
-    'Descripción Estándar','Clasificación','Subclasificación'];
+    'Descripción Estándar','Clasificación','Subclasificación','Litraje'];
 
   const addNewBtn = (i) => (
     <button type="button" onClick={()=>setAddingNew({field:i,val:''})}
@@ -1463,7 +1468,7 @@ const ModalDetail = ({ record, onClose, onEdit }) => {
   if (!record) return null;
   const labels = ['Marca','Modelo','Modelo Original','Período',
     'Código Repuesto','Código 1','Código 2','Código 3','Código 4','Código 5',
-    'Desc. Estándar','Clasificación','Subclasificación'];
+    'Desc. Estándar','Clasificación','Subclasificación','Litraje'];
   return (
     <div className="mo show">
       <div className="md sm">
@@ -1523,9 +1528,9 @@ const ModalImport = ({ onClose, onImport }) => {
       srcCol >= 0 && srcCol < mapping.length ? mapping[srcCol] : -1
     );
     const records = parsed.records.map(row => {
-      const mapped = Array(13).fill('');
+      const mapped = Array(14).fill('');
       fieldRemap.forEach((userDest, autoDest) => {
-        if (userDest >= 0 && userDest < 13 && autoDest < row.length) {
+        if (userDest >= 0 && userDest < 14 && autoDest < row.length) {
           mapped[userDest] = row[autoDest] ?? '';
         }
       });
@@ -2793,7 +2798,7 @@ function CatalogoApp() {
         </div>
         <div className="ac-hact">
           {isAdmin && <button className="btn btn-g"
-            onClick={()=>setModalEdit({_id:null,fields:Array(13).fill('')})}>➕ Nuevo</button>}
+            onClick={()=>setModalEdit({_id:null,fields:Array(14).fill('')})}>➕ Nuevo</button>}
           {isAdmin && <div style={{position:'relative',display:'inline-block'}}>
             <button className="btn btn-c" onClick={()=>setShowBaseMenu(!showBaseMenu)}>📂 Cargar base</button>
             {showBaseMenu && (
@@ -3040,6 +3045,7 @@ function CatalogoApp() {
                   10:()=><span className="cds">{highlightText(f[10],debText)}</span>,
                   11:()=>f[11]?<span className="ct" style={{background:clasiBgColor(f[11])}}>{f[11]}</span>:null,
                   12:()=><span className="cs">{f[12]}</span>,
+                  13:()=>f[13]?<span className="ca">{highlightText(f[13],debText)}</span>:<span className="cs">—</span>,
                 };
                 return (
                   <tr key={rec._id||ri}>

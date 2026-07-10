@@ -278,13 +278,13 @@ const COL_DEFS = [
   { key:7, label:'Código 3',         show:false, width:100 },
   { key:8, label:'Código 4',         show:false, width:100 },
   { key:9, label:'Código 5',         show:false, width:100 },
-  { key:10, label:'Desc. Estándar',  show:true,  width:200 },
+  { key:10, label:'Desc. Estándar',  show:false, width:200 },
   { key:11, label:'Clasificación',   show:true,  width:150 },
   { key:12, label:'Subclasificación',show:true,  width:150 },
   { key:13, label:'Litraje',         show:true,  width:90  },
 ];
-// Ordered display
-const COL_DEFS_ORDER = [0,1,3,13,4,5,6,7,8,9,10,11,12,2];
+// Ordered display: Marca, Modelo, Litraje, Período, Clasificación, Subclasificación, Código, Desc.Estándar (oculto), resto
+const COL_DEFS_ORDER = [0,1,13,3,11,12,4,10,5,6,7,8,9,2];
 
 const EXPECTED_FIELDS = ['marca','modelo','modelo_original','periodo',
   'codigo_repuesto','codigo_1','codigo_2','codigo_3','codigo_4','codigo_5',
@@ -1466,17 +1466,19 @@ const ModalDelete = ({ record, onConfirm, onClose }) => {
 // ============================================================
 const ModalDetail = ({ record, onClose, onEdit }) => {
   if (!record) return null;
-  const labels = ['Marca','Modelo','Modelo Original','Período',
-    'Código Repuesto','Código 1','Código 2','Código 3','Código 4','Código 5',
-    'Desc. Estándar','Clasificación','Subclasificación','Litraje'];
+  const detailLabels = {0:'Marca',1:'Modelo',2:'Modelo Original',3:'Período',
+    4:'Código Repuesto',5:'Código 1',6:'Código 2',7:'Código 3',8:'Código 4',9:'Código 5',
+    10:'Desc. Estándar',11:'Clasificación',12:'Subclasificación',13:'Litraje'};
+  // Mismo orden que la tabla; 10 (Desc. Estándar) oculto hasta segunda orden
+  const detailOrder = [0,1,13,3,11,12,4,5,6,7,8,9,2];
   return (
     <div className="mo show">
       <div className="md sm">
         <div className="mh"><h2>📋 Detalle del Registro</h2><button className="mx" onClick={onClose}>×</button></div>
         <div className="mb">
-          {labels.map((lbl,i) => record.fields[i] ? (
+          {detailOrder.map(i => record.fields[i] ? (
             <div key={i} className="dr">
-              <span className="lb">{lbl}</span><span className="vl">{record.fields[i]}</span>
+              <span className="lb">{detailLabels[i]}</span><span className="vl">{record.fields[i]}</span>
             </div>
           ) : null)}
         </div>
@@ -2508,6 +2510,11 @@ function CatalogoApp() {
     return [...new Set([...SUBCLASIFICACIONES_DEFAULT, ...extraSubs, ...fromRecs])].sort();
   },[records, extraSubs]);
 
+  // Listas SOLO con lo que existe en la data (para filtros avanzados, sin presets)
+  const dataMarcas = useMemo(()=>[...new Set(records.map(r=>r.fields[0]).filter(Boolean))].sort(),[records]);
+  const dataClasif = useMemo(()=>[...new Set(records.map(r=>r.fields[11]).filter(Boolean))].sort(),[records]);
+  const dataSubs   = useMemo(()=>[...new Set(records.map(r=>r.fields[12]).filter(Boolean))].sort(),[records]);
+
   const allDescStd = useMemo(()=>{
     const fromRecs = records.map(r=>r.fields[10]).filter(Boolean);
     return [...new Set([...DESC_STD_DEFAULT, ...extraDescStd, ...fromRecs])].sort();
@@ -2581,20 +2588,23 @@ function CatalogoApp() {
     return [...new Set(records.filter(r=>r.fields[0]===fMarca).map(r=>r.fields[1]).filter(Boolean))].sort();
   },[records,fMarca]);
 
+  const availableLitrajes = useMemo(()=>{
+    let b = fMarca ? records.filter(r=>r.fields[0]===fMarca) : records;
+    if(fModelo) b = b.filter(r=>r.fields[1]===fModelo);
+    return [...new Set(b.map(r=>r.fields[13]).filter(Boolean))].sort();
+  },[records,fMarca,fModelo]);
+
   const availablePeriodos = useMemo(()=>{
     let b = fMarca ? records.filter(r=>r.fields[0]===fMarca) : records;
     if(fModelo) b = b.filter(r=>r.fields[1]===fModelo);
+    if(fLitraje) b = b.filter(r=>r.fields[13]===fLitraje);
     return [...new Set(b.map(r=>r.fields[3]).filter(Boolean))].sort();
-  },[records,fMarca,fModelo]);
+  },[records,fMarca,fModelo,fLitraje]);
 
   const availableSubs = useMemo(()=>{
-    if(!fClasi) return allSubs;
+    if(!fClasi) return dataSubs;
     return [...new Set(records.filter(r=>r.fields[11]===fClasi).map(r=>r.fields[12]).filter(Boolean))].sort();
-  },[records,fClasi,allSubs]);
-
-  const availableLitrajes = useMemo(()=>{
-    return [...new Set(records.map(r=>r.fields[13]).filter(Boolean))].sort();
-  },[records]);
+  },[records,fClasi,dataSubs]);
 
   const filtered = useMemo(()=>{
     let r = records;
@@ -2632,8 +2642,9 @@ function CatalogoApp() {
     conCodigo: records.filter(r=>r.fields[5]).length,
   }),[records]);
 
-  const onMarcaChange  = v=>{setFMarca(v);setFModelo('');setFPeriodo('');setPage(1);};
-  const onModeloChange = v=>{setFModelo(v);setFPeriodo('');setPage(1);};
+  const onMarcaChange  = v=>{setFMarca(v);setFModelo('');setFLitraje('');setFPeriodo('');setPage(1);};
+  const onModeloChange = v=>{setFModelo(v);setFLitraje('');setFPeriodo('');setPage(1);};
+  const onLitrajeChange = v=>{setFLitraje(v);setFPeriodo('');setPage(1);};
   const onClasiChange  = v=>{setFClasi(v);setFSub('');setPage(1);};
   const clearAll = ()=>{
     setFMarca('');setFModelo('');setFPeriodo('');setFClasi('');setFSub('');setFLitraje('');
@@ -2886,12 +2897,12 @@ function CatalogoApp() {
       <div className="ac-sp">
         <div className="ac-fg">
           {[
-            {label:'🅱 Marca', val:fMarca, set:onMarcaChange, opts:allMarcas},
+            {label:'🅱 Marca', val:fMarca, set:onMarcaChange, opts:dataMarcas},
             {label:'🚗 Modelo', val:fModelo, set:onModeloChange, opts:availableModels, placeholder:'Todos los modelos'},
+            {label:'⛽ Litraje', val:fLitraje, set:onLitrajeChange, opts:availableLitrajes, placeholder:'Todos'},
             {label:'📅 Período',   val:fPeriodo,   set:v=>{setFPeriodo(v);setPage(1);}, opts:availablePeriodos, placeholder:'Todos los períodos'},
-            {label:'🔎 Clasificación', val:fClasi, set:onClasiChange, opts:allClasif, placeholder:'Todas'},
+            {label:'🔎 Clasificación', val:fClasi, set:onClasiChange, opts:dataClasif, placeholder:'Todas'},
             {label:'📂 Subclasificación', val:fSub, set:v=>{setFSub(v);setPage(1);}, opts:availableSubs, placeholder:'Todas'},
-            {label:'⛽ Litraje', val:fLitraje, set:v=>{setFLitraje(v);setPage(1);}, opts:availableLitrajes, placeholder:'Todos'},
           ].map(({label,val,set,opts,placeholder='Todas las marcas'})=>(
             <div key={label} className="ac-fl">
               <label>{label}</label>

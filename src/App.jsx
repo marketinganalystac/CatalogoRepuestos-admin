@@ -1675,13 +1675,19 @@ const ModalCols = ({ visibleCols, colOrder, onChange, onReorder, onClose }) => {
 // ============================================================
 //  MODAL — REEMPLAZO MASIVO
 // ============================================================
-const ModalReplace = ({ cols, onReplace, onClose }) => {
+const ModalReplace = ({ cols, records, onReplace, onClose }) => {
   const [fieldIdx, setFieldIdx] = React.useState(0);
   const [searchVal, setSearchVal] = React.useState('');
   const [replaceVal, setReplaceVal] = React.useState('');
   const [matchExact, setMatchExact] = React.useState(false);
   const [running, setRunning] = React.useState(false);
   const [result, setResult] = React.useState(null);
+
+  const fieldOptions = React.useMemo(()=>{
+    return [...new Set(records.map(r=>r.fields[Number(fieldIdx)]).filter(Boolean))].sort();
+  },[records,fieldIdx]);
+
+  const handleFieldChange = (v) => { setFieldIdx(v); setSearchVal(''); setResult(null); };
 
   const doReplace = async () => {
     if (!searchVal.trim()) return;
@@ -1701,15 +1707,19 @@ const ModalReplace = ({ cols, onReplace, onClose }) => {
           <div style={{display:'flex',flexDirection:'column',gap:12}}>
             <div className="fg2">
               <label>Campo a modificar</label>
-              <select value={fieldIdx} onChange={e=>setFieldIdx(e.target.value)} style={{background:'var(--g1)',border:'1.5px solid var(--g3)',borderRadius:7,padding:'8px 11px',fontSize:'0.71rem',width:'100%'}}>
+              <select value={fieldIdx} onChange={e=>handleFieldChange(e.target.value)} style={{background:'var(--g1)',border:'1.5px solid var(--g3)',borderRadius:7,padding:'8px 11px',fontSize:'0.71rem',width:'100%'}}>
                 {cols.map(c=><option key={c.key} value={c.key}>{c.label}</option>)}
               </select>
             </div>
             <div className="fg2">
-              <label>Buscar</label>
+              <label>Buscar <span style={{fontWeight:400,color:'var(--g5)'}}>({fieldOptions.length} valores existentes — elige uno o escribe el tuyo)</span></label>
               <input type="text" value={searchVal} onChange={e=>setSearchVal(e.target.value)}
-                placeholder="Ej: VIGO"
+                list="replace-search-options"
+                placeholder="Ej: VIGO (o selecciona de la lista)"
                 style={{background:'var(--g1)',border:'1.5px solid var(--g3)',borderRadius:7,padding:'8px 11px',fontSize:'0.71rem',width:'100%',outline:'none'}}/>
+              <datalist id="replace-search-options">
+                {fieldOptions.map(v=><option key={v} value={v}/>)}
+              </datalist>
             </div>
             <div className="fg2">
               <label>Reemplazar por</label>
@@ -2776,15 +2786,18 @@ function CatalogoApp() {
 
   // ── Exportar XLS ──
   const exportCSV = async ()=>{
-    if(!filtered.length){toast('No hay datos para exportar.','error');return;}
     try{
+      toast('📥 Descargando base completa desde Supabase…','info');
+      const rawAll = await fsGetAll(COL_RECORDS);
+      const allRows = rawAll.map(normalizeDoc).filter(Boolean);
+      if(!allRows.length){toast('No hay datos para exportar.','error');return;}
       const xlsxLib = await loadXLSX();
-      const rows = [COL_DEFS.map(c=>c.label), ...filtered.map(r=>r.fields)];
+      const rows = [COL_DEFS.map(c=>c.label), ...allRows.map(r=>r.fields)];
       const ws = xlsxLib.utils.aoa_to_sheet(rows);
       const wb = xlsxLib.utils.book_new();
       xlsxLib.utils.book_append_sheet(wb, ws, 'Catálogo');
       xlsxLib.writeFile(wb, `catalogo_${new Date().toISOString().slice(0,10)}.xlsx`);
-      toast(`📥 ${filtered.length} registros exportados como Excel.`,'success');
+      toast(`📥 ${allRows.length.toLocaleString()} registros exportados (base completa).`,'success');
     }catch(e){toast('Error al exportar: '+e.message,'error');}
   };
 
@@ -3111,7 +3124,7 @@ function CatalogoApp() {
       {showImport  && <ModalImport  onClose={()=>setShowImport(false)}  onImport={handleImport}/>}
       {showCols    && <ModalCols    visibleCols={visibleCols} colOrder={colOrder} onChange={(i,s)=>setVisibleCols(v=>v.map((c,ci)=>ci===i?{...c,show:s}:c))} onReorder={setColOrder} onClose={()=>setShowCols(false)}/>}
       {showHistory && <ModalHistory changelog={changelog} onClose={()=>setShowHistory(false)}/>}
-      {showReplace && <ModalReplace cols={COL_DEFS} onReplace={handleBulkReplace} onClose={()=>setShowReplace(false)}/>}
+      {showReplace && <ModalReplace cols={COL_DEFS} records={records} onReplace={handleBulkReplace} onClose={()=>setShowReplace(false)}/>}
     </>
     </ListasCtx.Provider>
   );

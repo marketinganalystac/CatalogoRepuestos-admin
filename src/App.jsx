@@ -1675,6 +1675,46 @@ const ModalCols = ({ visibleCols, colOrder, onChange, onReorder, onClose }) => {
 // ============================================================
 //  MODAL — REEMPLAZO MASIVO
 // ============================================================
+// Combobox: input de texto libre + lista desplegable filtrable de valores existentes
+const ComboBox = ({ value, onChange, options, placeholder }) => {
+  const [open, setOpen] = React.useState(false);
+  const boxRef = React.useRef(null);
+
+  React.useEffect(()=>{
+    const onDocClick = e => { if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  },[]);
+
+  const filtered = React.useMemo(()=>{
+    const q = value.trim().toLowerCase();
+    const list = q ? options.filter(o=>o.toLowerCase().includes(q)) : options;
+    return list.slice(0,150);
+  },[options,value]);
+
+  return (
+    <div ref={boxRef} style={{position:'relative'}}>
+      <input type="text" value={value} onChange={e=>{onChange(e.target.value);setOpen(true);}}
+        onFocus={()=>setOpen(true)}
+        placeholder={placeholder}
+        style={{background:'var(--g1)',border:'1.5px solid var(--g3)',borderRadius:7,padding:'8px 11px',fontSize:'0.71rem',width:'100%',outline:'none'}}/>
+      {open && filtered.length>0 && (
+        <div style={{position:'absolute',top:'100%',left:0,right:0,marginTop:3,maxHeight:180,overflowY:'auto',
+          background:'#fff',border:'1px solid var(--g3)',borderRadius:7,boxShadow:'0 6px 16px rgba(0,0,0,.15)',zIndex:600}}>
+          {filtered.map(opt=>(
+            <div key={opt} onClick={()=>{onChange(opt);setOpen(false);}}
+              style={{padding:'7px 11px',fontSize:'0.71rem',cursor:'pointer'}}
+              onMouseEnter={e=>e.currentTarget.style.background='var(--bl)'}
+              onMouseLeave={e=>e.currentTarget.style.background='none'}>
+              {opt}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ModalReplace = ({ cols, records, onReplace, onClose }) => {
   const [fieldIdx, setFieldIdx] = React.useState(0);
   const [searchVal, setSearchVal] = React.useState('');
@@ -1713,13 +1753,7 @@ const ModalReplace = ({ cols, records, onReplace, onClose }) => {
             </div>
             <div className="fg2">
               <label>Buscar <span style={{fontWeight:400,color:'var(--g5)'}}>({fieldOptions.length} valores existentes — elige uno o escribe el tuyo)</span></label>
-              <input type="text" value={searchVal} onChange={e=>setSearchVal(e.target.value)}
-                list="replace-search-options"
-                placeholder="Ej: VIGO (o selecciona de la lista)"
-                style={{background:'var(--g1)',border:'1.5px solid var(--g3)',borderRadius:7,padding:'8px 11px',fontSize:'0.71rem',width:'100%',outline:'none'}}/>
-              <datalist id="replace-search-options">
-                {fieldOptions.map(v=><option key={v} value={v}/>)}
-              </datalist>
+              <ComboBox value={searchVal} onChange={setSearchVal} options={fieldOptions} placeholder="Ej: VIGO (o selecciona de la lista)"/>
             </div>
             <div className="fg2">
               <label>Reemplazar por</label>

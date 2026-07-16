@@ -2555,9 +2555,7 @@ function CatalogoApp() {
   },[records, extraSubs]);
 
   // Listas SOLO con lo que existe en la data (para filtros avanzados, sin presets)
-  const dataMarcas = useMemo(()=>[...new Set(records.map(r=>r.fields[0]).filter(Boolean))].sort(),[records]);
-  const dataClasif = useMemo(()=>[...new Set(records.map(r=>r.fields[11]).filter(Boolean))].sort(),[records]);
-  const dataSubs   = useMemo(()=>[...new Set(records.map(r=>r.fields[12]).filter(Boolean))].sort(),[records]);
+
 
   const allDescStd = useMemo(()=>{
     const fromRecs = records.map(r=>r.fields[10]).filter(Boolean);
@@ -2627,28 +2625,63 @@ function CatalogoApp() {
     debRef.current = setTimeout(()=>setDebText(v), 280);
   };
 
-  const availableModels = useMemo(()=>{
-    if(!fMarca) return [];
-    return [...new Set(records.filter(r=>r.fields[0]===fMarca).map(r=>r.fields[1]).filter(Boolean))].sort();
-  },[records,fMarca]);
+  // ── Filtrado cruzado: cada filtro solo muestra valores que EXISTEN
+  //    en la data, dado el resto de filtros ya seleccionados ──
+  const applyActiveFilters = useCallback((list, exclude)=>{
+    let r = list;
+    if(exclude!=='marca'   && fMarca)   r = r.filter(x=>x.fields[0]===fMarca);
+    if(exclude!=='modelo'  && fModelo)  r = r.filter(x=>x.fields[1]===fModelo);
+    if(exclude!=='litraje' && fLitraje) r = r.filter(x=>x.fields[13]===fLitraje);
+    if(exclude!=='periodo' && fPeriodo) r = r.filter(x=>x.fields[3]===fPeriodo);
+    if(exclude!=='clasi'   && fClasi)   r = r.filter(x=>x.fields[11]===fClasi);
+    if(exclude!=='sub'     && fSub)     r = r.filter(x=>x.fields[12]===fSub);
+    return r;
+  },[fMarca,fModelo,fLitraje,fPeriodo,fClasi,fSub]);
 
-  const availableLitrajes = useMemo(()=>{
-    let b = fMarca ? records.filter(r=>r.fields[0]===fMarca) : records;
-    if(fModelo) b = b.filter(r=>r.fields[1]===fModelo);
-    return [...new Set(b.map(r=>r.fields[13]).filter(Boolean))].sort();
-  },[records,fMarca,fModelo]);
+  const availableMarcas = useMemo(()=>
+    [...new Set(applyActiveFilters(records,'marca').map(r=>r.fields[0]).filter(Boolean))].sort(),
+    [records,applyActiveFilters]);
 
-  const availablePeriodos = useMemo(()=>{
-    let b = fMarca ? records.filter(r=>r.fields[0]===fMarca) : records;
-    if(fModelo) b = b.filter(r=>r.fields[1]===fModelo);
-    if(fLitraje) b = b.filter(r=>r.fields[13]===fLitraje);
-    return [...new Set(b.map(r=>r.fields[3]).filter(Boolean))].sort();
-  },[records,fMarca,fModelo,fLitraje]);
+  const availableModels = useMemo(()=>
+    [...new Set(applyActiveFilters(records,'modelo').map(r=>r.fields[1]).filter(Boolean))].sort(),
+    [records,applyActiveFilters]);
 
-  const availableSubs = useMemo(()=>{
-    if(!fClasi) return dataSubs;
-    return [...new Set(records.filter(r=>r.fields[11]===fClasi).map(r=>r.fields[12]).filter(Boolean))].sort();
-  },[records,fClasi,dataSubs]);
+  const availableLitrajes = useMemo(()=>
+    [...new Set(applyActiveFilters(records,'litraje').map(r=>r.fields[13]).filter(Boolean))].sort(),
+    [records,applyActiveFilters]);
+
+  const availablePeriodos = useMemo(()=>
+    [...new Set(applyActiveFilters(records,'periodo').map(r=>r.fields[3]).filter(Boolean))].sort(),
+    [records,applyActiveFilters]);
+
+  const availableClasif = useMemo(()=>
+    [...new Set(applyActiveFilters(records,'clasi').map(r=>r.fields[11]).filter(Boolean))].sort(),
+    [records,applyActiveFilters]);
+
+  const availableSubs = useMemo(()=>
+    [...new Set(applyActiveFilters(records,'sub').map(r=>r.fields[12]).filter(Boolean))].sort(),
+    [records,applyActiveFilters]);
+
+  // Si el valor seleccionado en un filtro deja de existir entre las
+  // opciones disponibles (porque otro filtro cambió), se limpia solo
+  useEffect(()=>{
+    if(fMarca   && !availableMarcas.includes(fMarca))     setFMarca('');
+  },[availableMarcas]); // eslint-disable-line
+  useEffect(()=>{
+    if(fModelo  && !availableModels.includes(fModelo))    setFModelo('');
+  },[availableModels]); // eslint-disable-line
+  useEffect(()=>{
+    if(fLitraje && !availableLitrajes.includes(fLitraje)) setFLitraje('');
+  },[availableLitrajes]); // eslint-disable-line
+  useEffect(()=>{
+    if(fPeriodo && !availablePeriodos.includes(fPeriodo)) setFPeriodo('');
+  },[availablePeriodos]); // eslint-disable-line
+  useEffect(()=>{
+    if(fClasi   && !availableClasif.includes(fClasi))     setFClasi('');
+  },[availableClasif]); // eslint-disable-line
+  useEffect(()=>{
+    if(fSub     && !availableSubs.includes(fSub))         setFSub('');
+  },[availableSubs]); // eslint-disable-line
 
   const filtered = useMemo(()=>{
     let r = records;
@@ -2686,10 +2719,12 @@ function CatalogoApp() {
     conCodigo: records.filter(r=>r.fields[5]).length,
   }),[records]);
 
-  const onMarcaChange  = v=>{setFMarca(v);setFModelo('');setFLitraje('');setFPeriodo('');setPage(1);};
-  const onModeloChange = v=>{setFModelo(v);setFLitraje('');setFPeriodo('');setPage(1);};
-  const onLitrajeChange = v=>{setFLitraje(v);setFPeriodo('');setPage(1);};
-  const onClasiChange  = v=>{setFClasi(v);setFSub('');setPage(1);};
+  const onMarcaChange  = v=>{setFMarca(v);setPage(1);};
+  const onModeloChange = v=>{setFModelo(v);setPage(1);};
+  const onLitrajeChange = v=>{setFLitraje(v);setPage(1);};
+  const onPeriodoChange = v=>{setFPeriodo(v);setPage(1);};
+  const onClasiChange  = v=>{setFClasi(v);setPage(1);};
+  const onSubChange    = v=>{setFSub(v);setPage(1);};
   const clearAll = ()=>{
     setFMarca('');setFModelo('');setFPeriodo('');setFClasi('');setFSub('');setFLitraje('');
     setFText('');setDebText('');setSortCol(-1);setSortAsc(true);setPage(1);
@@ -2944,21 +2979,32 @@ function CatalogoApp() {
       <div className="ac-sp">
         <div className="ac-fg">
           {[
-            {label:'🅱 Marca', val:fMarca, set:onMarcaChange, opts:dataMarcas},
+            {label:'🅱 Marca', val:fMarca, set:onMarcaChange, opts:availableMarcas},
             {label:'🚗 Modelo', val:fModelo, set:onModeloChange, opts:availableModels, placeholder:'Todos los modelos'},
             {label:'⛽ Litraje', val:fLitraje, set:onLitrajeChange, opts:availableLitrajes, placeholder:'Todos'},
-            {label:'📅 Período',   val:fPeriodo,   set:v=>{setFPeriodo(v);setPage(1);}, opts:availablePeriodos, placeholder:'Todos los períodos'},
-            {label:'🔎 Clasificación', val:fClasi, set:onClasiChange, opts:dataClasif, placeholder:'Todas'},
-            {label:'📂 Subclasificación', val:fSub, set:v=>{setFSub(v);setPage(1);}, opts:availableSubs, placeholder:'Todas'},
-          ].map(({label,val,set,opts,placeholder='Todas las marcas'})=>(
-            <div key={label} className="ac-fl">
-              <label>{label}</label>
-              <select value={val} onChange={e=>set(e.target.value)}>
-                <option value="">{placeholder}</option>
-                {opts.map(o=><option key={o}>{o}</option>)}
-              </select>
-            </div>
-          ))}
+            {label:'📅 Período',   val:fPeriodo,   set:onPeriodoChange, opts:availablePeriodos, placeholder:'Todos los períodos'},
+            {label:'🔎 Clasificación', val:fClasi, set:onClasiChange, opts:availableClasif, placeholder:'Todas'},
+            {label:'📂 Subclasificación', val:fSub, set:onSubChange, opts:availableSubs, placeholder:'Todas'},
+          ].map(({label,val,set,opts,placeholder='Todas las marcas'})=>{
+            // Condicional según la data: si no hay opciones disponibles
+            // (o solo una y ya está seleccionada), se deshabilita el filtro
+            const noOptions = opts.length===0;
+            return (
+              <div key={label} className="ac-fl">
+                <label>{label}</label>
+                <select
+                  value={val}
+                  onChange={e=>set(e.target.value)}
+                  disabled={noOptions}
+                  title={noOptions?'No hay valores disponibles para la selección actual':undefined}
+                  style={noOptions?{opacity:.5,cursor:'not-allowed'}:undefined}
+                >
+                  <option value="">{noOptions?'— Sin opciones —':placeholder}</option>
+                  {opts.map(o=><option key={o}>{o}</option>)}
+                </select>
+              </div>
+            );
+          })}
         </div>
         <div className="ac-sr">
           <div className="ac-fl">

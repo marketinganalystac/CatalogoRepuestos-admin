@@ -1020,6 +1020,7 @@ tbody td{padding:7px 13px;vertical-align:middle;border-bottom:1px solid var(--g2
 .spin{display:inline-block;width:22px;height:22px;border:3px solid var(--bl);
   border-top-color:var(--bm);border-radius:50%;animation:spin .75s linear infinite;margin-right:8px;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse-warn{0%,100%{box-shadow:0 0 0 0 rgba(198,40,40,.35)}50%{box-shadow:0 0 0 5px rgba(198,40,40,0)}}
 .empty{text-align:center;padding:60px 20px;color:var(--g5);background:#fff}
 .empty .icon{font-size:2.87rem;margin-bottom:10px}
 
@@ -3094,29 +3095,33 @@ function CatalogoApp() {
             <div style={{position:'relative',display:'inline-block'}}>
               <button
                 onClick={()=>setShowSourceMenu(v=>!v)}
-                title="Elegir qué base de datos ver/editar"
+                title={isPreviewing
+                  ? '⚠️ Cambio sin publicar: los demás usuarios no ven esto todavía'
+                  : 'Elegir qué base de datos ver/editar'}
                 style={{
                   display:'flex',alignItems:'center',gap:6,
                   padding:'4px 10px',borderRadius:20,cursor:'pointer',
-                  fontSize:'0.62rem',fontWeight:700,border:'1.5px solid',
-                  borderColor: dataSource==='contingencia' ? '#D4A800' : '#0060A0',
+                  fontSize:'0.62rem',fontWeight:700,
+                  border: isPreviewing ? '1.5px dashed #C62828' : '1.5px solid',
+                  borderColor: isPreviewing ? '#C62828' : (dataSource==='contingencia' ? '#D4A800' : '#0060A0'),
                   color: dataSource==='contingencia' ? '#8a6d00' : '#0060A0',
                   background: dataSource==='contingencia' ? '#FFF8E1' : '#E3F2FD',
+                  animation: isPreviewing ? 'pulse-warn 1.5s ease-in-out infinite' : undefined,
                 }}>
                 {dataSource==='contingencia' ? '🟡 Contingencia' : '🟢 Producción'}
-                {isPreviewing && <span style={{fontSize:'0.55rem',opacity:.75}}>(vista previa)</span>}
+                {isPreviewing && <span style={{fontSize:'0.55rem',color:'#C62828',fontWeight:800}}>⚠ sin publicar</span>}
                 <span style={{fontSize:'0.55rem'}}>▾</span>
               </button>
               {showSourceMenu && (
                 <div style={{position:'absolute',top:'100%',left:0,marginTop:4,background:'#fff',
                   border:'1px solid var(--g3)',borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,.15)',
-                  zIndex:500,minWidth:260,padding:8}}>
+                  zIndex:500,minWidth:300,padding:8}}>
                   <div style={{fontSize:'0.6rem',color:'var(--g5)',padding:'4px 8px 8px'}}>
-                    Elige qué base quieres ver/editar en tu pantalla.
+                    1️⃣ Elige qué base quieres ver/editar en tu pantalla.
                   </div>
                   {Object.values(DATA_SOURCES).map(src=>(
                     <button key={src.key}
-                      onClick={()=>{previewSource(src.key);setShowSourceMenu(false);}}
+                      onClick={()=>previewSource(src.key)}
                       style={{
                         width:'100%',textAlign:'left',padding:'8px 10px',borderRadius:6,
                         border:'none',cursor:'pointer',fontSize:'0.68rem',
@@ -3125,21 +3130,36 @@ function CatalogoApp() {
                         marginBottom:2,
                       }}>
                       {src.key==='contingencia'?'🟡':'🟢'} {src.label}
-                      {activeSource===src.key && <span style={{marginLeft:6,fontSize:'0.55rem',color:'var(--grn)'}}>· activa para todos</span>}
+                      {activeSource===src.key && <span style={{marginLeft:6,fontSize:'0.55rem',color:'var(--grn)'}}>· activa para todos ahora</span>}
                     </button>
                   ))}
-                  <div style={{borderTop:'1px solid var(--g2)',marginTop:6,paddingTop:6}}>
-                    <button
-                      onClick={()=>{publishActiveSource(dataSource);setShowSourceMenu(false);}}
-                      disabled={activeSource===dataSource}
-                      style={{
-                        width:'100%',textAlign:'left',padding:'8px 10px',borderRadius:6,
-                        border:'none',cursor:activeSource===dataSource?'default':'pointer',
-                        fontSize:'0.65rem',opacity:activeSource===dataSource?.4:1,
-                        background:'transparent',color:'var(--bm)',fontWeight:600,
-                      }}>
-                      ✓ Definir "{DATA_SOURCES[dataSource].label}" como fuente activa para todos
-                    </button>
+
+                  <div style={{borderTop:'1px solid var(--g2)',marginTop:6,paddingTop:8}}>
+                    {isPreviewing ? (
+                      <>
+                        <div style={{
+                          fontSize:'0.6rem',color:'#8a4b00',background:'#FFF3CD',
+                          border:'1px solid #FFE29A',borderRadius:6,padding:'6px 8px',marginBottom:6,
+                        }}>
+                          ⚠️ Estás <strong>solo previsualizando</strong> "{DATA_SOURCES[dataSource].label}".
+                          Los demás usuarios SIGUEN viendo "{DATA_SOURCES[activeSource].label}"
+                          hasta que hagas clic abajo 👇
+                        </div>
+                        <button
+                          onClick={()=>{publishActiveSource(dataSource);setShowSourceMenu(false);}}
+                          style={{
+                            width:'100%',textAlign:'center',padding:'10px 10px',borderRadius:6,
+                            border:'none',cursor:'pointer',fontSize:'0.68rem',fontWeight:700,
+                            background:'var(--bm,#0060A0)',color:'#fff',
+                          }}>
+                          2️⃣ ✓ Definir "{DATA_SOURCES[dataSource].label}" como fuente activa para TODOS
+                        </button>
+                      </>
+                    ) : (
+                      <div style={{fontSize:'0.6rem',color:'var(--grn,#2e7d32)',padding:'4px 8px'}}>
+                        ✓ Ya estás viendo la fuente que ven todos los usuarios.
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

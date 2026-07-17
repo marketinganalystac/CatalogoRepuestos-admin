@@ -352,14 +352,40 @@ const nowDT = () => {
 
 const highlightText = (text, query) => {
   if (!query || !text) return String(text ?? '');
-  const esc   = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const parts = String(text).split(new RegExp(`(${esc})`, 'gi'));
-  return parts.map((p, i) =>
-    p.toLowerCase() === query.toLowerCase()
-      ? <mark key={i} className="ac-mark">{p}</mark>
-      : p
-  );
+  const tokens = normalizeSearch(query).split(' ').filter(Boolean);
+  if (!tokens.length) return String(text);
+  const pattern = tokens.map(tokenToFlexRegexSrc).filter(Boolean).join('|');
+  if (!pattern) return String(text);
+  let regex;
+  try { regex = new RegExp(`(${pattern})`, 'gi'); } catch { return String(text); }
+  const parts = String(text).split(regex);
+  return parts.map((p, i) => (i % 2 === 1 ? <mark key={i} className="ac-mark">{p}</mark> : p));
 };
+
+// ── Búsqueda avanzada por grupo de palabras ──
+// Permite encontrar "mazda cx5 rotula" == "cx-5 rotulas mazda" == "rotúlas mazda":
+// ignora acentos, mayúsculas, guiones/underscores, y no exige orden entre palabras.
+const ACCENT_GROUPS = { a:'[aáàäâ]', e:'[eéèëê]', i:'[iíìïî]', o:'[oóòöô]', u:'[uúùüû]', n:'[nñ]' };
+
+function normalizeSearch(s) {
+  return String(s ?? '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // quita tildes/diacríticos
+    .replace(/[-_/.]/g, '')                             // funde "cx-5" → "cx5"
+    .replace(/[^a-z0-9\s]/g, ' ')                        // resto de puntuación → espacio
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Convierte un token normalizado en una fuente de regex tolerante a
+// tildes y a guiones/espacios intercalados (para resaltar en el texto original)
+function tokenToFlexRegexSrc(tok) {
+  let src = '';
+  for (const ch of tok.toLowerCase()) {
+    if (/[a-z0-9]/.test(ch)) src += (ACCENT_GROUPS[ch] || ch) + '[-\\s]*';
+  }
+  return src;
+}
 
 // Normaliza un header de columna: quita acentos, ñ→n, espacios→_, minúsculas
 function normalizeHeader(h) {
@@ -512,15 +538,25 @@ const fsGetActiveSource = async () => {
     .select('active_source')
     .eq('id', 1)
     .maybeSingle();
+  if (error) console.error('[app_settings] error leyendo fuente activa:', error.message);
   if (error || !data) return 'produccion'; // fallback si la tabla no existe aún
   return DATA_SOURCES[data.active_source] ? data.active_source : 'produccion';
 };
 
+// IMPORTANTE: usa `supabaseSession` (cliente CON el JWT del usuario logueado),
+// no `supabase` (cliente anónimo sin sesión). La política RLS de escritura
+// exige auth.uid() para validar que quien escribe es admin — con el cliente
+// anónimo esa condición nunca se cumple y el upsert se bloquea EN SILENCIO
+// (no lanza error, pero no persiste el cambio).
 const fsSetActiveSource = async (sourceKey) => {
-  const { error } = await supabase
+  const { data, error } = await supabaseSession
     .from(COL_SETTINGS)
-    .upsert({ id: 1, active_source: sourceKey });
+    .upsert({ id: 1, active_source: sourceKey })
+    .select();
   if (error) throw new Error(error.message);
+  if (!data || data.length === 0) {
+    throw new Error('La base de datos no aplicó el cambio (posible bloqueo de RLS / permisos). Verifica que tu usuario tenga rol admin en user_roles.');
+  }
 };
 
 // ============================================================
@@ -2812,6 +2848,14 @@ function CatalogoApp() {
     if(fSub     && !availableSubs.includes(fSub))         setFSub('');
   },[availableSubs]); // eslint-disable-line
 
+  // Índice de búsqueda: normaliza cada registro UNA vez cuando cambian los
+  // datos (no en cada tecla), para que la búsqueda tokenizada sea rápida
+  const searchIndex = useMemo(()=>{
+    const idx = new Map();
+    records.forEach(rec => idx.set(rec._id, normalizeSearch(rec.fields.join(' '))));
+    return idx;
+  },[records]);
+
   const filtered = useMemo(()=>{
     let r = records;
     if(fMarca)  r=r.filter(x=>x.fields[0]===fMarca);
@@ -2820,14 +2864,22 @@ function CatalogoApp() {
     if(fClasi)  r=r.filter(x=>x.fields[11]===fClasi);
     if(fSub)    r=r.filter(x=>x.fields[12]===fSub);
     if(fLitraje) r=r.filter(x=>x.fields[13]===fLitraje);
-    if(debText){const t=debText.toLowerCase(); r=r.filter(x=>x.fields.some(f=>String(f).toLowerCase().includes(t)));}
+    if(debText){
+      const tokens = normalizeSearch(debText).split(' ').filter(Boolean);
+      if(tokens.length){
+        r = r.filter(x=>{
+          const txt = searchIndex.get(x._id) ?? normalizeSearch(x.fields.join(' '));
+          return tokens.every(t=>txt.includes(t));
+        });
+      }
+    }
     if(sortCol>=0) r=[...r].sort((a,b)=>{
       const av=String(a.fields[sortCol]||'').toLowerCase();
       const bv=String(b.fields[sortCol]||'').toLowerCase();
       return sortAsc?av.localeCompare(bv):bv.localeCompare(av);
     });
     return r;
-  },[records,fMarca,fModelo,fPeriodo,fClasi,fSub,fLitraje,debText,sortCol,sortAsc]);
+  },[records,fMarca,fModelo,fPeriodo,fClasi,fSub,fLitraje,debText,sortCol,sortAsc,searchIndex]);
 
   // ── Auto-activar decodificador al buscar en la tabla ──
   useEffect(() => {

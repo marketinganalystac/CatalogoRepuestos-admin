@@ -245,6 +245,23 @@ const PAGE_SIZE     = 50;
 const COL_RECORDS   = 'repuestos';
 const COL_CHANGELOG = 'changelog';
 
+// ── Fuentes de datos: Producción vs Contingencia ──
+// Permite cargar/ver una base provisional (p.ej. mientras se depura la real)
+// sin tocar la tabla de producción. Ambas tablas deben tener el mismo
+// esquema que `repuestos` (14 columnas 'fields' + id).
+const DATA_SOURCES = {
+  produccion:   { key:'produccion',   label:'Producción',   table:'repuestos' },
+  contingencia: { key:'contingencia', label:'Contingencia', table:'repuestos_contingencia' },
+};
+// Tabla de configuración global (1 fila) que define qué fuente ven
+// TODOS los usuarios por defecto. Requiere crearla en Supabase:
+//   create table app_settings (id int primary key, active_source text);
+//   insert into app_settings (id, active_source) values (1, 'produccion');
+const COL_SETTINGS  = 'app_settings';
+// Clave de sessionStorage para que un admin pueda "previsualizar" una
+// fuente distinta SOLO en su pestaña, sin afectar a los demás usuarios
+const PREVIEW_SOURCE_KEY = 'ac_preview_source';
+
 const MARCAS_DEFAULT = ['CHEVROLET','DAIHATSU','FORD','HONDA','HYUNDAI',
   'ISUZU','KIA','MAZDA','MITSUBISHI','NISSAN','SUZUKI','TOYOTA'];
 
@@ -283,8 +300,8 @@ const COL_DEFS = [
   { key:12, label:'Subclasificación',show:true,  width:150 },
   { key:13, label:'Litraje',         show:true,  width:90  },
 ];
-// Ordered display: Marca, Modelo, Litraje, Período, Clasificación, Subclasificación, Código, Desc.Estándar (oculto), resto
-const COL_DEFS_ORDER = [0,1,13,3,11,12,4,10,5,6,7,8,9,2];
+// Ordered display: Marca, Modelo, Período, Litraje, Clasificación, Subclasificación, Código, Desc.Estándar (oculto), resto
+const COL_DEFS_ORDER = [0,1,3,13,11,12,4,10,5,6,7,8,9,2];
 
 const EXPECTED_FIELDS = ['marca','modelo','modelo_original','periodo',
   'codigo_repuesto','codigo_1','codigo_2','codigo_3','codigo_4','codigo_5',
@@ -455,17 +472,17 @@ const fsAdd = async (col, data) => {
   return String(row.id);
 };
 
-const fsUpdate = async (id, data) => {
+const fsUpdate = async (id, data, col = COL_RECORDS) => {
   const { error } = await supabase
-    .from(COL_RECORDS)
+    .from(col)
     .update({ ...data })
     .eq('id', id);
   if (error) throw new Error(error.message);
 };
 
-const fsDelete = async (id) => {
+const fsDelete = async (id, col = COL_RECORDS) => {
   const { error } = await supabase
-    .from(COL_RECORDS)
+    .from(col)
     .delete()
     .eq('id', id);
   if (error) throw new Error(error.message);
@@ -478,12 +495,31 @@ const fsAddLog = async (entry) => {
   if (error) throw new Error(error.message);
 };
 
-const fsDeleteAll = async () => {
+const fsDeleteAll = async (col = COL_RECORDS) => {
   // Supabase requiere un filtro; usamos gt para UUIDs/integers cubrir todos los registros
   const { error } = await supabase
-    .from(COL_RECORDS)
+    .from(col)
     .delete()
     .not('id', 'is', null);
+  if (error) throw new Error(error.message);
+};
+
+// Fuente de datos activa GLOBAL (afecta a todos los usuarios que no
+// tengan una previsualización local en su sessionStorage)
+const fsGetActiveSource = async () => {
+  const { data, error } = await supabase
+    .from(COL_SETTINGS)
+    .select('active_source')
+    .eq('id', 1)
+    .maybeSingle();
+  if (error || !data) return 'produccion'; // fallback si la tabla no existe aún
+  return DATA_SOURCES[data.active_source] ? data.active_source : 'produccion';
+};
+
+const fsSetActiveSource = async (sourceKey) => {
+  const { error } = await supabase
+    .from(COL_SETTINGS)
+    .upsert({ id: 1, active_source: sourceKey });
   if (error) throw new Error(error.message);
 };
 
@@ -1494,13 +1530,14 @@ const ModalDetail = ({ record, onClose, onEdit }) => {
 // ============================================================
 //  MODAL — IMPORTAR
 // ============================================================
-const ModalImport = ({ onClose, onImport }) => {
+const ModalImport = ({ onClose, onImport, defaultTarget='produccion' }) => {
   const toast    = useToast();
   const fileRef  = useRef(null);
   const [parsed,  setParsed]  = useState(null);
   const [mapping, setMapping] = useState([]);
   const [isDrag,  setIsDrag]  = useState(false);
   const [loading, setLoading] = useState(false);
+  const [target,  setTarget]  = useState(defaultTarget); // 'produccion' | 'contingencia'
 
   const processFile = async (file) => {
     if (!file) return;
@@ -1539,7 +1576,7 @@ const ModalImport = ({ onClose, onImport }) => {
       return mapped;
     });
     onClose();
-    await onImport(records, mode);
+    await onImport(records, mode, target);
   };
 
   return (
@@ -1547,6 +1584,35 @@ const ModalImport = ({ onClose, onImport }) => {
       <div className="md">
         <div className="mh"><h2>📂 Cargar Base de Datos</h2><button className="mx" onClick={onClose}>×</button></div>
         <div className="mb">
+          {/* Selector de destino: a qué base se va a cargar */}
+          <div style={{
+            display:'flex', alignItems:'center', gap:10, marginBottom:14,
+            padding:'10px 12px', borderRadius:8,
+            background: target==='contingencia' ? 'var(--am-bg,#FFF8E1)' : 'var(--bl-bg,#E3F2FD)',
+            border: `1.5px solid ${target==='contingencia' ? '#D4A800' : '#0060A0'}`
+          }}>
+            <span style={{fontSize:'0.67rem',fontWeight:700,color:'var(--g7)'}}>🗄 Cargar a:</span>
+            <div style={{display:'flex',gap:6}}>
+              <button type="button"
+                onClick={()=>setTarget('produccion')}
+                className={`btn ${target==='produccion'?'btn-p':'btn-o'}`}
+                style={{fontSize:'0.62rem',padding:'5px 10px'}}>
+                🟢 Producción
+              </button>
+              <button type="button"
+                onClick={()=>setTarget('contingencia')}
+                className={`btn ${target==='contingencia'?'btn-org':'btn-o'}`}
+                style={{fontSize:'0.62rem',padding:'5px 10px'}}>
+                🟡 Contingencia
+              </button>
+            </div>
+            <span style={{fontSize:'0.58rem',color:'var(--g5)',marginLeft:'auto'}}>
+              {target==='contingencia'
+                ? 'Base provisional — no afecta lo que ven los demás usuarios'
+                : 'Base real que ven todos los usuarios'}
+            </span>
+          </div>
+
           <div
             className={`ib${isDrag?' drag':''}`}
             onClick={()=>fileRef.current?.click()}
@@ -1607,6 +1673,7 @@ const ModalImport = ({ onClose, onImport }) => {
           <div className="wb">
             ⚠ <strong>Reemplazar</strong> borra todo y carga desde el archivo.
             <strong> Agregar</strong> añade al catálogo sin borrar nada.
+            <br/>Destino seleccionado: <strong>{target==='contingencia'?'🟡 Contingencia':'🟢 Producción'}</strong>
           </div>
         </div>
         <div className="mf">
@@ -2503,6 +2570,36 @@ function CatalogoApp() {
   const [changelog, setChangelog] = useState([]);
   const [loadProgress, setLoadProgress] = useState({ active:false, pct:0, msg:'', indeterminate:true });
 
+  // ── Fuente de datos: Producción vs Contingencia ──
+  // `activeSource` = fuente global (definida en app_settings, aplica a todos)
+  // `dataSource`   = fuente que este usuario está VIENDO ahora mismo
+  //                  (por defecto = activeSource; un admin puede previsualizar
+  //                  la otra fuente solo en su pestaña vía sessionStorage)
+  const [activeSource, setActiveSource] = useState('produccion');
+  const [dataSource, setDataSource] = useState(()=>{
+    try { return sessionStorage.getItem(PREVIEW_SOURCE_KEY) || 'produccion'; }
+    catch { return 'produccion'; }
+  });
+  const currentTable = DATA_SOURCES[dataSource]?.table || DATA_SOURCES.produccion.table;
+  const isPreviewing = dataSource !== activeSource;
+
+  // Cambia SOLO la vista de este usuario (no afecta a nadie más)
+  const previewSource = (key)=>{
+    setDataSource(key);
+    try { sessionStorage.setItem(PREVIEW_SOURCE_KEY, key); } catch {}
+  };
+  // Define la fuente activa para TODOS los usuarios (requiere admin)
+  const publishActiveSource = async (key)=>{
+    try {
+      await fsSetActiveSource(key);
+      setActiveSource(key);
+      previewSource(key); // el admin también pasa a ver la fuente publicada
+      toast(`✅ "${DATA_SOURCES[key].label}" es ahora la fuente activa para todos los usuarios`, 'success');
+    } catch(e) {
+      toast('❌ No se pudo actualizar la fuente activa: ' + e.message, 'error');
+    }
+  };
+
   const [fMarca,  setFMarca]  = useState('');
   const [fModelo, setFModelo] = useState('');
   const [fPeriodo, setFPeriodo]   = useState('');
@@ -2528,6 +2625,7 @@ function CatalogoApp() {
   const [selectedCode, setSelectedCode] = useState(null); // Para decodificador automático
   const [showDec, setShowDec] = useState(false); // Mostrar/ocultar decodificador
   const [showBaseMenu, setShowBaseMenu] = useState(false); // Menú desplegable de Cargar base
+  const [showSourceMenu, setShowSourceMenu] = useState(false); // Menú desplegable de fuente de datos
 
   const debRef = useRef(null);
   const decActionsRef = useRef(null);
@@ -2579,9 +2677,19 @@ function CatalogoApp() {
       try {
         setLoading(true);
         setLoadProgress({ active:true, pct:0, msg:'Conectando a Supabase…', indeterminate:true });
-        // Cargamos SOLO repuestos al inicio para mayor velocidad
+
+        // 1) Resolver fuente activa global (producción/contingencia)
+        const globalSource = await fsGetActiveSource();
+        setActiveSource(globalSource);
+        let hadPreview = false;
+        try { hadPreview = !!sessionStorage.getItem(PREVIEW_SOURCE_KEY); } catch {}
+        const sourceToLoad = hadPreview ? dataSource : globalSource;
+        if (!hadPreview) setDataSource(globalSource);
+        const tableToLoad = DATA_SOURCES[sourceToLoad]?.table || DATA_SOURCES.produccion.table;
+
+        // 2) Cargamos SOLO repuestos al inicio para mayor velocidad
         // El changelog se carga cuando el usuario abre el historial
-        const rawRecs = await fsGetAll(COL_RECORDS, (n) => {
+        const rawRecs = await fsGetAll(tableToLoad, (n) => {
           // Supabase entrega todos los docs juntos — actualizamos badge temprano
           console.log('[Supabase] docs recibidos:', n);
           setLoadProgress({ active:true, pct:80, msg:`Procesando ${n.toLocaleString()} registros…`, indeterminate:false });
@@ -2605,6 +2713,27 @@ function CatalogoApp() {
       }
     })();
   },[]); // eslint-disable-line
+
+  // ── Recargar registros cuando el usuario cambia de fuente (preview) ──
+  const reloadRecords = useCallback(async ()=>{
+    try {
+      setLoading(true);
+      const rawRecs = await fsGetAll(currentTable);
+      const allNormalized = rawRecs.map(normalizeDoc).filter(Boolean);
+      const normalized = allNormalized.filter(hasCodigo);
+      setRecords(normalized);
+    } catch(e) {
+      toast('❌ Error cargando "' + DATA_SOURCES[dataSource]?.label + '": ' + e.message, 'error');
+    } finally {
+      setLoading(false);
+    }
+  },[currentTable]); // eslint-disable-line
+
+  const firstRunRef = useRef(true);
+  useEffect(()=>{
+    if (firstRunRef.current) { firstRunRef.current = false; return; } // ya cargado arriba
+    reloadRecords();
+  },[dataSource]); // eslint-disable-line
 
   // ── Carga de historial (lazy: solo cuando se abre el modal) ──
   const [changelogLoaded, setChangelogLoaded] = useState(false);
@@ -2746,7 +2875,7 @@ function CatalogoApp() {
 
   // ── CRUD ──
   const handleSaveNew = async ({fields})=>{
-    const id = await fsAdd(COL_RECORDS,{fields});
+    const id = await fsAdd(currentTable,{fields});
     const newRec = {_id:id,fields};
     if (hasCodigo(newRec)) setRecords(prev=>[newRec,...prev]);
     await logEntry('AGREGAR',`${fields[0]} ${fields[1]} ${fields[3]}`,
@@ -2755,7 +2884,7 @@ function CatalogoApp() {
   };
 
   const handleSaveEdit = async (original,{fields})=>{
-    await fsUpdate(original._id,{fields});
+    await fsUpdate(original._id,{fields},currentTable);
     const updatedRec = {...original,fields};
     setRecords(prev=>hasCodigo(updatedRec)
       ? prev.map(r=>r._id===original._id?updatedRec:r)
@@ -2769,7 +2898,7 @@ function CatalogoApp() {
   const handleDelete = async ()=>{
     const rec=modalDel; setModalDel(null);
     try{
-      await fsDelete(rec._id);
+      await fsDelete(rec._id,currentTable);
       setRecords(prev=>prev.filter(r=>r._id!==rec._id));
       await logEntry('ELIMINAR',`${rec.fields[0]} ${rec.fields[1]} ${rec.fields[3]}`);
       toast('🗑 Registro eliminado.','warning');
@@ -2797,7 +2926,7 @@ function CatalogoApp() {
       }
     }
     for (const { rec, newFields } of updated) {
-      await fsUpdate(rec._id, { fields: newFields });
+      await fsUpdate(rec._id, { fields: newFields }, currentTable);
     }
     if (count > 0) {
       setRecords(prev => prev
@@ -2815,37 +2944,44 @@ function CatalogoApp() {
   };
 
   // ── Importar ──
-  const handleImport = async (rows, mode)=>{
+  const handleImport = async (rows, mode, target=dataSource)=>{
+    const targetTable = DATA_SOURCES[target]?.table || currentTable;
     setLoading(true);
     const total = rows.length;
     setLoadProgress({ active:true, pct:0, msg:`Preparando ${total.toLocaleString()} registros…`, indeterminate:false });
     try{
       if(mode==='replace'){
         setLoadProgress({ active:true, pct:5, msg:'Eliminando registros anteriores…', indeterminate:true });
-        await fsDeleteAll();
+        await fsDeleteAll(targetTable);
       }
       // Escritura en batches con progreso visual
       const CHUNK = 500;
       for(let i=0; i<rows.length; i+=CHUNK){
         const batch = rows.slice(i, i+CHUNK).map(f => ({ fields: f }));
-        const { error } = await supabase.from(COL_RECORDS).insert(batch);
+        const { error } = await supabase.from(targetTable).insert(batch);
         if (error) throw new Error(error.message);
         const pct = Math.round(Math.min(((i+CHUNK)/total)*85, 85)) + 5;
         const done = Math.min(i+CHUNK, total);
         setLoadProgress({ active:true, pct, msg:`Subiendo… ${done.toLocaleString()} / ${total.toLocaleString()} registros`, indeterminate:false });
         toast(`⏳ Guardando… ${pct}% (${done}/${total})`, 'info');
       }
-      setLoadProgress({ active:true, pct:93, msg:'Recargando datos desde Supabase…', indeterminate:true });
-      // Recargar desde Supabase
-      const fresh = await fsGetAll(COL_RECORDS);
-      const freshAll = fresh.map(normalizeDoc).filter(Boolean);
-      const freshValid = freshAll.filter(hasCodigo);
-      const omitidosImport = freshAll.length - freshValid.length;
-      setRecords(freshValid);
-      await logEntry('IMPORTAR',`${mode==='replace'?'Reemplazo':'Adición'} de ${total} registros`);
-      setLoadProgress({ active:true, pct:100, msg:`✅ ${total.toLocaleString()} registros importados a Supabase (${freshValid.length.toLocaleString()} visibles en la app${omitidosImport?`, ${omitidosImport.toLocaleString()} sin código repuesto`:''})`, indeterminate:false });
+      // Si el destino de la carga es la fuente que se está viendo ahora,
+      // recargamos la tabla para reflejar los cambios de inmediato
+      if (targetTable === currentTable) {
+        setLoadProgress({ active:true, pct:93, msg:'Recargando datos desde Supabase…', indeterminate:true });
+        const fresh = await fsGetAll(targetTable);
+        const freshAll = fresh.map(normalizeDoc).filter(Boolean);
+        const freshValid = freshAll.filter(hasCodigo);
+        const omitidosImport = freshAll.length - freshValid.length;
+        setRecords(freshValid);
+        setLoadProgress({ active:true, pct:100, msg:`✅ ${total.toLocaleString()} registros importados a "${DATA_SOURCES[target].label}" (${freshValid.length.toLocaleString()} visibles${omitidosImport?`, ${omitidosImport.toLocaleString()} sin código repuesto`:''})`, indeterminate:false });
+        toast(`✅ ${total} registros importados a "${DATA_SOURCES[target].label}".${omitidosImport?` ⚠️ ${omitidosImport.toLocaleString()} quedaron ocultos por no tener "Código Repuesto".`:''}`,'success');
+      } else {
+        setLoadProgress({ active:true, pct:100, msg:`✅ ${total.toLocaleString()} registros importados a "${DATA_SOURCES[target].label}"`, indeterminate:false });
+        toast(`✅ ${total} registros importados a "${DATA_SOURCES[target].label}" (no estás viendo esa fuente ahora mismo).`,'success');
+      }
+      await logEntry('IMPORTAR',`${mode==='replace'?'Reemplazo':'Adición'} de ${total} registros en ${DATA_SOURCES[target].label}`);
       setTimeout(()=>setLoadProgress(p=>({...p,active:false})), 2500);
-      toast(`✅ ${total} registros importados a Supabase.${omitidosImport?` ⚠️ ${omitidosImport.toLocaleString()} quedaron ocultos por no tener "Código Repuesto".`:''}`,'success');
       clearAll();
     }catch(e){
       setLoadProgress({ active:false, pct:0, msg:'', indeterminate:true });
@@ -2856,8 +2992,8 @@ function CatalogoApp() {
   // ── Exportar XLS ──
   const exportCSV = async ()=>{
     try{
-      toast('📥 Descargando base completa desde Supabase…','info');
-      const rawAll = await fsGetAll(COL_RECORDS);
+      toast(`📥 Descargando base "${DATA_SOURCES[dataSource].label}" desde Supabase…`,'info');
+      const rawAll = await fsGetAll(currentTable);
       const allRows = rawAll.map(normalizeDoc).filter(Boolean);
       if(!allRows.length){toast('No hay datos para exportar.','error');return;}
       const xlsxLib = await loadXLSX();
@@ -2900,6 +3036,71 @@ function CatalogoApp() {
             }}/>
             Supabase {fbStatus==='ok'?'conectado':fbStatus==='connecting'?'conectando…':'error'}
           </span>
+
+          {/* FUENTE DE DATOS: Producción / Contingencia */}
+          {isAdmin ? (
+            <div style={{position:'relative',display:'inline-block'}}>
+              <button
+                onClick={()=>setShowSourceMenu(v=>!v)}
+                title="Elegir qué base de datos ver/editar"
+                style={{
+                  display:'flex',alignItems:'center',gap:6,
+                  padding:'4px 10px',borderRadius:20,cursor:'pointer',
+                  fontSize:'0.62rem',fontWeight:700,border:'1.5px solid',
+                  borderColor: dataSource==='contingencia' ? '#D4A800' : '#0060A0',
+                  color: dataSource==='contingencia' ? '#8a6d00' : '#0060A0',
+                  background: dataSource==='contingencia' ? '#FFF8E1' : '#E3F2FD',
+                }}>
+                {dataSource==='contingencia' ? '🟡 Contingencia' : '🟢 Producción'}
+                {isPreviewing && <span style={{fontSize:'0.55rem',opacity:.75}}>(vista previa)</span>}
+                <span style={{fontSize:'0.55rem'}}>▾</span>
+              </button>
+              {showSourceMenu && (
+                <div style={{position:'absolute',top:'100%',left:0,marginTop:4,background:'#fff',
+                  border:'1px solid var(--g3)',borderRadius:8,boxShadow:'0 4px 12px rgba(0,0,0,.15)',
+                  zIndex:500,minWidth:260,padding:8}}>
+                  <div style={{fontSize:'0.6rem',color:'var(--g5)',padding:'4px 8px 8px'}}>
+                    Elige qué base quieres ver/editar en tu pantalla.
+                  </div>
+                  {Object.values(DATA_SOURCES).map(src=>(
+                    <button key={src.key}
+                      onClick={()=>{previewSource(src.key);setShowSourceMenu(false);}}
+                      style={{
+                        width:'100%',textAlign:'left',padding:'8px 10px',borderRadius:6,
+                        border:'none',cursor:'pointer',fontSize:'0.68rem',
+                        background: dataSource===src.key ? 'var(--bl)' : 'transparent',
+                        fontWeight: dataSource===src.key ? 700 : 400,
+                        marginBottom:2,
+                      }}>
+                      {src.key==='contingencia'?'🟡':'🟢'} {src.label}
+                      {activeSource===src.key && <span style={{marginLeft:6,fontSize:'0.55rem',color:'var(--grn)'}}>· activa para todos</span>}
+                    </button>
+                  ))}
+                  <div style={{borderTop:'1px solid var(--g2)',marginTop:6,paddingTop:6}}>
+                    <button
+                      onClick={()=>{publishActiveSource(dataSource);setShowSourceMenu(false);}}
+                      disabled={activeSource===dataSource}
+                      style={{
+                        width:'100%',textAlign:'left',padding:'8px 10px',borderRadius:6,
+                        border:'none',cursor:activeSource===dataSource?'default':'pointer',
+                        fontSize:'0.65rem',opacity:activeSource===dataSource?.4:1,
+                        background:'transparent',color:'var(--bm)',fontWeight:600,
+                      }}>
+                      ✓ Definir "{DATA_SOURCES[dataSource].label}" como fuente activa para todos
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            // Usuarios no-admin solo ven un indicador informativo, sin poder cambiarlo
+            <span className="fb-badge" style={{
+              background: dataSource==='contingencia' ? '#FFF8E1' : undefined,
+              color: dataSource==='contingencia' ? '#8a6d00' : undefined,
+            }}>
+              {dataSource==='contingencia' ? '🟡 Base de contingencia' : '🟢 Base de producción'}
+            </span>
+          )}
         </div>
         <div className="ac-hact">
           {isAdmin && <button className="btn btn-g"
@@ -2981,8 +3182,8 @@ function CatalogoApp() {
           {[
             {label:'🅱 Marca', val:fMarca, set:onMarcaChange, opts:availableMarcas},
             {label:'🚗 Modelo', val:fModelo, set:onModeloChange, opts:availableModels, placeholder:'Todos los modelos'},
-            {label:'⛽ Litraje', val:fLitraje, set:onLitrajeChange, opts:availableLitrajes, placeholder:'Todos'},
             {label:'📅 Período',   val:fPeriodo,   set:onPeriodoChange, opts:availablePeriodos, placeholder:'Todos los períodos'},
+            {label:'⛽ Litraje', val:fLitraje, set:onLitrajeChange, opts:availableLitrajes, placeholder:'Todos'},
             {label:'🔎 Clasificación', val:fClasi, set:onClasiChange, opts:availableClasif, placeholder:'Todas'},
             {label:'📂 Subclasificación', val:fSub, set:onSubChange, opts:availableSubs, placeholder:'Todas'},
           ].map(({label,val,set,opts,placeholder='Todas las marcas'})=>{
@@ -3201,7 +3402,7 @@ function CatalogoApp() {
       )}
       {modalDel && isAdmin && <ModalDelete record={modalDel} onConfirm={handleDelete} onClose={()=>setModalDel(null)}/>}
       {modalDetail && <ModalDetail  record={modalDetail}  onClose={()=>setModalDetail(null)} onEdit={r=>{setModalDetail(null);setModalEdit(r);}}/>}
-      {showImport  && <ModalImport  onClose={()=>setShowImport(false)}  onImport={handleImport}/>}
+      {showImport  && <ModalImport  onClose={()=>setShowImport(false)}  onImport={handleImport} defaultTarget={dataSource}/>}
       {showCols    && <ModalCols    visibleCols={visibleCols} colOrder={colOrder} onChange={(i,s)=>setVisibleCols(v=>v.map((c,ci)=>ci===i?{...c,show:s}:c))} onReorder={setColOrder} onClose={()=>setShowCols(false)}/>}
       {showHistory && <ModalHistory changelog={changelog} onClose={()=>setShowHistory(false)}/>}
       {showReplace && <ModalReplace cols={COL_DEFS} records={records} onReplace={handleBulkReplace} onClose={()=>setShowReplace(false)}/>}

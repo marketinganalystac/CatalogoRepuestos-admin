@@ -8,7 +8,7 @@
           "key": "gate"
         }
       ],
-      "destination": "https://catalogorepuestos-admin.TUNUEVONOMBRE.workers.dev",
+      "destination": "https://catalogorepuestos.admin-acsa.workers.dev/",
       "permanent": false
     }
   ]

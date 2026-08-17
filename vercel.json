@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "destination": "https://catalogorepuestos-admin.TUNUEVONOMBRE.workers.dev",
+      "permanent": false
+    }
+  ]
+}

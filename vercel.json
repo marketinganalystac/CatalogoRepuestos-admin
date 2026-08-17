@@ -4,12 +4,11 @@
       "source": "/(.*)",
       "missing": [
         {
-          "type": "header",
-          "key": "x-worker-secret",
-          "value": "acsa-2026-gate"
+          "type": "query",
+          "key": "gate"
         }
       ],
-      "destination": "https://catalogorepuestos.admin-acsa.workers.dev/",
+      "destination": "https://catalogorepuestos-admin.TUNUEVONOMBRE.workers.dev",
       "permanent": false
     }
   ]

@@ -474,7 +474,7 @@ const fsGetAll = async (col, onProgress) => {
   let allRows = [];
   let from = 0;
   while (true) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseSession
       .from(col)
       .select('*')
       .range(from, from + PAGE - 1);
@@ -489,7 +489,7 @@ const fsGetAll = async (col, onProgress) => {
 };
 
 const fsAdd = async (col, data) => {
-  const { data: row, error } = await supabase
+  const { data: row, error } = await supabaseSession
     .from(col)
     .insert([{ ...data }])
     .select('id')
@@ -499,7 +499,7 @@ const fsAdd = async (col, data) => {
 };
 
 const fsUpdate = async (id, data, col = COL_RECORDS) => {
-  const { error } = await supabase
+  const { error } = await supabaseSession
     .from(col)
     .update({ ...data })
     .eq('id', id);
@@ -507,7 +507,7 @@ const fsUpdate = async (id, data, col = COL_RECORDS) => {
 };
 
 const fsDelete = async (id, col = COL_RECORDS) => {
-  const { error } = await supabase
+  const { error } = await supabaseSession
     .from(col)
     .delete()
     .eq('id', id);
@@ -515,7 +515,7 @@ const fsDelete = async (id, col = COL_RECORDS) => {
 };
 
 const fsAddLog = async (entry) => {
-  const { error } = await supabase
+  const { error } = await supabaseSession
     .from(COL_CHANGELOG)
     .insert([{ ...entry }]);
   if (error) throw new Error(error.message);
@@ -523,7 +523,7 @@ const fsAddLog = async (entry) => {
 
 const fsDeleteAll = async (col = COL_RECORDS) => {
   // Supabase requiere un filtro; usamos gt para UUIDs/integers cubrir todos los registros
-  const { error } = await supabase
+  const { error } = await supabaseSession
     .from(col)
     .delete()
     .not('id', 'is', null);
@@ -533,7 +533,7 @@ const fsDeleteAll = async (col = COL_RECORDS) => {
 // Fuente de datos activa GLOBAL (afecta a todos los usuarios que no
 // tengan una previsualización local en su sessionStorage)
 const fsGetActiveSource = async () => {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseSession
     .from(COL_SETTINGS)
     .select('active_source')
     .eq('id', 1)
@@ -2182,7 +2182,7 @@ function DecodificadorTab({ selectedCode = null, actionsRef = null }) {
       try {
         const PAGE = 1000; let all = []; let from = 0;
         while (true) {
-          const { data, error } = await supabase
+          const { data, error } = await supabaseSession
             .from(COL_BASE_CODIGOS)
             .select('*')
             .range(from, from + PAGE - 1);
@@ -2271,7 +2271,7 @@ function DecodificadorTab({ selectedCode = null, actionsRef = null }) {
       // Upsert in batches of 500
       const BATCH = 500;
       for (let i = 0; i < upsertRows.length; i += BATCH) {
-        const { error } = await supabase
+        const { error } = await supabaseSession
           .from(COL_BASE_CODIGOS)
           .upsert(upsertRows.slice(i, i + BATCH), { onConflict:'codigo' });
         if (error) throw new Error(error.message);
@@ -3011,7 +3011,7 @@ function CatalogoApp() {
       const CHUNK = 500;
       for(let i=0; i<rows.length; i+=CHUNK){
         const batch = rows.slice(i, i+CHUNK).map(f => ({ fields: f }));
-        const { error } = await supabase.from(targetTable).insert(batch);
+        const { error } = await supabaseSession.from(targetTable).insert(batch);
         if (error) throw new Error(error.message);
         const pct = Math.round(Math.min(((i+CHUNK)/total)*85, 85)) + 5;
         const done = Math.min(i+CHUNK, total);

@@ -161,7 +161,7 @@ function LoginScreen() {
             borderRadius: 20,
             boxShadow: '0 32px 80px rgba(0,0,0,.45)',
             zIndex: 0,
-            transform: 'translateX(-500px)'
+            transform: 'translateX(-250px)'
           }}
         />
         <div style={{

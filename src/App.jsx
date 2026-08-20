@@ -141,8 +141,21 @@ function LoginScreen() {
     <div style={{
       minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center',
       background:'linear-gradient(135deg,#0d2a4a 0%,#1A3F6F 50%,#0060A0 100%)',
-      fontFamily:"'Segoe UI',Arial,sans-serif", padding:16
+      fontFamily:"'Segoe UI',Arial,sans-serif", padding:16, gap:32, flexWrap:'wrap'
     }}>
+      <style>{`
+        .login-side-video { width:min(380px,40vw); border-radius:16px; overflow:hidden;
+          box-shadow:0 32px 80px rgba(0,0,0,.35); }
+        .login-side-video video { width:100%; height:100%; object-fit:cover; display:block; }
+        @media (max-width: 860px) { .login-side-video { display:none; } }
+      `}</style>
+      {/* Video decorativo — a mano izquierda del login (se oculta en pantallas angostas) */}
+      <div className="login-side-video">
+        <video
+          src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@main/public/mechanic.mp4"
+          autoPlay muted loop playsInline
+        />
+      </div>
       <div style={{
         background:'#fff', borderRadius:16, width:'min(420px,100%)',
         boxShadow:'0 32px 80px rgba(0,0,0,.35)', overflow:'hidden'

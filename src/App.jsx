@@ -147,26 +147,26 @@ function LoginScreen() {
         .ac-login-outer{ position:relative; display:inline-block; }
         .ac-login-wrap{
           position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-          width:min(400px,30vw); height:100%; z-index:0;
+          width:min(400px,100vw); height:100%; z-index:0;
         }
         .ac-login-video{
-          position:absolute; inset:-16px;
-          width:calc(100% + 32px); height:calc(100% + 32px);
-          object-fit:cover; border-radius:20px;
-          box-shadow:rgba(0,0,0,0.45) 0px 0px 0px;
-          transform:translateX(-209px);
+          position:absolute; inset: -3px;
+          width:calc(100% - 10px); height:calc(100% + 5px);
+          object-fit:cover; border-radius: 25px;
+          box-shadow:rgba(0,0,0,0.45) 60px 60px 60px;
+          transform:translateX(-225px);
           z-index:0;
-          mask-image:radial-gradient(ellipse at center, #000 50%, transparent 100%);
+          mask-image:radial-gradient(ellipse at center, #000 -100%, transparent 100%);
           -webkit-mask-image:radial-gradient(ellipse at center, #000 50%, transparent 100%);
         }
         .ac-login-card{
           position:relative; z-index:1; background:#fff; border-radius:16px; overflow:hidden;
-          width:min(520px,90vw);
-          box-shadow:0 32px 80px rgba(0,0,0,.45);
+          width:min(400px,60vw);
+          box-shadow:0 60px 1000px rgba(0,0,0,.60);
         }
         @media(max-width:900px){
           .ac-login-wrap{ width:min(400px,60vw); }
-          .ac-login-video{ transform:translateX(-140px); }
+          .ac-login-video{ transform:translateX(-200px); }
           .ac-login-card{ width:min(460px,90vw); }
         }
         @media(max-width:600px){

@@ -163,7 +163,6 @@ function LoginScreen() {
             zIndex: 0,
             transform: 'translateX(-500px)'
           }}
-          }}
         />
         <div style={{
           position:'relative', zIndex:1,

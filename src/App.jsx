@@ -150,12 +150,18 @@ function LoginScreen() {
           src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@main/public/mechanic.mp4"
           autoPlay muted loop playsInline
           style={{
-            position:'absolute',
-            top:-24, left:-24, right:-24, bottom:-24,
-            width:'calc(100% + 48px)', height:'calc(100% + 48px)',
-            objectFit:'cover', borderRadius:20,
-            boxShadow:'0 32px 80px rgba(0,0,0,.45)',
-            zIndex:0
+            position: 'absolute',
+            top: -2,
+            left: -2,
+            right: -2,
+            bottom: -2,
+            width: 'calc(100% + 100px)',
+            height: 'calc(100% + 5px)',
+            objectFit: 'cover',
+            borderRadius: 20,
+            boxShadow: '0 0 0 rgba(0,0,0,0)',
+            zIndex: 0,
+            transform: 'translateX(-200px)'
           }}
         />
         <div style={{

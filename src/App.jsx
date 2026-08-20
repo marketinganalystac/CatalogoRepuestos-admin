@@ -152,7 +152,7 @@ function LoginScreen() {
       {/* Video decorativo — a mano izquierda del login (se oculta en pantallas angostas) */}
       <div className="login-side-video">
         <video
-          src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@main/public/mechanic.mpeg"
+          src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@HEAD/public/mechanic.mp4"
           autoPlay muted loop playsInline
         />
       </div>

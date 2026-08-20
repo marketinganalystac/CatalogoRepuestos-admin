@@ -153,13 +153,16 @@ function LoginScreen() {
             position: 'absolute',
             top: -24,
             left: -24,
+            right: -24,
+            bottom: -24,
             width: 'calc(100% + 48px)',
             height: 'calc(100% + 48px)',
             objectFit: 'cover',
-            objectPosition: 'center center',
             borderRadius: 20,
             boxShadow: '0 32px 80px rgba(0,0,0,.45)',
-            zIndex: 0
+            zIndex: 0,
+            transform: 'translateX(-200px)'
+          }}
           }}
         />
         <div style={{

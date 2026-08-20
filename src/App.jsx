@@ -151,17 +151,15 @@ function LoginScreen() {
           autoPlay muted loop playsInline
           style={{
             position: 'absolute',
-            top: -2,
-            left: -2,
-            right: -2,
-            bottom: -2,
-            width: 'calc(100% + 100px)',
-            height: 'calc(100% + 5px)',
+            top: -24,
+            left: -24,
+            width: 'calc(100% + 48px)',
+            height: 'calc(100% + 48px)',
             objectFit: 'cover',
+            objectPosition: 'center center',
             borderRadius: 20,
-            boxShadow: '0 0 0 rgba(0,0,0,0)',
-            zIndex: 0,
-            transform: 'translateX(-200px)'
+            boxShadow: '0 32px 80px rgba(0,0,0,.45)',
+            zIndex: 0
           }}
         />
         <div style={{

@@ -147,7 +147,7 @@ function LoginScreen() {
       <div style={{ position:'relative', width:'min(420px,100%)' }}>
         {/* Video — detrás de la tarjeta, asomando por los bordes */}
         <video
-          src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@main/public/mechanic.mp4"
+          src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@HEAD/public/mechanic.mp4"
           autoPlay muted loop playsInline
           style={{
             position: 'absolute',

@@ -1163,7 +1163,7 @@ tbody td{padding:7px 13px;vertical-align:middle;border-bottom:1px solid var(--g2
 }
 .ac-progress-overlay.active{opacity:1;pointer-events:all}
 .ac-progress-card{
-  background:linear-gradient(135deg, rgba(26,63,111,.85) 0%, rgba(0,96,160,.85) 55%, rgba(21,51,92,.85) 100%);
+  background:linear-gradient(135deg, rgba(26,63,111,.75) 0%, rgba(0,96,160,.75) 55%, rgba(21,51,92,.75) 100%);
   border:none;border-radius:0;
   padding:0;width:100vw;height:100vh;max-width:none;max-height:none;min-width:0;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -1172,14 +1172,14 @@ tbody td{padding:7px 13px;vertical-align:middle;border-bottom:1px solid var(--g2
 }
 .ac-progress-title{
   font-size:1.1rem;font-weight:800;color:#fff;letter-spacing:.3px;
-  margin-top:20px;display:flex;align-items:center;gap:8px;
+  margin-top:15px;display:flex;align-items:center;gap:8px;
 }
 .ac-progress-title .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);
   box-shadow:0 0 8px var(--gold);animation:pulse-dot 1s ease-in-out infinite}
 @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
 .ac-progress-video-wrap{
   position:relative;width:420px;max-width:60vw;
-  margin:0 0 22px;border-radius:0;overflow:visible;
+  margin:0 0 18px;border-radius:0;overflow:visible;
   border:none;box-shadow:none;
 }
 .ac-progress-video{
@@ -1194,7 +1194,7 @@ tbody td{padding:7px 13px;vertical-align:middle;border-bottom:1px solid var(--g2
   letter-spacing:.5px;z-index:2;text-shadow:0 1px 3px rgba(0,0,0,.4);
 }
 .ac-progress-label{font-size:0.78rem;color:rgba(255,255,255,.75);font-weight:500;overflow:hidden;text-overflow:ellipsis;display:block;margin-top:14px;max-width:100%}
-.ac-progress-bar-bg{width:900px;max-width:60vw;background:rgba(0,0,0,.35);border-radius:20px;height:80px;overflow:hidden;position:relative;box-shadow:inset 0 1px 3px rgba(0,0,0,.3);margin-top:-200px;z-index:3;border:none;}
+.ac-progress-bar-bg{width:950px;max-width:60vw;background:rgba(0,0,0,.35);border-radius:20px;height:75px;overflow:hidden;position:relative;box-shadow:inset 0 1px 3px rgba(0,0,0,.3);margin-top:-200px;z-index:3;border:none;}
 .ac-progress-bar-fill{height:100%;background:linear-gradient(135deg,#2A8FD8 0%,#1a7bc8 100%);border-radius:20px;transition:width .3s ease;box-shadow:0 0 8px rgba(42,143,216,.5);position:relative}
 .ac-progress-bar-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.35) 0%,transparent 55%);border-radius:20px}
 .ac-progress-bar-fill.indeterminate{width:40%!important;animation:progress-slide 1.2s ease-in-out infinite}

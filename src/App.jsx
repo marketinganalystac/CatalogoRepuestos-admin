@@ -1172,7 +1172,7 @@ tbody td{padding:7px 13px;vertical-align:middle;border-bottom:1px solid var(--g2
 }
 .ac-progress-title{
   font-size:1.1rem;font-weight:800;color:#fff;letter-spacing:.3px;
-  margin-top:15px;display:flex;align-items:center;gap:8px;
+  margin-top:40px;display:flex;align-items:center;gap:8px;
 }
 .ac-progress-title .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);
   box-shadow:0 0 8px var(--gold);animation:pulse-dot 1s ease-in-out infinite}

@@ -1194,7 +1194,7 @@ tbody td{padding:7px 13px;vertical-align:middle;border-bottom:1px solid var(--g2
   letter-spacing:.5px;z-index:2;text-shadow:0 1px 3px rgba(0,0,0,.4);
 }
 .ac-progress-label{font-size:0.78rem;color:rgba(255,255,255,.75);font-weight:500;overflow:hidden;text-overflow:ellipsis;display:block;margin-top:14px;max-width:100%}
-.ac-progress-bar-bg{width:420px;max-width:60vw;background:rgba(0,0,0,.35);border-radius:20px;height:52px;overflow:hidden;position:relative;box-shadow:inset 0 1px 3px rgba(0,0,0,.3);margin-top:-130px;z-index:3;border:none;}
+.ac-progress-bar-bg{width:420px;max-width:60vw;background:rgba(0,0,0,.35);border-radius:20px;height:52px;overflow:hidden;position:relative;box-shadow:inset 0 1px 3px rgba(0,0,0,.3);margin-top:-170px;z-index:3;border:none;}
 .ac-progress-bar-fill{height:100%;background:linear-gradient(135deg,#2A8FD8 0%,#1a7bc8 100%);border-radius:20px;transition:width .3s ease;box-shadow:0 0 8px rgba(42,143,216,.5);position:relative}
 .ac-progress-bar-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.35) 0%,transparent 55%);border-radius:20px}
 .ac-progress-bar-fill.indeterminate{width:40%!important;animation:progress-slide 1.2s ease-in-out infinite}

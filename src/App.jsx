@@ -3372,7 +3372,7 @@ function CatalogoApp() {
           <div className="ac-progress-video-wrap">
             <video
               className="ac-progress-video"
-              src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@HEAD/public/Carguer.webm"
+              src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@HEAD/public/Carga.webm"
               autoPlay loop muted playsInline
             />
             <div className="ac-progress-bar-bg">

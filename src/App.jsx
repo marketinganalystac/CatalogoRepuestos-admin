@@ -178,7 +178,7 @@ function LoginScreen() {
         <div className="ac-login-wrap">
           <video
             className="ac-login-video"
-            src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@main/public/mechanic.mp4"
+            src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@HEAD/public/mechanic.mp4"
             autoPlay muted loop playsInline
           />
         </div>

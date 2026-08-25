@@ -628,7 +628,7 @@ const CLASI_ICON_PATHS = {
   'LLANTAS': <><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2.6"/><path d="M12 4.5v2.4M12 17.1v2.4M4.5 12h2.4M17.1 12h2.4M6.7 6.7l1.7 1.7M15.6 15.6l1.7 1.7M17.3 6.7l-1.7 1.7M8.4 15.6l-1.7 1.7"/></>,
   'LUBRICANTES': <><path d="M12 3c2.6 3.2 5 6.4 5 9.6a5 5 0 1 1-10 0C7 9.4 9.4 6.2 12 3Z"/></>,
 };
-function ClasiIcon({ clasi, size=56 }) {
+function ClasiIcon({ clasi, size=100 }) {
   const imgSrc = CLASI_IMAGES[clasi];
   if (imgSrc) {
     return <img src={imgSrc} alt={clasi} className="ac-clasi-img" draggable={false} />;

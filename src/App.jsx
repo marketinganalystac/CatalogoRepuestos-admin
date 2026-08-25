@@ -1019,7 +1019,7 @@ select:focus,input[type=text]:focus{
 .ac-sr-mid .ac-fl{
   flex:1;
   min-width:180px;
-
+}
 /* Status bar (fusionada con quick stats en una sola línea) */
 .ac-sb{
   background:linear-gradient(135deg,var(--bd) 0%,#1d4878 100%);

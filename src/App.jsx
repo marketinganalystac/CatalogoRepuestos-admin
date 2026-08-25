@@ -189,43 +189,51 @@ function LoginScreen() {
       <div className="ac-login-outer">
         {/* Wrapper del video — más ancho que el card, asoma parejo en los 4 lados sin cálculos manuales */}
         <div className="ac-login-wrap">
-              <video
-        className="ac-login-video"
-        src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@HEAD/public/Mechanic.webm"
-        autoPlay
-        muted
-        loop={false}
-        playsInline
-        ref={(video) => {
-          if (!video) return;
-      
-          video.playbackRate = 0.7;
-      
-          const iniciar = () => {
-            video.currentTime = 0;
-            video.play();
-          };
-      
-          const controlar = () => {
-            if (video.currentTime >= 2) {
-              video.pause();
-      
-              setTimeout(() => {
-                video.currentTime = 4;
-                video.play();
-              }, 2000);
-            }
-          };
-      
-          video.addEventListener("timeupdate", controlar);
-      
-          iniciar();
-      
-          return () => {
-            video.removeEventListener("timeupdate", controlar);
-          };
-        }}
-      />
+
+
+<video
+  className="ac-login-video video-1"
+  src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@HEAD/public/Mechanic.webm"
+  autoPlay
+  muted
+  playsInline
+  ref={(video) => {
+    if (!video) return;
+
+    video.currentTime = 0;
+    video.playbackRate = 0.7;
+
+    const detener = () => {
+      if (video.currentTime >= 2.5) {
+        video.pause();
+      }
+    };
+
+    video.addEventListener("timeupdate", detener);
+
+    return () => {
+      video.removeEventListener("timeupdate", detener);
+    };
+  }}
+/>
+
+<video
+  className="ac-login-video video-2"
+  src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@HEAD/public/Mechanic.webm"
+  muted
+  playsInline
+  ref={(video) => {
+    if (!video) return;
+
+    video.currentTime = 4;
+    video.playbackRate = 0.7;
+    video.play();
+  }}
+/>
+
+
+
+          
         </div>
         {/* Card del login — ancho propio, independiente del wrapper del video */}
         <div className="ac-login-card">

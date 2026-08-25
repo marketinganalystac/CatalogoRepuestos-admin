@@ -214,14 +214,14 @@ function LoginScreen() {
       // Ocultar después de 2.5 segundos
       setTimeout(() => {
         video.style.display = "none";
-      }, 3000);
+      }, 4000);
 
       // Al llegar a 4 segundos, reiniciar desde el segundo 4
       setTimeout(() => {
         video.style.display = "block";
-        video.currentTime = 4;
+        video.currentTime = 3;
         video.play();
-      }, 4000);
+      }, 3000);
     };
 
     video.addEventListener("ended", iniciar);

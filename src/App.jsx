@@ -1007,10 +1007,18 @@ select:focus,input[type=text]:focus{
 
 /* Búsqueda libre reubicada — entre la barra de resultados y la tabla */
 .ac-sr-mid{
-  display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;
-  background:transparent;border-bottom:1px solid var(--g2);padding:10px 20px;
+  display:flex;
+  gap:8px;
+  align-items:flex-end;
+  flex-wrap:wrap;
+  background:transparent;
+  border-bottom:1px solid var(--g2);
+  padding:10px 20px;
 }
-.ac-sr-mid .ac-fl{flex:1;min-width:180px}
+
+.ac-sr-mid .ac-fl{
+  flex:1;
+  min-width:180px;
 
 /* Status bar (fusionada con quick stats en una sola línea) */
 .ac-sb{

@@ -192,7 +192,7 @@ function LoginScreen() {
 
 
 <video
-  className="ac-login-video video-1"
+  className="ac-login-video"
   src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@HEAD/public/Mechanic.webm"
   autoPlay
   muted
@@ -200,40 +200,35 @@ function LoginScreen() {
   ref={(video) => {
     if (!video) return;
 
-    video.currentTime = 0;
     video.playbackRate = 0.7;
 
-    const detener = () => {
-      if (video.currentTime >= 2.5) {
-        video.pause();
-      }
+    // Evita crear el control más de una vez
+    if (video.dataset.controlado) return;
+    video.dataset.controlado = "true";
+
+    const iniciar = () => {
+      video.currentTime = 0;
+      video.style.display = "block";
+      video.play();
+
+      // Ocultar después de 2.5 segundos
+      setTimeout(() => {
+        video.style.display = "none";
+      }, 2500);
+
+      // Al llegar a 4 segundos, reiniciar desde el segundo 4
+      setTimeout(() => {
+        video.style.display = "block";
+        video.currentTime = 4;
+        video.play();
+      }, 4000);
     };
 
-    video.addEventListener("timeupdate", detener);
+    video.addEventListener("ended", iniciar);
 
-    return () => {
-      video.removeEventListener("timeupdate", detener);
-    };
+    iniciar();
   }}
 />
-
-<video
-  className="ac-login-video video-2"
-  src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@HEAD/public/Mechanic.webm"
-  muted
-  playsInline
-  ref={(video) => {
-    if (!video) return;
-
-    video.currentTime = 4;
-    video.playbackRate = 0.7;
-    video.play();
-  }}
-/>
-
-
-
-          
         </div>
         {/* Card del login — ancho propio, independiente del wrapper del video */}
         <div className="ac-login-card">

@@ -202,7 +202,6 @@ function LoginScreen() {
 
     video.playbackRate = 0.7;
 
-    // Evita crear el control más de una vez
     if (video.dataset.controlado) return;
     video.dataset.controlado = "true";
 
@@ -211,17 +210,17 @@ function LoginScreen() {
       video.style.display = "block";
       video.play();
 
-      // Ocultar después de 2.5 segundos
+      // A los 4 segundos: ocultar
       setTimeout(() => {
         video.style.display = "none";
       }, 4000);
 
-      // Al llegar a 4 segundos, reiniciar desde el segundo 4
+      // 3 segundos después: aparecer desde el segundo 3
       setTimeout(() => {
-        video.style.display = "block";
         video.currentTime = 3;
+        video.style.display = "block";
         video.play();
-      }, 3000);
+      }, 7000);
     };
 
     video.addEventListener("ended", iniciar);

@@ -189,17 +189,43 @@ function LoginScreen() {
       <div className="ac-login-outer">
         {/* Wrapper del video — más ancho que el card, asoma parejo en los 4 lados sin cálculos manuales */}
         <div className="ac-login-wrap">
-        <video
-          className="ac-login-video"
-          src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@HEAD/public/Mechanic.webm"
-          autoPlay
-          muted
-          loop
-          playsInline
-          ref={(video) => {
-            if (video) video.playbackRate = 0.7;
-          }}
-        />
+              <video
+        className="ac-login-video"
+        src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@HEAD/public/Mechanic.webm"
+        autoPlay
+        muted
+        loop={false}
+        playsInline
+        ref={(video) => {
+          if (!video) return;
+      
+          video.playbackRate = 0.7;
+      
+          const iniciar = () => {
+            video.currentTime = 0;
+            video.play();
+          };
+      
+          const controlar = () => {
+            if (video.currentTime >= 2) {
+              video.pause();
+      
+              setTimeout(() => {
+                video.currentTime = 4;
+                video.play();
+              }, 2000);
+            }
+          };
+      
+          video.addEventListener("timeupdate", controlar);
+      
+          iniciar();
+      
+          return () => {
+            video.removeEventListener("timeupdate", controlar);
+          };
+        }}
+      />
         </div>
         {/* Card del login — ancho propio, independiente del wrapper del video */}
         <div className="ac-login-card">

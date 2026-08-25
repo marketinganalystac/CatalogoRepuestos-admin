@@ -205,22 +205,29 @@ function LoginScreen() {
     if (video.dataset.controlado) return;
     video.dataset.controlado = "true";
 
+    let ocultar;
+    let mostrar;
+
     const iniciar = () => {
+      clearTimeout(ocultar);
+      clearTimeout(mostrar);
+
       video.currentTime = 0;
       video.style.display = "block";
       video.play();
 
-      // A los 4 segundos: ocultar
-      setTimeout(() => {
+      // Ocultar a los 4 segundos
+      ocultar = setTimeout(() => {
         video.style.display = "none";
-      }, 4000);
 
-      // 3 segundos después: aparecer desde el segundo 3
-      setTimeout(() => {
-        video.currentTime = 3;
-        video.style.display = "block";
-        video.play();
-      }, 7000);
+        // 3 segundos después, mostrar desde el segundo 3
+        mostrar = setTimeout(() => {
+          video.currentTime = 3;
+          video.style.display = "block";
+          video.play();
+        }, 3000);
+
+      }, 4000);
     };
 
     video.addEventListener("ended", iniciar);

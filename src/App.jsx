@@ -159,6 +159,9 @@ function LoginScreen() {
           height:100%;
           object-fit:cover;
           z-index:0;
+        
+          -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%, black 80%, transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0%, black 15%, black 80%, transparent 100%);
         }
         .ac-login-card{
           grid-area:1/1;
@@ -171,7 +174,7 @@ function LoginScreen() {
           border-radius:16px;
           overflow:hidden;
           width:min(400px,60vw);
-          box-shadow:-50px 0 80px rgba(0,0,0,.60);
+          box-shadow:-50px 0 80px rgba(0,0,0,.40);
         }
         @media(max-width:900px){
           .ac-login-wrap{ display:none; }

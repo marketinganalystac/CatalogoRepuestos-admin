@@ -258,7 +258,7 @@ function LoginScreen() {
             src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@HEAD/public/Mechanic.webm"
             muted
             playsInline
-            style={{ display: "block", left: "-60px" }}
+            style={{ display: "block", left: "-10px" }}
           />
           <video
             className="ac-login-video"

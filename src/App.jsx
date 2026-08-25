@@ -258,7 +258,7 @@ function LoginScreen() {
             src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@HEAD/public/Mechanic.webm"
             muted
             playsInline
-            style={{ display: "block", left: "-10px" }}
+            style={{ display: "block", left: "-5px" }}
           />
           <video
             className="ac-login-video"
@@ -266,7 +266,7 @@ function LoginScreen() {
             src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@HEAD/public/Mechanic.webm"
             muted
             playsInline
-            style={{ display: "none" }}
+            style={{ display: "none", left: "-20px" }}
           />
         </div>
         {/* Card del login — ancho propio, independiente del wrapper del video */}

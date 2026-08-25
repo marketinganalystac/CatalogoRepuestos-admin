@@ -998,7 +998,7 @@ select:focus,input[type=text]:focus{
 }
 .ac-clasi-icon-panel svg{opacity:.2;flex-shrink:0;width:220px;height:220px}
 .ac-clasi-icon-panel img.ac-clasi-img{
-  opacity:.28;position:absolute;right:0;top:50%;transform:translateY(-50%);
+  opacity:.50;position:absolute;right:0;top:50%;transform:translateY(-50%);
   width:480px;height:auto;max-width:none;object-fit:contain;z-index:0;
 }
 

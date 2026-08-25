@@ -158,10 +158,17 @@ function LoginScreen() {
           z-index:0;
         }
         .ac-login-card{
-          grid-area:1/1; justify-self: center; margin-left: 150px; align-self:center;
-          position:relative; z-index:1; background:#fff; border-radius:16px; overflow:hidden;
+          grid-area:1/1;
+          justify-self:center;
+          margin-left:150px;
+          align-self:center;
+          position:relative;
+          z-index:1;
+          background:#fff;
+          border-radius:16px;
+          overflow:hidden;
           width:min(400px,60vw);
-          box-shadow:0 30px 80px rgba(0,0,0,.45);
+          box-shadow:-50px 0 80px rgba(0,0,0,.60);
         }
         @media(max-width:900px){
           .ac-login-wrap{ display:none; }

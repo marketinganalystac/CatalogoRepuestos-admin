@@ -152,8 +152,11 @@ function LoginScreen() {
           width:min(650px,90vw); z-index:0;
         }
         .ac-login-video{
-          position:absolute; inset:0;
-          width:50%; height:100%;
+          position:absolute;
+          top:0;
+          left:-50px;
+          width:50%;
+          height:100%;
           object-fit:cover;
           z-index:0;
         }
@@ -183,11 +186,17 @@ function LoginScreen() {
       <div className="ac-login-outer">
         {/* Wrapper del video — más ancho que el card, asoma parejo en los 4 lados sin cálculos manuales */}
         <div className="ac-login-wrap">
-          <video
-            className="ac-login-video"
-            src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@HEAD/public/Mechanic.webm"
-            autoPlay muted loop playsInline
-          />
+        <video
+          className="ac-login-video"
+          src="https://cdn.jsdelivr.net/gh/marketinganalystac/CatalogoRepuestos-admin@HEAD/public/Mechanic.webm"
+          autoPlay
+          muted
+          loop
+          playsInline
+          ref={(video) => {
+            if (video) video.playbackRate = 0.7;
+          }}
+        />
         </div>
         {/* Card del login — ancho propio, independiente del wrapper del video */}
         <div className="ac-login-card">

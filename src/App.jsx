@@ -756,7 +756,7 @@ function ClasiIcon({ clasi, sub, size=56 }) {
   // viene de la base de datos y puede no coincidir letra a letra con la clave.
   const subMatch   = findByNormalizedKey(SUBCLASI_IMAGES, sub);
   const clasiMatch = findByNormalizedKey(CLASI_IMAGES, clasi);
-  const imgSrc = subMatch || clasiMatch || (!clasi && !sub ? '/repuesto.png' : null);
+  const imgSrc = subMatch || clasiMatch || (!clasi && !sub ? '/LogO.png' : null);
   if (imgSrc) {
     // Algunos archivos fueron subidos con variaciones de mayúsculas/tilde en
     // el nombre (ej. "BATERIAS.PNG" vs "baterias.png" vs "baterías.png") y,
@@ -793,7 +793,7 @@ function ClasiIcon({ clasi, sub, size=56 }) {
         el.dataset.variantIdx = String(idx + 1);
         el.src = variants[idx];
       } else {
-        el.src = '/repuesto.png';
+        el.src = '/LogO.png';
       }
     };
     return <img src={imgSrc} alt={sub || clasi || 'Todas las categorías'} className="ac-clasi-img" draggable={false} onError={handleImgErr}/>;

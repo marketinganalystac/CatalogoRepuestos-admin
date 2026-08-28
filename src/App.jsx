@@ -3709,7 +3709,7 @@ function CatalogoApp() {
           al escribir (onTextInput), así que se quitó el botón "Buscar" por redundante. */}
       <div className="ac-sr-mid">
         <div className="ac-fl">
-          <label><Icon.Search style={{marginRight:5,verticalAlign:-1}}/>Búsqueda libre — descripción, código, modelo…</label>
+          <label><Icon.Search style={{marginRight:2,verticalAlign:-1}}/>Búsqueda libre — descripción, código, modelo…</label>
           <input type="text" value={fText}
             placeholder="Ej: filtro aceite, TSL420, amortiguador…"
             onChange={e=>onTextInput(e.target.value)}/>

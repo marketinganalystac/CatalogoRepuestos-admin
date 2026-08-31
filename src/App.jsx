@@ -1484,7 +1484,19 @@ tbody td{padding:7px 13px;vertical-align:middle;border-bottom:1px solid var(--g2
 .novf-pill.novf-hide{opacity:0;transform:translateY(-6px);pointer-events:none}
 .novf-veh{font-weight:800;font-size:0.66rem;letter-spacing:.1px}
 .novf-sep{width:1px;align-self:stretch;background:rgba(255,255,255,.35);flex-shrink:0}
-.novf-cat-icon{display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:.95}
+.novf-cat-icon{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  opacity:.95;
+  width:24px;
+  height:24px;
+  background:#fff;
+  border:1px solid #ccc;
+  border-radius:50%;
+  box-sizing:border-box;
+}
 .novf-cat{display:flex;flex-direction:column;line-height:1.25;overflow:visible;min-width:0}
 .novf-cat b{font-size:0.66rem;letter-spacing:.2px;white-space:normal;overflow:visible;text-overflow:clip}
 .novf-cat small{font-size:0.57rem;opacity:.9;font-weight:500;white-space:normal;overflow:visible;text-overflow:clip}
@@ -3974,7 +3986,7 @@ function CatalogoApp() {
               {renderFilter({label:'Subclasificación', icon:<Icon.Tag style={{width:11,height:11}}/>, val:fSub, set:onSubChange, opts:availableSubs, placeholder:'Todas'})}
               {novedadDisplay && (()=>{
                 const { kind, vehiculo, sub, clasi, codigo, especificacion, specLine, modeloOriginal } = novedadDisplay;
-                const kindLabel = kind==='editar' ? 'EDITADO' : kind==='agregar' ? 'NUEVO' : 'DE LA BASE';
+                const kindLabel = kind==='editar' ? 'EDITADO' : kind==='agregar' ? 'NUEVO' : 'DETALLE DEL REGISTRO';
                 const codLine = [codigo, especificacion].filter(Boolean).join(' · ');
                 return (
                   <div className="novf-inline-wrap" key={codLine||vehiculo} style={{gridColumn:'3 / span 2'}}>

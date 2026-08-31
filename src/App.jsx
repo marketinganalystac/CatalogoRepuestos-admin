@@ -759,7 +759,7 @@ function ClasiIcon({ clasi, sub, size=56, forceSvg=false }) {
   // un logo genérico único en todos los casos. Cuando estén listas las
   // fotos reales, restaurar la lógica de SUBCLASI_IMAGES / CLASI_IMAGES que
   // queda más abajo comentada como referencia.
-  const TEMP_LOGO = '/logo.png';
+  const TEMP_LOGO = '/logoo.png';
   if (forceSvg) {
     // Contextos chicos e inline (píldora de Novedades): logo pequeño,
     // tamaño fijo en píxeles para que nunca desborde el layout — el

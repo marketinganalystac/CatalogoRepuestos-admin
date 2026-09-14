@@ -1667,7 +1667,7 @@ tbody td{padding:7px 13px;vertical-align:middle;border-bottom:1px solid var(--g2
 .dtl-code-chip .val{font-family:'SF Mono','Fira Code','Consolas',monospace;font-weight:800;color:var(--bd);font-size:0.78rem;padding:0 2px}
 .dtl-code-chip button{background:none;border:none;color:var(--bm);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:4px;border-radius:50%;flex-shrink:0}
 .dtl-code-chip button:hover{background:#fff}
-.dtl-body-split{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start}
+.dtl-body-split{display:grid;grid-template-columns:1fr 500px;gap:20px;align-items:start}
 .dtl-main-col{display:flex;flex-direction:column;gap:9px;min-width:0}
 .dtl-codes-aside{border-top:none;border-left:1px solid var(--g2);padding-top:0;padding-left:14px;margin-top:0}
 .dtl-codes-chips-aside{display:flex;flex-direction:column;gap:6px}
